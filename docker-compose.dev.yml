@@ -1,0 +1,43 @@
+services:
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "4222:4222"  # NATS client port
+      - "8222:8222"  # Monitoring port
+    environment:
+      - NATS_SERVER_NAME=nats-payment-system
+      - NATS_USER=admin
+      - NATS_PASSWORD=admin123
+    command: >
+      -js  # Enable JetStream for persistence
+      -m 8222  # Enable monitoring on port 8222
+      --user ${NATS_USER}
+      --pass ${NATS_PASSWORD}
+  service_register:
+    container_name: "pay_service_register"
+    image: consul:1.15.4
+    ports:
+      - "8500:8500"
+    logging:
+      driver: none
+  database:
+    container_name: "pay_database"
+    image: postgres:12.13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=twitter
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    logging:
+      driver: none
+networks:
+  default:
+    name: Twitter
+    external: true
+volumes:
+  db:

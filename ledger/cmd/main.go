@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/service/pkg"
+	"github.com/mavrk-mose/pay/ledger/pkg"
 )
 
 func main() {

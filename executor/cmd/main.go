@@ -1,8 +1,8 @@
-package main
+package cmd
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/service/pkg"
+	"github.com/mavrk-mose/pay/executor/pkg"
 )
 
 func main() {

@@ -10,6 +10,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.10.0 // indirect
+	github.com/nats-io/nats-streaming-server v0.18.0
+    github.com/nats-io/nats.go v1.11.0
 	github.com/spf13/viper v1.15.0
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

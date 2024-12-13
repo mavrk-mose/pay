@@ -1,6 +1,10 @@
 package ports
 
-import . "github.com/mavrk-mose/pay/ledger/internal/model"
+import . "github.com/mavrk-mose/pay/reconcile/internal/model"
+
+type ReconciliationService interface {
+	ReconcileLedgerWithSettlement(ledger LedgerService, settlementFile SettlementFile) (ReconciliationResult, error)
+}
 
 type LedgerService interface {
 	RecordTransaction(transaction LedgerTransaction) error
