@@ -21,5 +21,4 @@ type ApiService interface {
 	// status checks
 	UpdatePaymentStatus(paymentID string, status PaymentStatus) error // Updates the status of a payment
 	GetPaymentStatus(paymentID string) (PaymentStatus, error)         // Retrieves the current status of a payment
-
 }
