@@ -17,7 +17,8 @@ func NewApiHandler(s ports.ApiService, m *middleware.ApiMiddleware, r *gin.Engin
 
 	r.GET("/check", handler.Check)
 
-	payment := r.Group("/payment") 
+	//TODO: need to verify signature with RSA in middleware
+	payment := r.Group("/payment", m.Authorization()) 
 	{
 		payment.POST("/event", handler.ReceivePaymentEvent)                                          // Receive payment event
 		payment.GET("/id/:paymentID", handler.GetPaymentDetails)                                     // Get payment details
@@ -27,8 +28,8 @@ func NewApiHandler(s ports.ApiService, m *middleware.ApiMiddleware, r *gin.Engin
 		payment.GET("/user/:userID/status", handler.QueryPaymentsByStatus)                           // Query payments by status
 		payment.PATCH("/id/:paymentID/status", handler.UpdatePaymentStatus)                          // Update payment status
 		payment.GET("/id/:paymentID/status", handler.GetPaymentStatus)                               // Get payment status
-		payment.POST("/id/:paymentID/authorize", m.CheckAuthor(), handler.AuthorizePayment)          // Authorize payment
-		payment.POST("/id/:paymentID/process", m.CheckAuthor(), handler.ProcessPayment)              // Process authorized payment
+		payment.POST("/id/:paymentID/authorize", handler.AuthorizePayment)          // Authorize payment
+		payment.POST("/id/:paymentID/process", handler.ProcessPayment)              // Process authorized payment
 	}
 
 	return handler

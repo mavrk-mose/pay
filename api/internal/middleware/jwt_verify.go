@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -37,7 +37,7 @@ func (u *ApiMiddleware) Authorization() gin.HandlerFunc {
 
 func ValidateJwt(signedToken string) (*jwt.Token, jwt.MapClaims, error) {
 	// Load the RSA public key from a file
-	publicKey, err := ioutil.ReadFile("../public.pem")
+	publicKey, err := os.ReadFile("../public.pem")
 	if err != nil {
 		log.Fatal(err)
 	}
