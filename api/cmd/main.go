@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/api/config"
+	"github.com/mavrk-mose/pay/common/config"
 	"github.com/mavrk-mose/pay/api/pkg/db/postgres"
-	"github.com/mavrk-mose/pay/api/pkg/logger"
-	"github.com/mavrk-mose/pay/api/pkg/utils"
+	"github.com/mavrk-mose/pay/common/logger"
+	"github.com/mavrk-mose/pay/common/utils"
 )
 
 func main() {
