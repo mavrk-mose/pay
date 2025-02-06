@@ -31,9 +31,3 @@ type PaymentOrder struct {
 	Description     string        `json:"description"`      // Optional description or memo for the payment
 }
 
-// type PaymentOrder struct {
-//   OrderID      string
-//   Amount       float64
-//   SellerID     string
-//   PaymentMethod string
-// }
