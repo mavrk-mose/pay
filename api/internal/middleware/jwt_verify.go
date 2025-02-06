@@ -31,7 +31,6 @@ func (u *ApiMiddleware) Authorization() gin.HandlerFunc {
 		ctx.Set("username", claims["name"].(string))
 		ctx.Set("id", claims["ID"].(string))
 		ctx.Next()
-
 	}
 }
 
@@ -51,7 +50,7 @@ func ValidateJwt(signedToken string) (*jwt.Token, jwt.MapClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexepcted signing method: %v", token.Header["alg"])
 		}
-		return rsaPublicKey, nil
+		return rsaPublicKey, nil	
 	})
 
 	claims, ok := token.Claims.(jwt.MapClaims)
