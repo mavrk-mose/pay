@@ -13,6 +13,11 @@ import (
 
 func main() {
 	r := gin.Default()
+
+	// Initialize Rate Limiter: Allow 20 requests per second, with a burst of 5
+	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
+
+	r.use(rl.RateLimitMiddleware())
 	
 	// Load configuration
 	configPath := utils.GetConfigPath(os.Getenv("config"))
