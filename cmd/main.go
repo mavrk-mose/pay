@@ -5,16 +5,23 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/common/config"
-	"github.com/mavrk-mose/pay/api/pkg/db/postgres"
-	"github.com/mavrk-mose/pay/common/logger"
-	"github.com/mavrk-mose/pay/common/utils"
+	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/pkg/db/postgres"
+	"github.com/mavrk-mose/pay/utils/logger"
+	"github.com/mavrk-mose/pay/utils"
 )
 
 func main() {
 	r := gin.Default()
 
-	// Initialize Rate Limiter: Allow 20 requests per second, with a burst of 5
+	// Load public key
+	publicKey, err := middleware.LoadPublicKey("public.pem")
+	if err != nil {
+		panic(err)
+	}
+
+
+	// Allow 20 requests per second, with a burst of 5
 	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
 
 	r.use(rl.RateLimitMiddleware())
