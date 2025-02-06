@@ -7,12 +7,12 @@ RUN go mod download
 
 COPY . /app
 
-ENV SERVICE=pay_executor
-ENV ID=pay_EXECUTOR_1
-ENV PORT=8090
+ENV SERVICE=payment_service
+ENV ID=pay_API_1
+ENV PORT=8100
 
 RUN go build -o main ./cmd/main.go
 
-EXPOSE 8090
+EXPOSE 8100
 
 CMD ["./main"]

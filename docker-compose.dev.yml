@@ -37,7 +37,7 @@ services:
       driver: none
 networks:
   default:
-    name: Twitter
+    name: pay-net
     external: true
 volumes:
   db:

@@ -42,61 +42,10 @@ services:
       - db:/var/lib/postgresql/data
     logging:
       driver: none
-  api-server:
+  pay-service:
     build:
-      context: ./api
+      context: .
     container_name: api-server
-    depends_on:
-      - nats
-    environment:
-      - NATS_URL=nats://nats-server:4222
-    networks:
-      - payment-network
-  payment-service:
-    build:
-      context: ./service
-    container_name: payment-service
-    depends_on:
-      - nats
-    environment:
-      - NATS_URL=nats://nats-server:4222
-    networks:
-      - payment-network
-  ledger-service:
-    build:
-      context: ./ledger
-    container_name: ledger-service
-    depends_on:
-      - nats
-    environment:
-      - NATS_URL=nats://nats-server:4222
-    networks:
-      - payment-network
-
-  wallet-service:
-    build:
-      context: ./wallet
-    container_name: wallet-service
-    depends_on:
-      - nats
-    environment:
-      - NATS_URL=nats://nats-server:4222
-    networks:
-      - payment-network
-  payment-executor:
-    build:
-      context: ./executor
-    container_name: payment-executor
-    depends_on:
-      - nats
-    environment:
-      - NATS_URL=nats://nats-server:4222
-    networks:
-      - payment-network
-  reconciliation:
-    build:
-      context: ./reconcile
-    container_name: reconciliation
     depends_on:
       - nats
     environment:
