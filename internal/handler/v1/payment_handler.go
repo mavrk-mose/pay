@@ -2,15 +2,12 @@ package handler
 
 import (
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 	. "github.com/mavrk-mose/pay/api/internal/model"
 )
 
-
-
 func (h *ApiHandler) ReceivePaymentEvent(c *gin.Context) {
-	var event PaymentEvent
+	var event PaymentIntent
 	if err := c.ShouldBindJSON(&event); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 		return
