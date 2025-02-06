@@ -69,6 +69,12 @@ func (c *GenericHttpClient) Post[T any, V any](url string, request T, headers ma
 		return nil, err
 	}
 
-	c.logger.Info("Received response", zap.String("url", url))
+	response, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		c.logger.Error("Failed to format response", zap.Error(err))
+	} else {
+		c.logger.Info("Received response", zap.String("response", string(response)))
+	}
+
 	return &response, nil
 }
