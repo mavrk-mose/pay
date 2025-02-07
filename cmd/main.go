@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/internal/service"
 	"github.com/mavrk-mose/pay/pkg/db/postgres"
 	"github.com/mavrk-mose/pay/utils/logger"
 	"github.com/mavrk-mose/pay/utils"
@@ -60,4 +61,6 @@ func main() {
 	if err != nil {
 		appLogger.Fatalf("Server failed to start: %v", err)
 	}
+
+	paymentExecutor := service.NewDefaultPaymentExecutor()
 }

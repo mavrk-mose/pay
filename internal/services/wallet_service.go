@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"errors"
@@ -9,6 +9,9 @@ import (
 type WalletService interface {
 	CreateWallet(req model.CreateWalletRequest) (model.Wallet, error)
 	Transfer(req model.TransferRequest) error
+	Withdraw(req model.WithdrawalRequest) error
+	Deposit(req model.DepositRequest) error
+	GetWallet(userID string) (float64, error)
 }
 
 type walletService struct {
@@ -59,4 +62,8 @@ func (s *walletService) Transfer(req model.TransferRequest) error {
 		return err
 	}
 	return nil
+}
+
+func (s *walletService) Withdraw(req model.WithdrawalRequest) error {
+
 }

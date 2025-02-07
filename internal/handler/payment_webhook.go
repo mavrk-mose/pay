@@ -11,6 +11,7 @@ import (
 
 type PaymentWebhookHandler struct {
 	TransactionRepo repository.TransactionRepo
+	ledger          service.LedgerService
 }
 
 type WebhookPayload struct {
@@ -36,36 +37,8 @@ func (h *PaymentWebhookHandler) HandleWebhook(c *gin.Context) {
 		return
 	}
 
-	// - Debits the payer wallet
-	// - Credits the payee wallet
-	// add the double entries when transaction is successful
 	if newStatus == "confirmed" {
-		// Create the transaction header (initially pending)
-		txn := &models.Transaction{
-			ExternalRef: externalRef,
-			Status:      models.TransactionPending,
-			Details:     nil, // Optionally store extra data as JSON (string)
-		}
-
-		// Create ledger entries: one debit and one credit
-		debitEntry := models.Transaction{
-			WalletID:  payerWalletID,
-			EntryType: models.Debit,
-			Amount:    amount,
-			Currency:  currency,
-		}
-		creditEntry := models.Transaction{
-			WalletID:  payeeWalletID,
-			EntryType: models.Credit,
-			Amount:    amount,
-			Currency:  currency,
-		}
-		entries := []models.Transaction{debitEntry, creditEntry}
-
-		// Save the transaction and its entries atomically
-		if err := s.TransactionRepo.CreateTransactionWithEntries(ctx, txn, entries); err != nil {
-			return "", err
-		}
+		go ledger.RecordTransaction(payload)
 	}
 
 	if err := h.TransactionRepo.UpdateTransactionStatus(context.Background(), payload.ExternalRef, newStatus); err != nil {
