@@ -2,7 +2,7 @@ package ports
 
 import (
 	"time"
-
+	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/api/internal/model"
 )
 

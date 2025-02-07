@@ -14,7 +14,6 @@ import (
 func main() {
 	r := gin.Default()
 
-	// Load public key
 	publicKey, err := middleware.LoadPublicKey("public.pem")
 	if err != nil {
 		panic(err)

@@ -7,6 +7,7 @@ type ApiMiddleware struct {
 }
 
 func NewApiMiddleware(s ports.ApiService) *ApiMiddleware {
+	//TODO: load the public key here
 	return &ApiMiddleware{
 		apiService: s,
 	}
