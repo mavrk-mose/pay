@@ -1,5 +1,9 @@
 package services
 
+import (
+	. "github.com/mavrk-mose/pay/internal/model"
+)
+
 type StripeGateway struct{}
 
 func (s *StripeGateway) ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error) {

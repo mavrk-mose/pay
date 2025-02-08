@@ -1,7 +1,7 @@
 package services
 
 import (
-	. "github.com/mavrk-mose/pay/api/internal/ports"
+	. "github.com/mavrk-mose/pay/internal/ports"
 )
 
 type ApiHandler struct {

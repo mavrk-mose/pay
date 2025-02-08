@@ -1,4 +1,4 @@
-package httpclient
+package utils
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ func NewGenericHttpClient(logger *zap.Logger) *GenericHttpClient {
 	}
 }
 
-func (c *GenericHttpClient) Post[T any, V any](url string, request T, headers map[string]string) (*V, error) {
+func (c *GenericHttpClient) Post(url string, request interface{}, headers map[string]string) (*json.RawMessage, error) {
 	c.logger.Info("Making POST request", zap.String("url", url))
 
 	// Marshal request body
@@ -53,13 +53,18 @@ func (c *GenericHttpClient) Post[T any, V any](url string, request T, headers ma
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	if resp.StatusCode >= 400 {
 		return nil, errors.New("HTTP error: " + resp.Status)
 	}
 
-	var response V
+	var response json.RawMessage
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -69,11 +74,11 @@ func (c *GenericHttpClient) Post[T any, V any](url string, request T, headers ma
 		return nil, err
 	}
 
-	response, err := json.MarshalIndent(response, "", "  ")
+	formattedResponse, err := json.MarshalIndent(response, "", "  ")
 	if err != nil {
 		c.logger.Error("Failed to format response", zap.Error(err))
 	} else {
-		c.logger.Info("Received response", zap.String("response", string(response)))
+		c.logger.Info("Received response", zap.String("response", string(formattedResponse)))
 	}
 
 	return &response, nil

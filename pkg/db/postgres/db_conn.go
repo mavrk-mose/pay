@@ -7,7 +7,7 @@ import (
 	_ "github.com/jackc/pgx/stdlib" // pgx driver
 	"github.com/jmoiron/sqlx"
 
-	"github.com/mavrk-mose/pay/api/config"
+	"github.com/mavrk-mose/pay/config"
 )
 
 const (

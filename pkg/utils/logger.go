@@ -1,151 +1,151 @@
 package utils
 
 import (
-    "os"
+	"os"
 
-    "github.com/mavrk-mose/pay/common/config"
-    "go.uber.org/zap"
-    "go.uber.org/zap/zapcore"
+	"github.com/mavrk-mose/pay/config"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Logger methods interface
 type Logger interface {
-    InitLogger()
-    Debug(args ...interface{})
-    Debugf(template string, args ...interface{})
-    Info(args ...interface{})
-    Infof(template string, args ...interface{})
-    Warn(args ...interface{})
-    Warnf(template string, args ...interface{})
-    Error(args ...interface{})
-    Errorf(template string, args ...interface{})
-    DPanic(args ...interface{})
-    DPanicf(template string, args ...interface{})
-    Fatal(args ...interface{})
-    Fatalf(template string, args ...interface{})
+	InitLogger()
+	Debug(args ...interface{})
+	Debugf(template string, args ...interface{})
+	Info(args ...interface{})
+	Infof(template string, args ...interface{})
+	Warn(args ...interface{})
+	Warnf(template string, args ...interface{})
+	Error(args ...interface{})
+	Errorf(template string, args ...interface{})
+	DPanic(args ...interface{})
+	DPanicf(template string, args ...interface{})
+	Fatal(args ...interface{})
+	Fatalf(template string, args ...interface{})
 }
 
 // Logger
 type apiLogger struct {
-    cfg         *config.Config
-    sugarLogger *zap.SugaredLogger
+	cfg         *config.Config
+	sugarLogger *zap.SugaredLogger
 }
 
 // App Logger constructor
 func NewApiLogger(cfg *config.Config) *apiLogger {
-    return &apiLogger{cfg: cfg}
+	return &apiLogger{cfg: cfg}
 }
 
 // For mapping config logger to app logger levels
 var loggerLevelMap = map[string]zapcore.Level{
-    "debug":  zapcore.DebugLevel,
-    "info":   zapcore.InfoLevel,
-    "warn":   zapcore.WarnLevel,
-    "error":  zapcore.ErrorLevel,
-    "dpanic": zapcore.DPanicLevel,
-    "panic":  zapcore.PanicLevel,
-    "fatal":  zapcore.FatalLevel,
+	"debug":  zapcore.DebugLevel,
+	"info":   zapcore.InfoLevel,
+	"warn":   zapcore.WarnLevel,
+	"error":  zapcore.ErrorLevel,
+	"dpanic": zapcore.DPanicLevel,
+	"panic":  zapcore.PanicLevel,
+	"fatal":  zapcore.FatalLevel,
 }
 
 func (l *apiLogger) getLoggerLevel(cfg *config.Config) zapcore.Level {
-    level, exist := loggerLevelMap[cfg.Logger.Level]
-    if !exist {
-        return zapcore.DebugLevel
-    }
+	level, exist := loggerLevelMap[cfg.Logger.Level]
+	if !exist {
+		return zapcore.DebugLevel
+	}
 
-    return level
+	return level
 }
 
 // Init logger
 func (l *apiLogger) InitLogger() {
-    logLevel := l.getLoggerLevel(l.cfg)
+	logLevel := l.getLoggerLevel(l.cfg)
 
-    logWriter := zapcore.AddSync(os.Stderr)
+	logWriter := zapcore.AddSync(os.Stderr)
 
-    var encoderCfg zapcore.EncoderConfig
-    if l.cfg.Server.Mode == "Development" {
-        encoderCfg = zap.NewDevelopmentEncoderConfig()
-    } else {
-        encoderCfg = zap.NewProductionEncoderConfig()
-    }
+	var encoderCfg zapcore.EncoderConfig
+	if l.cfg.Server.Mode == "Development" {
+		encoderCfg = zap.NewDevelopmentEncoderConfig()
+	} else {
+		encoderCfg = zap.NewProductionEncoderConfig()
+	}
 
-    var encoder zapcore.Encoder
-    encoderCfg.LevelKey = "LEVEL"
-    encoderCfg.CallerKey = "CALLER"
-    encoderCfg.TimeKey = "TIME"
-    encoderCfg.NameKey = "NAME"
-    encoderCfg.MessageKey = "MESSAGE"
+	var encoder zapcore.Encoder
+	encoderCfg.LevelKey = "LEVEL"
+	encoderCfg.CallerKey = "CALLER"
+	encoderCfg.TimeKey = "TIME"
+	encoderCfg.NameKey = "NAME"
+	encoderCfg.MessageKey = "MESSAGE"
 
-    if l.cfg.Logger.Encoding == "console" {
-        encoder = zapcore.NewConsoleEncoder(encoderCfg)
-    } else {
-        encoder = zapcore.NewJSONEncoder(encoderCfg)
-    }
+	if l.cfg.Logger.Encoding == "console" {
+		encoder = zapcore.NewConsoleEncoder(encoderCfg)
+	} else {
+		encoder = zapcore.NewJSONEncoder(encoderCfg)
+	}
 
-    encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-    core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
-    logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
+	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
-    l.sugarLogger = logger.Sugar()
-    if err := l.sugarLogger.Sync(); err != nil {
-        l.sugarLogger.Error(err)
-    }
+	l.sugarLogger = logger.Sugar()
+	if err := l.sugarLogger.Sync(); err != nil {
+		l.sugarLogger.Error(err)
+	}
 }
 
 // Logger methods
 
 func (l *apiLogger) Debug(args ...interface{}) {
-    l.sugarLogger.Debug(args...)
+	l.sugarLogger.Debug(args...)
 }
 
 func (l *apiLogger) Debugf(template string, args ...interface{}) {
-    l.sugarLogger.Debugf(template, args...)
+	l.sugarLogger.Debugf(template, args...)
 }
 
 func (l *apiLogger) Info(args ...interface{}) {
-    l.sugarLogger.Info(args...)
+	l.sugarLogger.Info(args...)
 }
 
 func (l *apiLogger) Infof(template string, args ...interface{}) {
-    l.sugarLogger.Infof(template, args...)
+	l.sugarLogger.Infof(template, args...)
 }
 
 func (l *apiLogger) Warn(args ...interface{}) {
-    l.sugarLogger.Warn(args...)
+	l.sugarLogger.Warn(args...)
 }
 
 func (l *apiLogger) Warnf(template string, args ...interface{}) {
-    l.sugarLogger.Warnf(template, args...)
+	l.sugarLogger.Warnf(template, args...)
 }
 
 func (l *apiLogger) Error(args ...interface{}) {
-    l.sugarLogger.Error(args...)
+	l.sugarLogger.Error(args...)
 }
 
 func (l *apiLogger) Errorf(template string, args ...interface{}) {
-    l.sugarLogger.Errorf(template, args...)
+	l.sugarLogger.Errorf(template, args...)
 }
 
 func (l *apiLogger) DPanic(args ...interface{}) {
-    l.sugarLogger.DPanic(args...)
+	l.sugarLogger.DPanic(args...)
 }
 
 func (l *apiLogger) DPanicf(template string, args ...interface{}) {
-    l.sugarLogger.DPanicf(template, args...)
+	l.sugarLogger.DPanicf(template, args...)
 }
 
 func (l *apiLogger) Panic(args ...interface{}) {
-    l.sugarLogger.Panic(args...)
+	l.sugarLogger.Panic(args...)
 }
 
 func (l *apiLogger) Panicf(template string, args ...interface{}) {
-    l.sugarLogger.Panicf(template, args...)
+	l.sugarLogger.Panicf(template, args...)
 }
 
 func (l *apiLogger) Fatal(args ...interface{}) {
-    l.sugarLogger.Fatal(args...)
+	l.sugarLogger.Fatal(args...)
 }
 
 func (l *apiLogger) Fatalf(template string, args ...interface{}) {
-    l.sugarLogger.Fatalf(template, args...)
+	l.sugarLogger.Fatalf(template, args...)
 }

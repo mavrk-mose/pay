@@ -6,8 +6,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
-	"encoding/base64"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -68,7 +68,7 @@ func VerifySignature(data, signature []byte, publicKey *rsa.PublicKey) error {
 	}
 	return nil
 }
- 
+
 func LoadPublicKey(filePath string) (*rsa.PublicKey, error) {
 	keyBytes, err := os.ReadFile(filePath)
 	if err != nil {

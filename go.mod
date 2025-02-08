@@ -1,4 +1,4 @@
-module github.com/mavrk-mose/pay/api
+module github.com/mavrk-mose/pay
 
 go 1.23.4
 

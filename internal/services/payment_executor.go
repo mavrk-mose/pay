@@ -1,8 +1,13 @@
 package services
 
+import (
+	"errors"
+	. "github.com/mavrk-mose/pay/internal/model"
+)
+
 type PaymentExecutorService interface {
-	ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error)
-	RecordPaymentOrder(order PaymentOrder) error
+	ExecutePayment(order PaymentIntent) (PaymentExecutionResult, error)
+	RecordPaymentOrder(order PaymentIntent) error
 }
 
 type PaymentGateway interface {
@@ -19,8 +24,6 @@ func NewPaymentExecutor(gateways map[string]PaymentGateway) PaymentExecutorServi
 	}
 }
 
-// NewDefaultPaymentExecutor initializes the default gateways (e.g., Stripe, PayPal, Adyen)
-// and returns a PaymentExecutorService instance.
 func NewDefaultPaymentExecutor() PaymentExecutorService {
 	gateways := map[string]PaymentGateway{
 		"stripe": &StripeGateway{},
@@ -30,13 +33,23 @@ func NewDefaultPaymentExecutor() PaymentExecutorService {
 	return NewPaymentExecutor(gateways)
 }
 
-
-// ExecutePayment routes the payment request to the appropriate gateway based on order.Gateway.
-// TODO: should use payment intent here
-func (pe *PaymentExecutor) ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error) {
-	gateway, exists := pe.gateways[order.Gateway]
+func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentExecutionResult, error) {
+	gateway, exists := pe.gateways[order.PaymentMethod]
 	if !exists {
-		return PaymentExecutionResult{}, errors.New("unsupported payment gateway: " + order.Gateway)
+		return PaymentExecutionResult{}, errors.New("unsupported payment gateway: " + order.PaymentMethod)
 	}
-	return gateway.ExecutePayment(order)
+	paymentOrder := PaymentOrder{
+		Amount:        float64(order.Amount),
+		Currency:      order.Currency,
+		Description:   order.Description,
+		PayerID:       order.Customer,
+		PayeeID:       order.ReceiptNumber,
+		PaymentMethod: order.PaymentMethod,
+	}
+	return gateway.ExecutePayment(paymentOrder)
+}
+
+func (pe *PaymentExecutor) RecordPaymentOrder(order PaymentIntent) error {
+	// Implementation for recording payment order
+	return nil
 }

@@ -1,15 +1,16 @@
 package main
 
 import (
+	"github.com/mavrk-mose/pay/internal/middleware"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
-	"github.com/mavrk-mose/pay/internal/service"
+	"github.com/mavrk-mose/pay/internal/services"
 	"github.com/mavrk-mose/pay/pkg/db/postgres"
-	"github.com/mavrk-mose/pay/utils/logger"
-	"github.com/mavrk-mose/pay/utils"
+	"github.com/mavrk-mose/pay/pkg/utils"
+	"github.com/mavrk-mose/pay/pkg/utils/logger"
 )
 
 func main() {
@@ -20,12 +21,11 @@ func main() {
 		panic(err)
 	}
 
-
 	// Allow 20 requests per second, with a burst of 5
 	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
 
 	r.use(rl.RateLimitMiddleware())
-	
+
 	// Load configuration
 	configPath := utils.GetConfigPath(os.Getenv("config"))
 
@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
 	}
-	
+
 	cfg, err := config.ParseConfig(cfgFile)
 	if err != nil {
 		log.Fatalf("ParseConfig: %v", err)
@@ -41,8 +41,8 @@ func main() {
 
 	// Initialize logger
 	appLogger := logger.NewApiLogger(cfg)
-	
-	psqlDB, err := postgres.NewPsqlDB(cfg);
+
+	psqlDB, err := postgres.NewPsqlDB(cfg)
 	if err != nil {
 		appLogger.Fatalf("Postgresql init: %s", err)
 	} else {
@@ -51,11 +51,11 @@ func main() {
 	defer psqlDB.Close()
 
 	// Use cfg for PORT configuration
-	PORT := cfg.Server.Port 
+	PORT := cfg.Server.Port
 	if PORT == "" {
 		PORT = "8080" // Fallback to a default port if not specified
 	}
-	
+
 	// Start the server
 	err = r.Run(":" + PORT)
 	if err != nil {

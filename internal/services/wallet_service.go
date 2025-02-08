@@ -1,13 +1,15 @@
 package services
 
 import (
+	"context"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/mavrk-mose/pay/internal/model"
 	"github.com/mavrk-mose/pay/internal/repository"
 )
 
 type WalletService interface {
-	CreateWallet(req model.CreateWalletRequest) (model.Wallet, error)
+	CreateWallet(ctx context.Context, req model.CreateWalletRequest) (model.Wallet, error)
 	Transfer(req model.TransferRequest) error
 	Withdraw(req model.WithdrawalRequest) error
 	Deposit(req model.DepositRequest) error
@@ -18,26 +20,26 @@ type walletService struct {
 	repo repository.WalletRepo
 }
 
-func NewWalletService(repo repository.WalletRepository) WalletService {
+func NewWalletService(repo repository.WalletRepo) WalletService {
 	return &walletService{repo: repo}
 }
 
-func (s *walletService) CreateWallet(req model.CreateWalletRequest) (model.Wallet, error) {
+func (s *walletService) CreateWallet(ctx context.Context, req model.CreateWalletRequest) error {
 	wallet := model.Wallet{
-		CustomerID: req.CustomerID,
+		CustomerID: uuid.New(),
 		Balance:    req.InitialBalance,
 		Currency:   req.Currency,
 	}
-	return s.repo.Create(wallet)
+	return s.repo.Create(ctx, wallet)
 }
 
-func (s *walletService) Transfer(req model.TransferRequest) error {
-	fromWallet, err := s.repo.GetByID(req.FromWalletID)
+func (s *walletService) Transfer(ctx context.Context, req model.TransferRequest) error {
+	fromWallet, err := s.repo.GetByID(ctx, req.FromWalletID)
 	if err != nil {
 		return err
 	}
 
-	toWallet, err := s.repo.GetByID(req.ToWalletID)
+	toWallet, err := s.repo.GetByID(ctx, req.ToWalletID)
 	if err != nil {
 		return err
 	}
@@ -55,10 +57,10 @@ func (s *walletService) Transfer(req model.TransferRequest) error {
 	fromWallet.Balance -= req.Amount
 	toWallet.Balance += req.Amount
 
-	if err := s.repo.Update(fromWallet); err != nil {
+	if err := s.repo.UpdateWalletBalance(fromWallet); err != nil {
 		return err
 	}
-	if err := s.repo.Update(toWallet); err != nil {
+	if err := s.repo.UpdateWalletBalance(toWallet); err != nil {
 		return err
 	}
 	return nil

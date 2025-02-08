@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type TransactionType string
 
@@ -34,16 +37,14 @@ type Transaction struct {
 	Details     *string           `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
 	Currency    string            `db:"currency" json:"currency"`
 
-	// Debit side (e.g., the wallet being debited)
-	DebitWalletID int64   		  `db:"debit_wallet_id" json:"debit_wallet_id"`
-	DebitAmount   float64         `db:"debit_amount" json:"debit_amount"`
+	DebitWalletID int64   `db:"debit_wallet_id" json:"debit_wallet_id"`
+	DebitAmount   float64 `db:"debit_amount" json:"debit_amount"`
 
-	EntryType     EntryType       `db:"entry_type" json:"entry_type"`
+	EntryType EntryType `db:"entry_type" json:"entry_type"`
 
-	// Credit side (e.g., the wallet being credited)
-	CreditWalletID int64          `db:"credit_wallet_id" json:"credit_wallet_id"`
-	CreditAmount   float64        `db:"credit_amount" json:"credit_amount"`
+	CreditWalletID int64   `db:"credit_wallet_id" json:"credit_wallet_id"`
+	CreditAmount   float64 `db:"credit_amount" json:"credit_amount"`
 
-	CreatedAt time.Time           `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time           `db:"updated_at" json:"updated_at"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

@@ -1,5 +1,9 @@
 package services
 
+import (
+	. "github.com/mavrk-mose/pay/internal/model"
+)
+
 type PaypalGateway struct{}
 
 func (p *PaypalGateway) ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error) {

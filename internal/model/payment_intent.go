@@ -27,7 +27,7 @@ type PaymentIntent struct {
 	PaymentIntent        string               `json:"payment_intent"`
 	PaymentMethod        string               `json:"payment_method"`
 	PaymentMethodOptions PaymentMethodOptions `json:"payment_method_options"`
-	PaymentMethodTypes []string               `json:"payment_method_types"`
+	PaymentMethodTypes   []string             `json:"payment_method_types"`
 	PaymentMethodDetails PaymentMethodDetails `json:"payment_method_details"`
 	ReceiptEmail         string               `json:"receipt_email"`
 	ReceiptNumber        string               `json:"receipt_number"`
@@ -67,18 +67,18 @@ type PaymentMethodDetails struct {
 
 // Card represents card-specific details.
 type Card struct {
-	Brand         string  `json:"brand"`
-	Checks        Checks  `json:"checks"`
-	Country       string  `json:"country"`
-	ExpMonth      int     `json:"exp_month"`
-	ExpYear       int     `json:"exp_year"`
-	Fingerprint   string  `json:"fingerprint"`
-	Funding       string  `json:"funding"`
-	Installments  *string `json:"installments,omitempty"`
-	Last4         string  `json:"last4"`
-	Network       string  `json:"network"`
-	ThreeDSecure  *string `json:"three_d_secure,omitempty"`
-	Wallet        *string `json:"wallet,omitempty"`
+	Brand        string  `json:"brand"`
+	Checks       Checks  `json:"checks"`
+	Country      string  `json:"country"`
+	ExpMonth     int     `json:"exp_month"`
+	ExpYear      int     `json:"exp_year"`
+	Fingerprint  string  `json:"fingerprint"`
+	Funding      string  `json:"funding"`
+	Installments *string `json:"installments,omitempty"`
+	Last4        string  `json:"last4"`
+	Network      string  `json:"network"`
+	ThreeDSecure *string `json:"three_d_secure,omitempty"`
+	Wallet       *string `json:"wallet,omitempty"`
 }
 
 // Checks holds verification check results.
@@ -98,16 +98,15 @@ type Refunds struct {
 }
 
 type PaymentMethodOptions struct {
-	Installments        interface{} `json:"installments"`          
-	MandateOptions      interface{} `json:"mandate_options"`       
-	Network             interface{} `json:"network"`               
+	Installments        interface{} `json:"installments"`
+	MandateOptions      interface{} `json:"mandate_options"`
+	Network             interface{} `json:"network"`
 	RequestThreeDSecure string      `json:"request_three_d_secure"`
 }
 
 type PaymentMethodOptionsLink struct {
 	PersistentToken interface{} `json:"persistent_token"`
 }
-
 
 // Stripe payment intent
 // {
@@ -168,4 +167,3 @@ type PaymentMethodOptionsLink struct {
 // 	"transfer_data": null,
 // 	"transfer_group": null
 //   }
-  

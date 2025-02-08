@@ -29,5 +29,5 @@ type PaymentOrder struct {
 	CreatedAt       time.Time     `json:"created_at"`       // Timestamp when the payment was created
 	UpdatedAt       time.Time     `json:"updated_at"`       // Timestamp when the payment was last updated
 	Description     string        `json:"description"`      // Optional description or memo for the payment
+	Gateway         string        `json:"gateway"`
 }
-
