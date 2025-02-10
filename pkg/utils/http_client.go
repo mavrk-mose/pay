@@ -33,7 +33,6 @@ func NewGenericHttpClient(logger *zap.Logger) *GenericHttpClient {
 func (c *GenericHttpClient) Post(url string, request interface{}, headers map[string]string) (*json.RawMessage, error) {
 	c.logger.Info("Making POST request", zap.String("url", url))
 
-	// Marshal request body
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err

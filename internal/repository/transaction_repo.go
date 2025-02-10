@@ -23,10 +23,15 @@ func NewTransactionRepo(db *sqlx.DB) TransactionRepo {
 
 func (r *pgTransactionRepo) CreateTransactionRecord(ctx context.Context, txn *model.Transaction) error {
 	query := `
-		INSERT INTO transaction
-			(external_ref, type, status, details, currency, debit_wallet_id, debit_amount, credit_wallet_id, credit_amount)
-		VALUES
-			(:external_ref, :type, :status, :details, :currency, :debit_wallet_id, :debit_amount, :credit_wallet_id, :credit_amount)
+		INSERT INTO transaction (
+			external_ref, type, status, details, currency, 
+			debit_wallet_id, debit_amount, credit_wallet_id, 
+			credit_amount
+			) VALUES (
+				:external_ref, :type, :status, :details, 
+				:currency, :debit_wallet_id, :debit_amount, 
+				:credit_wallet_id, :credit_amount
+			)
 		RETURNING id, created_at, updated_at
 	`
 	return r.DB.QueryRowxContext(ctx, query, txn).

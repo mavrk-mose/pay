@@ -44,7 +44,6 @@ func (s *walletService) Transfer(ctx context.Context, req model.TransferRequest)
 		return err
 	}
 
-	// Optional: Ensure wallets use the same currency.
 	if fromWallet.Currency != toWallet.Currency {
 		//TODO: implement currency conversion
 		return errors.New("wallet currencies do not match")
