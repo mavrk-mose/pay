@@ -1,4 +1,4 @@
-package model
+package wallet
 
 import (
 	"github.com/google/uuid"

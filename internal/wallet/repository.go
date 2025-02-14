@@ -1,4 +1,4 @@
-package repository
+package wallet
 
 import (
 	"context"
@@ -9,12 +9,26 @@ import (
 )
 
 type WalletRepo struct {
-	DB                *sqlx.DB
-	WithdrawalAccount int64
+	DB  *sqlx.DB
 }
 
-func NewWalletRepo(db *sqlx.DB, withdrawalAccount int64) *WalletRepo {
+func NewWalletRepo(db *sqlx.DB) *WalletRepo {
 	return &WalletRepo{DB: db, WithdrawalAccount: withdrawalAccount}
+}
+
+
+func (r *WalletRepo) GetBalance(userID string) (float64, error) {
+	var balance float64
+	err := r.db.QueryRow("SELECT balance FROM wallets WHERE user_id = ?", userID).Scan(&balance)
+	if err != nil {
+		return 0, fmt.Errorf("error fetching wallet balance: %v", err)
+	}
+	return balance, nil
+}
+
+func (r *WalletRepo) UpdateBalance(userID string, amount float64) error {
+	_, err := r.db.Exec("UPDATE wallets SET balance = balance + ? WHERE user_id = ?", amount, userID)
+	return err
 }
 
 func (r *WalletRepo) Create(ctx context.Context, wallet model.Wallet) error {

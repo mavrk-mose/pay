@@ -1,4 +1,4 @@
-package services
+package payment
 
 import (
 	"encoding/json"

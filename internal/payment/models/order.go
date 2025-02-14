@@ -1,4 +1,4 @@
-package model
+package models
 
 import (
 	"time"
@@ -16,6 +16,13 @@ const (
 	StatusFailed    PaymentStatus = "failed"
 	StatusRefunded  PaymentStatus = "refunded"
 )
+
+type PaymentEvent struct {
+	EventID     string
+	UserID      string
+	TotalAmount float64
+	Orders      []PaymentOrder
+}
 
 type PaymentOrder struct {
 	ID              string        `json:"id"`               // Unique identifier for the payment

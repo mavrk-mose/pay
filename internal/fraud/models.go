@@ -1,4 +1,4 @@
-package model
+package fraud
 
 import (
 	"github.com/google/uuid"
@@ -47,4 +47,27 @@ type Transaction struct {
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type Report struct {
+	ReportID      uuid.UUID `json:"report_id" db:"report_id"`
+	GeneratedAt   time.Time `json:"generated_at" db:"generated_at"`
+	Period        string    `json:"period" db:"period"`
+	TotalCases    int       `json:"total_cases" db:"total_cases"`
+	TotalAmount   float64   `json:"total_amount" db:"total_amount"`
+	HighRiskUsers []string  `json:"high_risk_users" db:"high_risk_users"`
+	Details       string    `json:"details" db:"details"`
+}
+
+type SettlementFile struct {
+	FileID        string
+	BankAccountID string
+	Transactions  []Transaction
+}
+
+type RiskScore struct {
+	UserID    uuid.UUID `json:"user_id" db:"user_id"`
+	Score     float64   `json:"score" db:"score"`
+	RiskLevel string    `json:"risk_level" db:"risk_level"`
+	Details   string    `json:"details" db:"details"`
 }

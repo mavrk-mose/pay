@@ -1,4 +1,4 @@
-package model
+package models
 
 type PaymentIntent struct {
 	ID                   string               `json:"id"`
@@ -59,12 +59,6 @@ type Address struct {
 	State      string  `json:"state"`
 }
 
-// PaymentMethodDetails holds information about the payment method.
-type PaymentMethodDetails struct {
-	Card Card   `json:"card"`
-	Type string `json:"type"`
-}
-
 // Card represents card-specific details.
 type Card struct {
 	Brand        string  `json:"brand"`
@@ -79,6 +73,12 @@ type Card struct {
 	Network      string  `json:"network"`
 	ThreeDSecure *string `json:"three_d_secure,omitempty"`
 	Wallet       *string `json:"wallet,omitempty"`
+}
+
+// PaymentMethodDetails holds information about the payment method.
+type PaymentMethodDetails struct {
+	Card Card   `json:"card"`
+	Type string `json:"type"`
 }
 
 // Checks holds verification check results.
