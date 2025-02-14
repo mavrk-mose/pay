@@ -1,4 +1,4 @@
-package models
+package wallet
 
 type CreateWalletRequest struct {
 	CustomerID     string  `json:"customer_id"`

@@ -1,32 +1,30 @@
-package wallet
+package service
 
 import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/mavrk-mose/pay/internal/model"
-	"github.com/mavrk-mose/pay/internal/repository"
+	. "github.com/mavrk-mose/pay/internal/wallet/models"
+	. "github.com/mavrk-mose/pay/internal/wallet/repository"
 )
 
 // Wallet module (tracks balances)
+
 type WalletService interface {
-	CreateWallet(ctx context.Context, req model.CreateWalletRequest) (model.Wallet, error)
-	Transfer(req model.TransferRequest) error
-	Withdraw(req model.WithdrawalRequest) error
-	Deposit(req model.DepositRequest) error
+	CreateWallet(ctx context.Context, req CreateWalletRequest) (Wallet, error)
+	Transfer(req TransferRequest) error
+	Withdraw(req WithdrawalRequest) error
+	Deposit(req DepositRequest) error
 	GetWallet(userID string) (float64, error)
+	GetBalance(userID string) (float64, error)
 }
 
 type walletService struct {
-	repo repository.WalletRepo
+	repo WalletRepo
 }
 
-func NewWalletService(repo repository.WalletRepo) *WalletService {
-	return &walletService{repo: repo}
-}
-
-func (s *walletService) CreateWallet(ctx context.Context, req model.CreateWalletRequest) error {
-	wallet := model.Wallet{
+func (s *walletService) CreateWallet(ctx context.Context, req CreateWalletRequest) error {
+	wallet := Wallet{
 		CustomerID: uuid.New(),
 		Balance:    req.InitialBalance,
 		Currency:   req.Currency,
@@ -34,7 +32,7 @@ func (s *walletService) CreateWallet(ctx context.Context, req model.CreateWallet
 	return s.repo.Create(ctx, wallet)
 }
 
-func (s *walletService) Transfer(ctx context.Context, req model.TransferRequest) error {
+func (s *walletService) Transfer(ctx context.Context, req TransferRequest) error {
 	fromWallet, err := s.repo.GetByID(ctx, req.FromWalletID)
 	if err != nil {
 		return err
@@ -57,15 +55,20 @@ func (s *walletService) Transfer(ctx context.Context, req model.TransferRequest)
 	fromWallet.Balance -= req.Amount
 	toWallet.Balance += req.Amount
 
-	if err := s.repo.UpdateWalletBalance(fromWallet); err != nil {
+	if err := s.repo.UpdateWalletBalance(ctx, fromWallet.ID, req.Amount); err != nil {
 		return err
 	}
-	if err := s.repo.UpdateWalletBalance(toWallet); err != nil {
+	if err := s.repo.UpdateWalletBalance(ctx, toWallet.ID, req.Amount); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *walletService) Withdraw(req model.WithdrawalRequest) error {
+func (s *walletService) Withdraw(req WithdrawalRequest) error {
+	return nil
+}
+
+func (s *walletService) GetBalance(userID string) (float64, error) {
+	return 10, nil
 
 }

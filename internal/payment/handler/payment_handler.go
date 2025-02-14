@@ -2,18 +2,9 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
 	"net/http"
-	"payment-system/internal/payment/models"
-	"payment-system/internal/payment/service"
 )
-
-type PaymentHandler struct {
-	paymentService *service.PaymentService
-}
-
-func NewPaymentHandler(paymentService *service.PaymentService) *PaymentHandler {
-	return &PaymentHandler{paymentService}
-}
 
 func (h *PaymentHandler) ReceivePaymentEvent(c *gin.Context) {
 	var event PaymentIntent

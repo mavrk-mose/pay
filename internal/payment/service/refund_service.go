@@ -2,19 +2,19 @@ package service
 
 import (
 	"errors"
-	"payment-system/internal/payment/models"
-	"payment-system/internal/payment/repository"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
+	. "github.com/mavrk-mose/pay/internal/payment/repository"
 )
 
 type RefundService struct {
-	repo *repository.PaymentRepository
+	repo *PaymentRepo
 }
 
-func NewRefundService(repo *repository.PaymentRepository) *RefundService {
+func NewRefundService(repo *PaymentRepo) *RefundService {
 	return &RefundService{repo: repo}
 }
 
-func (s *RefundService) ProcessRefund(refund *models.Refund) error {
+func (s *RefundService) ProcessRefund(refund *Refund) error {
 	// Business logic for refunds
 	if refund.Amount <= 0 {
 		return errors.New("invalid refund amount")

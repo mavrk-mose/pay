@@ -1,6 +1,8 @@
 package handler
 
-import "github.com/mavrk-mose/pay/internal/payment"
+import (
+	. "github.com/mavrk-mose/pay/internal/payment/service"
+)
 
 type PaymentHandler struct {
 	service *PaymentService

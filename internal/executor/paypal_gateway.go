@@ -1,7 +1,7 @@
-package services
+package executor
 
 import (
-	. "github.com/mavrk-mose/pay/internal/model"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
 )
 
 type PaypalGateway struct{}
