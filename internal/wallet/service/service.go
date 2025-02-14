@@ -8,6 +8,7 @@ import (
 	"github.com/mavrk-mose/pay/internal/repository"
 )
 
+// Wallet module (tracks balances)
 type WalletService interface {
 	CreateWallet(ctx context.Context, req model.CreateWalletRequest) (model.Wallet, error)
 	Transfer(req model.TransferRequest) error
@@ -20,7 +21,7 @@ type walletService struct {
 	repo repository.WalletRepo
 }
 
-func NewWalletService(repo repository.WalletRepo) WalletService {
+func NewWalletService(repo repository.WalletRepo) *WalletService {
 	return &walletService{repo: repo}
 }
 

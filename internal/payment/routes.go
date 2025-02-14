@@ -18,7 +18,7 @@ func NewApiHandler(s ports.ApiService, m *middleware.ApiMiddleware, r *gin.Engin
 	r.GET("/check", handler.Check)
 
 	//TODO: need to verify signature with RSA in middleware
-	payment := r.Group("/payment", m.Authorization()) 
+	payment := r.Group("/api/v1", m.Authorization()) 
 	{
 		payment.POST("/event", handler.ReceivePaymentEvent)                                          // Receive payment event
 		payment.GET("/id/:paymentID", handler.GetPaymentDetails)                                     // Get payment details

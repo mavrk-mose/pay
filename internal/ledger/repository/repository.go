@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"context"
-	"github.com/mavrk-mose/pay/internal/model"
+	"github.com/mavrk-mose/pay/internal/fraud"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +47,7 @@ func (r *LedgerRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWal
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	entries := []model.Transaction{debitEntry, creditEntry}
+	entries := []fraud.Transaction{debitEntry, creditEntry}
 
 	if err := r.CreateTransactionWithEntries(ctx, txn, entries); err != nil {
 		err := txn.Rollback()
@@ -64,7 +64,7 @@ func (r *LedgerRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWal
 	return transactionID.String(), nil
 }
 
-func (r *LedgerRepo) CreateTransactionWithEntries(ctx context.Context, txn *sqlx.Tx, entries []model.Transaction) error {
+func (r *LedgerRepo) CreateTransactionWithEntries(ctx context.Context, txn *sqlx.Tx, entries []fraud.Transaction) error {
 	for _, entry := range entries {
 		_, err := txn.NamedExecContext(ctx, `
 			INSERT INTO transactions (
@@ -79,6 +79,23 @@ func (r *LedgerRepo) CreateTransactionWithEntries(ctx context.Context, txn *sqlx
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (r *LedgerRepo) UpdateTransactionStatus(ctx context.Context, externalRef string, status fraud.TransactionStatus) error {
+	query := `
+		UPDATE transaction
+		SET status = $1, updated_at = NOW() 
+		WHERE external_ref = $2
+	`
+	res, err := r.DB.ExecContext(ctx, query, status, externalRef)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil || n == 0 {
+		return fmt.Errorf("no transaction found with external_ref %s", externalRef)
 	}
 	return nil
 }

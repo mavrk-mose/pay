@@ -5,6 +5,8 @@ import (
 	. "github.com/mavrk-mose/pay/internal/model"
 )
 
+// Payment execution (Stripe, PayPal, Bank API) 
+
 type PaymentExecutorService interface {
 	ExecutePayment(order PaymentIntent) (PaymentExecutionResult, error)
 	RecordPaymentOrder(order PaymentIntent) error
