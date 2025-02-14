@@ -15,6 +15,8 @@ resource "aws_instance" "app_server" {
               sudo systemctl enable docker
               sudo docker run -d -p ${var.app_port}:${var.app_port} your-docker-image
               EOF
+  
+  user_data = file("${path.module}/../scripts/setup-db.sh")
 
   tags = {
     Name = "payment-system-instance"
