@@ -34,7 +34,7 @@ type Transaction struct {
 	ExternalRef string            `db:"external_ref" json:"external_ref"` // Unique external reference to track the transaction
 	Type        TransactionType   `db:"type" json:"type"`                 // e.g. transfer, deposit, withdrawal, charge
 	Status      TransactionStatus `db:"status" json:"status"`             // pending, confirmed, or failed
-	Details     *string           `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
+	Details     string            `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
 	Currency    string            `db:"currency" json:"currency"`
 
 	DebitWalletID int64   `db:"debit_wallet_id" json:"debit_wallet_id"`

@@ -1,18 +1,23 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
+	"net/http"
 )
 
-func (h *ApiHandler) ProcessPayment(c *gin.Context) {
-	paymentID := c.Param("paymentID")
+func (h *PaymentHandler) ProcessPayment(ctx *gin.Context) {
+	var paymentIntent PaymentIntent
 
-	if err := h.service.ProcessPayment(paymentID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := ctx.ShouldBindJSON(&paymentIntent); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
+	if err := h.service.ProcessPayment(ctx, paymentIntent); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
 }

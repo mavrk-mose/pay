@@ -44,7 +44,7 @@ func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentExecution
 		Amount:        float64(order.Amount),
 		Currency:      order.Currency,
 		Description:   order.Description,
-		PayerID:       order.Customer,
+		PayerID:       order.Customer.String(),
 		PayeeID:       order.ReceiptNumber,
 		PaymentMethod: order.PaymentMethod,
 	}
@@ -55,36 +55,3 @@ func (pe *PaymentExecutor) RecordPaymentOrder(order PaymentIntent) error {
 	// Implementation for recording payment order
 	return nil
 }
-
-// type PaymentService struct {
-// 	TransactionRepo    repository.TransactionRepo
-// 	HttpClient         *http.Client
-// 	ExternalPaymentURL string
-// 	GenericHttpClient  *utils.GenericHttpClient
-// }
-
-// func NewPaymentService(transactionRepo repository.TransactionRepo, externalPaymentURL string, logger *zap.Logger) *PaymentService {
-// 	return &PaymentService{
-// 		TransactionRepo:    transactionRepo,
-// 		ExternalPaymentURL: externalPaymentURL,
-// 		GenericHttpClient:  utils.NewGenericHttpClient(logger),
-// 	}
-// }
-
-// func (s *PaymentService) InitiatePayment(paymentRequest PaymentIntent) (string, error) {
-// 	extResp, err := s.GenericHttpClient.Post(s.ExternalPaymentURL, paymentRequest, map[string]string{})
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	var response ExternalPaymentResponse
-// 	if err := json.Unmarshal(*extResp, &response); err != nil {
-// 		return "", err
-// 	}
-
-// 	if response.Status != "ok" && response.Status != "confirmed" {
-// 		return "", errors.New("external payment initiation failed")
-// 	}
-
-// 	return response.ExternalRef, nil
-// }

@@ -6,6 +6,6 @@ import (
 
 // Ledger module (immutable transactions)
 type LedgerService interface {
-	RecordTransaction(transaction Transaction) error
+	RecordTransaction(txn Transaction)
 	GetTransactionByID(transactionID string) (Transaction, error)
 }

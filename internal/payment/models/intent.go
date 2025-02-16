@@ -1,5 +1,7 @@
 package models
 
+import "github.com/google/uuid"
+
 type PaymentIntent struct {
 	ID                   string               `json:"id"`
 	Object               string               `json:"object"`
@@ -16,7 +18,7 @@ type PaymentIntent struct {
 	Captured             bool                 `json:"captured"`
 	Created              int64                `json:"created"`
 	Currency             string               `json:"currency"`
-	Customer             string               `json:"customer"`
+	Customer             uuid.UUID            `json:"customer"`
 	Description          string               `json:"description"`
 	Disputed             bool                 `json:"disputed"`
 	FailureCode          *string              `json:"failure_code,omitempty"`

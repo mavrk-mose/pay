@@ -36,7 +36,7 @@ func (r *WalletRepo) Create(ctx context.Context, wallet Wallet) error {
 	return err
 }
 
-func (r *WalletRepo) GetByID(ctx context.Context, userID string) (*Wallet, error) {
+func (r *WalletRepo) GetByID(ctx context.Context, userID string) (Wallet, error) {
 	wallet := &Wallet{}
 	err := r.DB.GetContext(ctx, wallet, "SELECT * FROM wallets WHERE user_id = $1", userID)
 	if err != nil {
