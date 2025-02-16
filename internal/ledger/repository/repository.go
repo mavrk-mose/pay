@@ -10,11 +10,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type LedgerRepo struct {
+type Repo struct {
 	DB *sqlx.DB
 }
 
-func (r *LedgerRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error) {
+func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error) {
 	txn, err := r.DB.BeginTxx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -64,7 +64,7 @@ func (r *LedgerRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWal
 	return transactionID.String(), nil
 }
 
-func (r *LedgerRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
+func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
 	for _, entry := range entries {
 		_, err := txn.NamedExecContext(ctx, `
 			INSERT INTO transactions (
@@ -83,7 +83,7 @@ func (r *LedgerRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx
 	return nil
 }
 
-func (r *LedgerRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
+func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
 	query := `
 		UPDATE transaction
 		SET status = $1, updated_at = NOW() 

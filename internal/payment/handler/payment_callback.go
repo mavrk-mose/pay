@@ -1,16 +1,16 @@
 package handler
 
 import (
-	"context"
+	. "github.com/mavrk-mose/pay/internal/fraud/models"
+	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
+	service "github.com/mavrk-mose/pay/internal/ledger/service"
 	"net/http"
-	"github.com/mavrk-mose/pay/internal/models"
-	"github.com/mavrk-mose/pay/internal/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
 type PaymentWebhookHandler struct {
-	TransactionRepo repository.TransactionRepo
+	TransactionRepo repository.Repo
 	ledger          service.LedgerService
 }
 
@@ -26,22 +26,32 @@ func (h *PaymentWebhookHandler) HandleWebhook(c *gin.Context) {
 		return
 	}
 
-	var newStatus models.TransactionStatus
-	switch payload.Status {
+	txn, err := h.ledger.GetTransactionByID(payload.ExternalRef)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	var newStatus TransactionStatus
+	switch txn.Status {
 	case "confirmed":
-		newStatus = models.TransactionConfirmed
+		newStatus = TransactionConfirmed
 	case "failed":
-		newStatus = models.TransactionFailed
+		newStatus = TransactionFailed
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Unknown status"})
 		return
 	}
 
 	if newStatus == "confirmed" {
-		go ledger.RecordTransaction(payload)
+		go func() {
+			err := h.ledger.RecordTransaction(c, txn)
+			if err != nil {
+
+			}
+		}()
 	}
 
-	if err := h.TransactionRepo.UpdateTransactionStatus(context.Background(), payload.ExternalRef, newStatus); err != nil {
+	if err := h.TransactionRepo.UpdateTransactionStatus(c, payload.ExternalRef, newStatus); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

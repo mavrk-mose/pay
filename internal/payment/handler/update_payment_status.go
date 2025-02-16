@@ -1,16 +1,16 @@
 package handler
 
 import (
+	"github.com/mavrk-mose/pay/internal/payment/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	. "github.com/mavrk-mose/pay/api/internal/model"
 )
 
-func (h *ApiHandler) UpdatePaymentStatus(c *gin.Context) {
+func (t *PaymentHandler) UpdatePaymentStatus(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 	var request struct {
-		Status PaymentStatus `json:"status"`
+		Status models.PaymentStatus `json:"status"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -18,7 +18,7 @@ func (h *ApiHandler) UpdatePaymentStatus(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.UpdatePaymentStatus(paymentID, request.Status); err != nil {
+	if err := t.service.UpdatePaymentStatus(paymentID, request.Status); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

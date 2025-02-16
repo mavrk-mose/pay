@@ -2,8 +2,8 @@ package payment
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mavrk-mose/pay/internal/middleware"
 	"github.com/mavrk-mose/pay/internal/payment/ports"
-	"github.com/mavrk-mose/pay/pkg/middleware"
 )
 
 type ApiHandler struct {

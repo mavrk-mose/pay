@@ -79,3 +79,31 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 	ctx.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
 	return nil
 }
+
+func (h *PaymentService) GetPaymentDetails(id string) (PaymentIntent, error) {
+	return PaymentIntent{}, nil
+}
+
+func (h *PaymentService) GetPaymentStatus(id string) (PaymentStatus, error) {
+	return "", nil
+}
+
+func (h *PaymentService) QueryIncomingPayments(id string) ([]PaymentIntent, error) {
+	return []PaymentIntent{}, nil
+}
+
+func (h *PaymentService) QueryOutgoingPayments(id string) ([]PaymentIntent, error) {
+	return []PaymentIntent{}, nil
+}
+
+func (h *PaymentService) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {
+	return []PaymentIntent{}, nil
+}
+
+func (h *PaymentService) QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error) {
+	return []PaymentIntent{}, nil
+}
+
+func (h *PaymentService) UpdatePaymentStatus(id string, status PaymentStatus) error {
+	return nil
+}

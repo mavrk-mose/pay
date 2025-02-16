@@ -6,18 +6,18 @@ import (
 	"net/http"
 )
 
-func (h *PaymentHandler) ReceivePaymentEvent(c *gin.Context) {
-	var event PaymentIntent
-	if err := c.ShouldBindJSON(&event); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
+func (t *PaymentHandler) ProcessPayment(ctx *gin.Context) {
+	var paymentIntent PaymentIntent
+
+	if err := ctx.ShouldBindJSON(&paymentIntent); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := h.paymentService.ProcessPayment(&req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})
+	if err := t.service.ProcessPayment(ctx, paymentIntent); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
 }

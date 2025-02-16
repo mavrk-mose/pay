@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *ApiHandler) GetPaymentDetails(c *gin.Context) {
+func (t *PaymentHandler) GetPaymentDetails(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 
-	payment, err := h.service.GetPaymentDetails(paymentID)
+	payment, err := t.service.GetPaymentDetails(paymentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
