@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
@@ -30,13 +30,13 @@ func (r *WalletRepo) UpdateBalance(userID string, amount float64) error {
 	return err
 }
 
-func (r *WalletRepo) Create(ctx context.Context, wallet Wallet) error {
+func (r *WalletRepo) Create(ctx *gin.Context, wallet Wallet) error {
 	_, err := r.DB.NamedExecContext(ctx, `INSERT INTO wallets (id, customer_id, balance, currency) 
 		VALUES (:id, :customer_id, :balance, :currency)`, wallet)
 	return err
 }
 
-func (r *WalletRepo) GetByID(ctx context.Context, userID string) (Wallet, error) {
+func (r *WalletRepo) GetByID(ctx *gin.Context, userID string) (Wallet, error) {
 	wallet := &Wallet{}
 	err := r.DB.GetContext(ctx, wallet, "SELECT * FROM wallets WHERE user_id = $1", userID)
 	if err != nil {
@@ -45,23 +45,23 @@ func (r *WalletRepo) GetByID(ctx context.Context, userID string) (Wallet, error)
 	return wallet, nil
 }
 
-func (r *WalletRepo) UpdateWalletBalance(ctx context.Context, walletID uuid.UUID, amount float64) error {
+func (r *WalletRepo) UpdateWalletBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error {
 	_, err := r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance + $1 WHERE id = $2", amount, walletID)
 	return err
 }
 
-func (r *WalletRepo) CreateTransfer(ctx context.Context, transfer *TransferRequest) error {
+func (r *WalletRepo) CreateTransfer(ctx *gin.Context, transfer *TransferRequest) error {
 	_, err := r.DB.NamedExecContext(ctx, `INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, currency, status, external_ref) 
 		VALUES (:from_wallet_id, :to_wallet_id, :amount, :currency, :status, :external_ref)`, transfer)
 	return err
 }
 
-func (r *WalletRepo) UpdateTransferStatus(ctx context.Context, externalRef, status string) error {
+func (r *WalletRepo) UpdateTransferStatus(ctx *gin.Context, externalRef, status string) error {
 	_, err := r.DB.ExecContext(ctx, "UPDATE transfers SET status = $1 WHERE external_ref = $2", status, externalRef)
 	return err
 }
 
-func (r *WalletRepo) Withdraw(ctx context.Context, walletID int64, amount float64, currency string) (string, error) {
+func (r *WalletRepo) Withdraw(ctx *gin.Context, walletID int64, amount float64, currency string) (string, error) {
 	transactionID := uuid.New().String()
 
 	tx, err := r.DB.BeginTxx(ctx, nil)

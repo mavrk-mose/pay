@@ -1,7 +1,6 @@
 package ledger
 
 import (
-	"context"
 	"fmt"
 	. "github.com/mavrk-mose/pay/internal/fraud/models"
 	"time"
@@ -65,7 +64,7 @@ func (r *LedgerRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWal
 	return transactionID.String(), nil
 }
 
-func (r *LedgerRepo) CreateTransactionWithEntries(ctx context.Context, txn *sqlx.Tx, entries []Transaction) error {
+func (r *LedgerRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
 	for _, entry := range entries {
 		_, err := txn.NamedExecContext(ctx, `
 			INSERT INTO transactions (
@@ -84,7 +83,7 @@ func (r *LedgerRepo) CreateTransactionWithEntries(ctx context.Context, txn *sqlx
 	return nil
 }
 
-func (r *LedgerRepo) UpdateTransactionStatus(ctx context.Context, externalRef string, status TransactionStatus) error {
+func (r *LedgerRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
 	query := `
 		UPDATE transaction
 		SET status = $1, updated_at = NOW() 

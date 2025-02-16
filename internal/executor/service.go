@@ -41,7 +41,7 @@ func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentExecution
 		return PaymentExecutionResult{}, errors.New("unsupported payment gateway: " + order.PaymentMethod)
 	}
 	paymentOrder := PaymentOrder{
-		Amount:        float64(order.Amount),
+		Amount:        order.Amount,
 		Currency:      order.Currency,
 		Description:   order.Description,
 		PayerID:       order.Customer.String(),

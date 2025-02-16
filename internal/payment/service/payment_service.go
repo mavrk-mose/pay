@@ -1,66 +1,81 @@
 package service
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/internal/executor"
-	fraud "github.com/mavrk-mose/pay/internal/fraud/models"
-	ledger "github.com/mavrk-mose/pay/internal/ledger/service"
-	"github.com/mavrk-mose/pay/internal/payment/models"
-	wallet "github.com/mavrk-mose/pay/internal/wallet/service"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/mavrk-mose/pay/internal/executor"
+	. "github.com/mavrk-mose/pay/internal/fraud/models"
+	ledger "github.com/mavrk-mose/pay/internal/ledger/service"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
+	wallet "github.com/mavrk-mose/pay/internal/wallet/service"
 )
 
+// PaymentService handles payment processing
 type PaymentService struct {
-	walletService *wallet.WalletService
-	ledgerService *ledger.LedgerService
-	executor      *executor.PaymentExecutor
+	walletService wallet.WalletService
+	ledgerService ledger.LedgerService
+	executor      executor.PaymentExecutor
 }
 
-func NewPaymentService(wallet *wallet.WalletService, ledger *ledger.LedgerService, executor *executor.PaymentExecutor) *PaymentService {
-	return &PaymentService{wallet, ledger, executor}
+func NewPaymentService(wallet wallet.WalletService, ledger ledger.LedgerService, executor executor.PaymentExecutor) *PaymentService {
+	return &PaymentService{
+		walletService: wallet,
+		ledgerService: ledger,
+		executor:      executor,
+	}
 }
 
+// ExternalPaymentResponse represents a response from an external payment provider
 type ExternalPaymentResponse struct {
 	Status      string `json:"status"`
 	ExternalRef string `json:"external_ref"`
 }
 
-func (h *PaymentService) ProcessPayment(c *gin.Context, req models.PaymentIntent) error {
-	// 1. Check balance
-	balance, err := h.walletService.GetBalance(c, req.ID)
+// ProcessPayment handles the entire payment flow
+func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
+	// 1️⃣ Check wallet balance
+	balance, err := h.walletService.GetBalance(ctx, req.Customer)
 	if err != nil || balance < req.Amount {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
 		return err
 	}
 
-	// 2. Execute payment
+	// 2️⃣ Execute payment via external processor
 	err, _ = h.executor.ExecutePayment(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})
 		return err
 	}
 
-	// 3. Record transaction in ledger
-	txn := fraud.Transaction{
+	// 3️⃣ Record transaction in ledger
+	txn := Transaction{
 		ExternalRef:    req.ReceiptNumber,
-		Type:           fraud.TransactionType("deposit"),
-		Status:         fraud.TransactionStatus("pending"),
+		Type:           TransactionType("payment"),
+		Status:         TransactionStatus("pending"),
 		Details:        req.Description,
 		Currency:       req.Currency,
-		DebitWalletID:  1121213123, //TODO: rewrite this
-		DebitAmount:    float64(req.Amount),
-		EntryType:      fraud.EntryType("debit"),
-		CreditWalletID: 213412434354, // TODO: rewrite this
-		CreditAmount:   float64(req.Amount),
+		DebitWalletID:  324532453245, // Use actual wallet ID
+		DebitAmount:    req.Amount,
+		EntryType:      EntryType("debit"),
+		CreditWalletID: 235432453455, // Use actual recipient wallet ID
+		CreditAmount:   req.Amount,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	h.ledgerService.RecordTransaction(txn)
+	if err := h.ledgerService.RecordTransaction(ctx, txn); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record transaction in ledger"})
+		return err
+	}
 
-	// 4. Deduct from wallet
-	h.walletService.UpdateBalance(req.UserID, -req.Amount)
+	// 4️⃣ Deduct funds from sender's wallet
+	if err := h.walletService.UpdateBalance(ctx, req.Customer, -req.Amount); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update wallet balance"})
+		return err
+	}
 
-	// Success response
-	c.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
+	// ✅ Payment Successful
+	ctx.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
+	return nil
 }

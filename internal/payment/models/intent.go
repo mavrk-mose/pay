@@ -5,9 +5,9 @@ import "github.com/google/uuid"
 type PaymentIntent struct {
 	ID                   string               `json:"id"`
 	Object               string               `json:"object"`
-	Amount               int64                `json:"amount"`
-	AmountCaptured       int64                `json:"amount_captured"`
-	AmountRefunded       int64                `json:"amount_refunded"`
+	Amount               float64              `json:"amount"`
+	AmountCaptured       float64              `json:"amount_captured"`
+	AmountRefunded       float64              `json:"amount_refunded"`
 	AmountDetails        AmountDetails        `json:"amount_details"`
 	AmountReceived       int64                `json:"amount_received"`
 	Application          *string              `json:"application,omitempty"`

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"context"
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
 	. "github.com/mavrk-mose/pay/internal/wallet/repository"
@@ -11,13 +11,13 @@ import (
 // Wallet module (tracks balances)
 
 type WalletService interface {
-	CreateWallet(ctx context.Context, req CreateWalletRequest) (Wallet, error)
-	Transfer(ctx context.Context, req TransferRequest) error
-	Withdraw(ctx context.Context, req WithdrawalRequest) error
-	Deposit(ctx context.Context, req DepositRequest) error
-	GetWallet(ctx context.Context, userID string) (Wallet, error)
-	UpdateBalance(ctx context.Context, walletID uuid.UUID, amount int64) error
-	GetBalance(ctx context.Context, walletID uuid.UUID) (float64, error)
+	CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error)
+	Transfer(ctx *gin.Context, req TransferRequest) error
+	Withdraw(ctx *gin.Context, req WithdrawalRequest) error
+	Deposit(ctx *gin.Context, req DepositRequest) error
+	GetWallet(ctx *gin.Context, userID string) (Wallet, error)
+	UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error
+	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
 }
 
 type walletService struct {
@@ -29,7 +29,7 @@ func NewWalletService(repo WalletRepo) WalletService {
 }
 
 // CreateWallet creates a new wallet for a user
-func (s *walletService) CreateWallet(ctx context.Context, req CreateWalletRequest) (Wallet, error) {
+func (s *walletService) CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error) {
 	wallet := Wallet{
 		CustomerID: uuid.New(),
 		Balance:    req.InitialBalance,
@@ -40,7 +40,7 @@ func (s *walletService) CreateWallet(ctx context.Context, req CreateWalletReques
 }
 
 // Transfer moves funds from one wallet to another
-func (s *walletService) Transfer(ctx context.Context, req TransferRequest) error {
+func (s *walletService) Transfer(ctx *gin.Context, req TransferRequest) error {
 	fromWallet, err := s.repo.GetByID(ctx, req.FromWalletID)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (s *walletService) Transfer(ctx context.Context, req TransferRequest) error
 }
 
 // Withdraw handles withdrawing funds from a wallet
-func (s *walletService) Withdraw(ctx context.Context, req WithdrawalRequest) error {
+func (s *walletService) Withdraw(ctx *gin.Context, req WithdrawalRequest) error {
 	wallet, err := s.repo.GetByID(ctx, req.WalletID)
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (s *walletService) Withdraw(ctx context.Context, req WithdrawalRequest) err
 }
 
 // Deposit adds funds to a wallet
-func (s *walletService) Deposit(ctx context.Context, req DepositRequest) error {
+func (s *walletService) Deposit(ctx *gin.Context, req DepositRequest) error {
 	wallet, err := s.repo.GetByID(ctx, req.WalletID)
 	if err != nil {
 		return err
@@ -98,12 +98,12 @@ func (s *walletService) Deposit(ctx context.Context, req DepositRequest) error {
 }
 
 // GetWallet retrieves a wallet by user ID
-func (s *walletService) GetWallet(ctx context.Context, userID string) (Wallet, error) {
+func (s *walletService) GetWallet(ctx *gin.Context, userID string) (Wallet, error) {
 	return s.repo.GetByID(ctx, userID)
 }
 
 // GetBalance returns the balance of a wallet
-func (s *walletService) GetBalance(ctx context.Context, walletID uuid.UUID) (float64, error) {
+func (s *walletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error) {
 	wallet, err := s.repo.GetByID(ctx, walletID)
 	if err != nil {
 		return 0, err
@@ -112,6 +112,6 @@ func (s *walletService) GetBalance(ctx context.Context, walletID uuid.UUID) (flo
 }
 
 // UpdateBalance updates the balance of a wallet
-func (s *walletService) UpdateBalance(ctx context.Context, walletID uuid.UUID, amount int64) error {
+func (s *walletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error {
 	return s.repo.UpdateWalletBalance(ctx, walletID, amount)
 }

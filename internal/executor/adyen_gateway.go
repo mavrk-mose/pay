@@ -6,12 +6,6 @@ import (
 
 type AdyenGateway struct{}
 
-type PaymentExecutionResult struct {
-	Success       bool
-	Message       string
-	TransactionID string
-}
-
 func (a *AdyenGateway) ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error) {
 	// Simulate Adyen API call.
 	return PaymentExecutionResult{
