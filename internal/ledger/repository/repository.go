@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"fmt"
-	. "github.com/mavrk-mose/pay/internal/fraud/models"
+	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	"time"
 
 	"github.com/gin-gonic/gin"

@@ -1,9 +1,9 @@
 package handler
 
 import (
-	. "github.com/mavrk-mose/pay/internal/fraud/models"
+	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
-	service "github.com/mavrk-mose/pay/internal/ledger/service"
+	"github.com/mavrk-mose/pay/internal/ledger/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

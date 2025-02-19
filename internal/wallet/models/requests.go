@@ -1,5 +1,7 @@
 package wallet
 
+import "github.com/google/uuid"
+
 type CreateWalletRequest struct {
 	CustomerID     string  `json:"customer_id"`
 	InitialBalance float64 `json:"initial_balance"`
@@ -7,19 +9,20 @@ type CreateWalletRequest struct {
 }
 
 type TransferRequest struct {
-	FromWalletID string  `json:"from_wallet_id"`
-	ToWalletID   string  `json:"to_wallet_id"`
-	Amount       float64 `json:"amount"`
+	FromWalletID uuid.UUID `json:"from_wallet_id"`
+	ToWalletID   uuid.UUID `json:"to_wallet_id"`
+	Amount       float64   `json:"amount"`
+	Currency     string    `json:"currency"`
 }
 
 type WithdrawalRequest struct {
-	WalletID string  `json:"wallet_id"`
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
+	WalletID uuid.UUID `json:"wallet_id"`
+	Amount   float64   `json:"amount"`
+	Currency string    `json:"currency"`
 }
 
 type DepositRequest struct {
-	WalletID string  `json:"wallet_id"`
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
+	WalletID uuid.UUID `json:"wallet_id"`
+	Amount   float64   `json:"amount"`
+	Currency string    `json:"currency"`
 }

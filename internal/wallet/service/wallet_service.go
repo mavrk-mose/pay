@@ -8,8 +8,6 @@ import (
 	. "github.com/mavrk-mose/pay/internal/wallet/repository"
 )
 
-// Wallet module (tracks balances)
-
 type WalletService interface {
 	CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error)
 	Transfer(ctx *gin.Context, req TransferRequest) error
@@ -18,11 +16,6 @@ type WalletService interface {
 	GetWallet(ctx *gin.Context, userID string) (Wallet, error)
 	UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error
 	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
-	
-	// GetBalance(ctx context.Context, userID string) (Balance, error)
-    // Credit(ctx context.Context, userID string, amount float64) error
-    // Debit(ctx context.Context, userID string, amount float64) error
-    // Transfer(ctx context.Context, fromUserID, toUserID string, amount float64) error
 }
 
 type walletService struct {
@@ -46,12 +39,12 @@ func (s *walletService) CreateWallet(ctx *gin.Context, req CreateWalletRequest) 
 
 // Transfer moves funds from one wallet to another
 func (s *walletService) Transfer(ctx *gin.Context, req TransferRequest) error {
-	fromWallet, err := s.repo.GetByID(ctx, req.FromWalletID)
+	fromWallet, err := s.repo.GetByID(ctx, req.FromWalletID.String())
 	if err != nil {
 		return err
 	}
 
-	toWallet, err := s.repo.GetByID(ctx, req.ToWalletID)
+	toWallet, err := s.repo.GetByID(ctx, req.ToWalletID.String())
 	if err != nil {
 		return err
 	}
@@ -64,13 +57,10 @@ func (s *walletService) Transfer(ctx *gin.Context, req TransferRequest) error {
 		return errors.New("insufficient funds")
 	}
 
-	fromWallet.Balance -= req.Amount
-	toWallet.Balance += req.Amount
-
-	if err := s.repo.UpdateWalletBalance(ctx, fromWallet.ID, -req.Amount); err != nil {
+	if err := s.repo.Debit(ctx, req.FromWalletID, req.Amount); err != nil {
 		return err
 	}
-	if err := s.repo.UpdateWalletBalance(ctx, toWallet.ID, req.Amount); err != nil {
+	if err := s.repo.Credit(ctx, req.ToWalletID, req.Amount); err != nil {
 		return err
 	}
 	return nil
@@ -78,7 +68,7 @@ func (s *walletService) Transfer(ctx *gin.Context, req TransferRequest) error {
 
 // Withdraw handles withdrawing funds from a wallet
 func (s *walletService) Withdraw(ctx *gin.Context, req WithdrawalRequest) error {
-	wallet, err := s.repo.GetByID(ctx, req.WalletID)
+	wallet, err := s.repo.GetByID(ctx, req.WalletID.String())
 	if err != nil {
 		return err
 	}
@@ -87,19 +77,12 @@ func (s *walletService) Withdraw(ctx *gin.Context, req WithdrawalRequest) error 
 		return errors.New("insufficient funds")
 	}
 
-	wallet.Balance -= req.Amount
-	return s.repo.UpdateWalletBalance(ctx, wallet.ID, -req.Amount)
+	return s.repo.Debit(ctx, req.WalletID, req.Amount)
 }
 
 // Deposit adds funds to a wallet
 func (s *walletService) Deposit(ctx *gin.Context, req DepositRequest) error {
-	wallet, err := s.repo.GetByID(ctx, req.WalletID)
-	if err != nil {
-		return err
-	}
-
-	wallet.Balance += req.Amount
-	return s.repo.UpdateWalletBalance(ctx, wallet.ID, req.Amount)
+	return s.repo.Credit(ctx, req.WalletID, req.Amount)
 }
 
 // GetWallet retrieves a wallet by user ID
@@ -109,7 +92,7 @@ func (s *walletService) GetWallet(ctx *gin.Context, userID string) (Wallet, erro
 
 // GetBalance returns the balance of a wallet
 func (s *walletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error) {
-	wallet, err := s.repo.GetByID(ctx, walletID)
+	wallet, err := s.repo.GetByID(ctx, walletID.String())
 	if err != nil {
 		return 0, err
 	}
@@ -118,5 +101,5 @@ func (s *walletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float6
 
 // UpdateBalance updates the balance of a wallet
 func (s *walletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error {
-	return s.repo.UpdateWalletBalance(ctx, walletID, amount)
+	return s.repo.Credit(ctx, walletID, amount)
 }

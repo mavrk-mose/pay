@@ -2,21 +2,20 @@ package main
 
 import (
 	"github.com/mavrk-mose/pay/internal/middleware"
+	"github.com/mavrk-mose/pay/internal/user"
+	"golang.org/x/time/rate"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
-	"github.com/mavrk-mose/pay/internal/services"
-	"github.com/mavrk-mose/pay/pkg/db/postgres"
-	"github.com/mavrk-mose/pay/pkg/utils"
-	"github.com/mavrk-mose/pay/pkg/utils/logger"
+	. "github.com/mavrk-mose/pay/pkg/utils"
 )
 
 func main() {
 	r := gin.Default()
 
-	publicKey, err := middleware.LoadPublicKey("public.pem")
+	_, err := middleware.LoadPublicKey("public.pem")
 	if err != nil {
 		panic(err)
 	}
@@ -24,10 +23,10 @@ func main() {
 	// Allow 20 requests per second, with a burst of 5
 	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
 
-	r.use(rl.RateLimitMiddleware())
+	r.Use(rl.RateLimitMiddleware())
 
 	// Load configuration
-	configPath := utils.GetConfigPath(os.Getenv("config"))
+	configPath := GetConfigPath(os.Getenv("config"))
 
 	cfgFile, err := config.LoadConfig(configPath)
 	if err != nil {
@@ -40,15 +39,17 @@ func main() {
 	}
 
 	// Initialize logger
-	appLogger := logger.NewApiLogger(cfg)
+	appLogger := NewApiLogger(cfg)
 
-	psqlDB, err := postgres.NewPsqlDB(cfg)
+	// Initialize database
+	db, err := config.NewPsqlDB(cfg)
 	if err != nil {
-		appLogger.Fatalf("Postgresql init: %s", err)
-	} else {
-		appLogger.Infof("Postgres connected, Status: %#v", psqlDB.Stats())
+		panic("Failed to connect to database!")
+		return
 	}
-	defer psqlDB.Close()
+
+	// modules
+	user.AuthRoute(db)
 
 	// Use cfg for PORT configuration
 	PORT := cfg.Server.Port
@@ -62,5 +63,4 @@ func main() {
 		appLogger.Fatalf("Server failed to start: %v", err)
 	}
 
-	paymentExecutor := service.NewDefaultPaymentExecutor()
 }

@@ -6,8 +6,6 @@ import (
 
 	_ "github.com/jackc/pgx/stdlib" // pgx driver
 	"github.com/jmoiron/sqlx"
-
-	"github.com/mavrk-mose/pay/config"
 )
 
 const (
@@ -18,7 +16,7 @@ const (
 )
 
 // Return new Postgresql db instance
-func NewPsqlDB(c *config.Config) (*sqlx.DB, error) {
+func NewPsqlDB(c *Config) (*sqlx.DB, error) {
 	dataSourceName := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 		c.Postgres.PostgresqlHost,
 		c.Postgres.PostgresqlPort,
@@ -31,6 +29,8 @@ func NewPsqlDB(c *config.Config) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer db.Close()
 
 	db.SetMaxOpenConns(maxOpenConns)
 	db.SetConnMaxLifetime(connMaxLifetime * time.Second)

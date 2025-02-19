@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
-	. "github.com/mavrk-mose/pay/internal/fraud/models"
+	. "github.com/mavrk-mose/pay/internal/ledger/models"
 )
 
 // LedgerService Ledger module (immutable transactions)

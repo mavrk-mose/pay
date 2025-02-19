@@ -1,28 +1,36 @@
 package service
 
 import (
+	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/internal/executor"
-	. "github.com/mavrk-mose/pay/internal/fraud/models"
 	ledger "github.com/mavrk-mose/pay/internal/ledger/service"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
+	. "github.com/mavrk-mose/pay/internal/payment/repository"
 	wallet "github.com/mavrk-mose/pay/internal/wallet/service"
 )
 
 type PaymentService struct {
-	walletService wallet.WalletService
-	ledgerService ledger.LedgerService
-	executor      executor.PaymentExecutor
+	walletService     wallet.WalletService
+	ledgerService     ledger.LedgerService
+	executor          executor.PaymentExecutor
+	productConfigRepo ProductConfigRepo
 }
 
-func NewPaymentService(wallet wallet.WalletService, ledger ledger.LedgerService, executor executor.PaymentExecutor) *PaymentService {
+func NewPaymentService(
+	wallet wallet.WalletService,
+	ledger ledger.LedgerService,
+	executor executor.PaymentExecutor,
+	productConfigRepo ProductConfigRepo,
+) *PaymentService {
 	return &PaymentService{
-		walletService: wallet,
-		ledgerService: ledger,
-		executor:      executor,
+		walletService:     wallet,
+		ledgerService:     ledger,
+		executor:          executor,
+		productConfigRepo: productConfigRepo,
 	}
 }
 
@@ -32,11 +40,20 @@ type ExternalPaymentResponse struct {
 }
 
 func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
+	productConfig, err := h.productConfigRepo.GetProductConfig(ctx, req.ProductName)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product configuration"})
+		return err
+	}
+
 	balance, err := h.walletService.GetBalance(ctx, req.Customer)
 	if err != nil || balance < req.Amount {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
 		return err
 	}
+
+	feeAmount := req.Amount * productConfig.FeePercentage / 100
+	netAmount := req.Amount - feeAmount
 
 	err, _ = h.executor.ExecutePayment(req)
 	if err != nil {
@@ -51,10 +68,10 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 		Details:        req.Description,
 		Currency:       req.Currency,
 		DebitWalletID:  324532453245, // Use actual wallet ID
-		DebitAmount:    req.Amount,
+		DebitAmount:    req.Amount,   // Full amount deducted from customer
 		EntryType:      EntryType("debit"),
 		CreditWalletID: 235432453455, // Use actual recipient wallet ID
-		CreditAmount:   req.Amount,
+		CreditAmount:   netAmount,    // Net amount credited to recipient
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
@@ -63,8 +80,37 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 		return err
 	}
 
+	feeTxn := Transaction{
+		ExternalRef:    req.ReceiptNumber + "-fee",
+		Type:           TransactionType("fee"),
+		Status:         TransactionStatus("completed"),
+		Details:        "Transaction fee for payment",
+		Currency:       req.Currency,
+		DebitWalletID:  23423342424, // Customer's wallet ID
+		DebitAmount:    feeAmount,   // Fee amount deducted from customer
+		EntryType:      EntryType("debit"),
+		CreditWalletID: 25234534254, // System's fee wallet ID
+		CreditAmount:   feeAmount,   // Fee amount credited to system's fee wallet
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	if err := h.ledgerService.RecordTransaction(ctx, feeTxn); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record fee transaction in ledger"})
+		return err
+	}
+
 	if err := h.walletService.UpdateBalance(ctx, req.Customer, -req.Amount); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update wallet balance"})
+		return err
+	}
+
+	if err := h.walletService.UpdateBalance(ctx, req.Recipient, netAmount); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update recipient's wallet balance"})
+		return err
+	}
+
+	if err := h.walletService.UpdateBalance(ctx, productConfig.FeeWalletID, feeAmount); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update fee wallet balance"})
 		return err
 	}
 

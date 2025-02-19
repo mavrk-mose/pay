@@ -19,6 +19,7 @@ type PaymentIntent struct {
 	Created              int64                `json:"created"`
 	Currency             string               `json:"currency"`
 	Customer             uuid.UUID            `json:"customer"`
+	Recipient            uuid.UUID            `json:"recipient"`
 	Description          string               `json:"description"`
 	Disputed             bool                 `json:"disputed"`
 	FailureCode          *string              `json:"failure_code,omitempty"`
@@ -37,6 +38,7 @@ type PaymentIntent struct {
 	Refunded             bool                 `json:"refunded"`
 	Refunds              Refunds              `json:"refunds"`
 	Status               string               `json:"status"`
+	ProductName          string               `json:"product_name"`
 }
 
 type AmountDetails struct {
