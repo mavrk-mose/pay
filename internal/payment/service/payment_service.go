@@ -12,7 +12,6 @@ import (
 	wallet "github.com/mavrk-mose/pay/internal/wallet/service"
 )
 
-// PaymentService handles payment processing
 type PaymentService struct {
 	walletService wallet.WalletService
 	ledgerService ledger.LedgerService
@@ -27,29 +26,24 @@ func NewPaymentService(wallet wallet.WalletService, ledger ledger.LedgerService,
 	}
 }
 
-// ExternalPaymentResponse represents a response from an external payment provider
 type ExternalPaymentResponse struct {
 	Status      string `json:"status"`
 	ExternalRef string `json:"external_ref"`
 }
 
-// ProcessPayment handles the entire payment flow
 func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
-	// 1️⃣ Check wallet balance
 	balance, err := h.walletService.GetBalance(ctx, req.Customer)
 	if err != nil || balance < req.Amount {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
 		return err
 	}
 
-	// 2️⃣ Execute payment via external processor
 	err, _ = h.executor.ExecutePayment(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})
 		return err
 	}
 
-	// 3️⃣ Record transaction in ledger
 	txn := Transaction{
 		ExternalRef:    req.ReceiptNumber,
 		Type:           TransactionType("payment"),
@@ -69,13 +63,11 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 		return err
 	}
 
-	// 4️⃣ Deduct funds from sender's wallet
 	if err := h.walletService.UpdateBalance(ctx, req.Customer, -req.Amount); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update wallet balance"})
 		return err
 	}
 
-	// ✅ Payment Successful
 	ctx.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
 	return nil
 }

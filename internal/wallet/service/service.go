@@ -18,6 +18,11 @@ type WalletService interface {
 	GetWallet(ctx *gin.Context, userID string) (Wallet, error)
 	UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error
 	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
+	
+	// GetBalance(ctx context.Context, userID string) (Balance, error)
+    // Credit(ctx context.Context, userID string, amount float64) error
+    // Debit(ctx context.Context, userID string, amount float64) error
+    // Transfer(ctx context.Context, fromUserID, toUserID string, amount float64) error
 }
 
 type walletService struct {
