@@ -32,5 +32,31 @@ func NewApiHandler(s ports.ApiService, m *middleware.ApiMiddleware, r *gin.Engin
 		payment.POST("/id/:paymentID/process", handler.ProcessPayment)            // Process authorized payment
 	}
 
+	r.GET("/users/:userID/referral", refHandler.GenerateReferralCode)
+	r.POST("/users/:userID/referral", refHandler.ApplyReferralCode)
+	r.GET("/users/:userID/bonus", refHandler.GetReferralBonus)
+
+
 	return handler
+
+	// // Referral routes
+	// router.GET("/users/:userID/referral", gHandler.GenerateReferral)
+	// router.POST("/users/:userID/referral", gHandler.ApplyReferral)
+
+	// // Cashback route (query parameter: amount)
+	// router.GET("/cashback", gHandler.GetCashback)
+
+	// // Voucher routes
+	// router.POST("/users/:userID/voucher", gHandler.GenerateVoucher)
+	// router.POST("/users/:userID/voucher/redeem", gHandler.RedeemVoucher)
+
+	
+	// // Merchant discount route
+	// router.GET("/merchants/:merchantID/discount", gHandler.GetMerchantDiscount)
+
+	// // Challenges route
+	// router.GET("/users/:userID/challenges", gHandler.GetChallenges)
+
+	// // Loyalty points route
+	// router.GET("/users/:userID/loyalty", gHandler.GetLoyaltyPoints)
 }

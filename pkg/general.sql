@@ -1,7 +1,19 @@
 -- Create custom enums for entry type and transaction status
 CREATE TYPE entry_type AS ENUM ('debit', 'credit');
 CREATE TYPE transaction_status AS ENUM ('pending', 'confirmed', 'failed');
+
+-- custom enum for wallet 
 CREATE TYPE wallet_status AS ENUM ('active','terminated')
+
+-- custom enum for discount types
+CREATE TYPE discount_type AS ENUM (
+    'merchant',     -- Merchant-specific discount
+    'referral',     -- Discount awarded for successful referrals
+    'loyalty',      -- Reward for repeat or long-term customers
+    'seasonal',     -- Special discount during holiday or seasonal events
+    'volume',       -- Discount based on bulk purchasing
+    'promotional'   -- Time-limited marketing promotion discount
+);
 
 -- Create custom enum types (if you prefer enums)
 CREATE TYPE transaction_type AS ENUM ('withdrawal', 'deposit', 'transfer', 'charge');
@@ -57,4 +69,41 @@ CREATE TABLE wallets (
     currency VARCHAR(10) DEFAULT 'USD',
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE referrals (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    referral_code TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE referral_usages (
+    id SERIAL PRIMARY KEY,
+    applied_user_id TEXT NOT NULL,
+    referral_code TEXT NOT NULL,
+    bonus NUMERIC DEFAULT 5.0,
+    applied_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Table for storing vouchers
+CREATE TABLE vouchers (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    code TEXT NOT NULL UNIQUE,
+    amount NUMERIC NOT NULL,
+    currency TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    redeemed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Table for merchant discounts
+CREATE TABLE discounts (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    type discount_type NOT NULL DEFAULT ,
+    discount_percentage NUMERIC NOT NULL,
+    valid_from TIMESTAMP NOT NULL,
+    valid_until TIMESTAMP NOT NULL
 );
