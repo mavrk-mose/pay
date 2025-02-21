@@ -1,6 +1,7 @@
 -- Create custom enums for entry type and transaction status
 CREATE TYPE entry_type AS ENUM ('debit', 'credit');
 CREATE TYPE transaction_status AS ENUM ('pending', 'confirmed', 'failed');
+CREATE TYPE wallet_status AS ENUM ('active','terminated')
 
 -- Create custom enum types (if you prefer enums)
 CREATE TYPE transaction_type AS ENUM ('withdrawal', 'deposit', 'transfer', 'charge');
@@ -46,4 +47,14 @@ CREATE TABLE users
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE wallets (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES users(google_id) ON DELETE CASCADE,
+    balance NUMERIC DEFAULT 0.00,
+    status wallet_status NOT NULL DEFAULT 'active',
+    currency VARCHAR(10) DEFAULT 'USD',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );

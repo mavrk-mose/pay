@@ -14,7 +14,7 @@ const (
 
 type Wallet struct {
 	ID         uuid.UUID `db:"id" json:"id"`
-	CustomerID uuid.UUID `db:"customer_id" json:"customer_id"`
+	userId     uuid.UUID `db:"user_id" json:"customer_id"`
 	Balance    float64   `db:"balance" json:"balance"`
 	Status     Status    `db:"status" json:"status,omitempty"`
 	Currency   string    `db:"currency" json:"currency"`

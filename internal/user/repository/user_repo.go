@@ -1,14 +1,30 @@
 package repository
 
 import (
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
 	"github.com/mavrk-mose/pay/internal/user/models"
-	"time"
 )
 
-func CreateOrUpdateUser(db *sqlx.DB, user goth.User) (*models.User, error) {
+// UserRepository defines the methods for user operations.
+type UserRepository interface {
+	CreateOrUpdateUser(user goth.User) (*models.User, error)
+	CreateWallet(userID string, currency string) (*models.Wallet, error)
+	GetUserWallets(userID string) ([]models.Wallet, error)
+}
+
+// userRepo implements UserRepository
+type userRepo struct {
+	db *sqlx.DB
+}
+
+// NewUserRepository creates a new instance of UserRepository
+func NewUserRepository(db *sqlx.DB) UserRepository {
+	return &userRepo{db: db}
+}
+
+// CreateOrUpdateUser creates or updates a user in the database
+func (r *userRepo) CreateOrUpdateUser(user goth.User) (*models.User, error) {
 	var dbUser models.User
 	query := `
 		INSERT INTO users (google_id, name, email, avatar_url, location, language, currency, created_at, updated_at, last_login_at)
@@ -18,15 +34,15 @@ func CreateOrUpdateUser(db *sqlx.DB, user goth.User) (*models.User, error) {
 		RETURNING id, google_id, name, email, avatar_url, location, language, currency, created_at, updated_at, last_login_at
 	`
 	now := time.Now()
-	err := db.QueryRowx(
+	err := r.db.QueryRowx(
 		query,
 		user.UserID,
 		user.Name,
 		user.Email,
 		user.AvatarURL,
-		"",    // Default location (can be updated later)
-		"sw",  // Default language (can be updated later)
-		"TZS", // Default currency (can be updated later)
+		"",    // Default location
+		"sw",  // Default language
+		"TZS", // Default currency
 		now,
 		now,
 		now,
@@ -35,4 +51,48 @@ func CreateOrUpdateUser(db *sqlx.DB, user goth.User) (*models.User, error) {
 		return nil, fmt.Errorf("failed to create/update user: %v", err)
 	}
 	return &dbUser, nil
+
+	// Check if user has at least one wallet
+	var walletCount int
+	err = r.db.Get(&walletCount, "SELECT COUNT(*) FROM wallets WHERE user_id = $1", dbUser.GoogleID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check wallet existence: %v", err)
+	}
+
+	// If no wallet exists, create a default wallet
+	if walletCount == 0 {
+		_, err = r.CreateWallet(dbUser.GoogleID, dbUser.Currency)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create default wallet: %v", err)
+		}
+	}
+
+	return &dbUser, nil
+}
+
+//TODO: move this to the wallet module
+// CreateWallet allows users to create additional wallets
+func (r *userRepo) CreateWallet(userID string, currency string) (*models.Wallet, error) {
+	var wallet models.Wallet
+	query := `
+		INSERT INTO wallets (user_id, balance, currency, created_at)
+		VALUES ($1, 0.00, $2, NOW())
+		RETURNING id, user_id, balance, currency, created_at
+	`
+	err := r.db.QueryRowx(query, userID, currency).StructScan(&wallet)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create wallet: %v", err)
+	}
+	return &wallet, nil
+}
+
+// GetUserWallets fetches all wallets belonging to a user
+func (r *userRepo) GetUserWallets(userID string) ([]models.Wallet, error) {
+	var wallets []models.Wallet
+	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1`
+	err := r.db.Select(&wallets, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch wallets: %v", err)
+	}
+	return wallets, nil
 }
