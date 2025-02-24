@@ -1,11 +1,18 @@
--- Create custom enums for entry type and transaction status
-CREATE TYPE entry_type AS ENUM ('debit', 'credit');
-CREATE TYPE transaction_status AS ENUM ('pending', 'confirmed', 'failed');
+-- Enums
+CREATE TYPE entry_type AS ENUM (
+    'debit',
+    'credit'
+);
 
--- custom enum for wallet 
-CREATE TYPE wallet_status AS ENUM ('active','terminated')
+CREATE TYPE wallet_status AS ENUM (
+    'active',        -- Wallet is fully operational
+    'suspended',     -- Wallet temporarily restricted due to fraud checks, verification issues, or policy violations
+    'terminated',    -- Wallet is permanently closed and cannot be reactivated
+    'frozen',        -- Wallet is locked due to security reasons, disputes, or legal compliance
+    'pending',       -- Wallet is created but awaiting verification or activation
+    'restricted'     -- Wallet has limited functionality (e.g., can't withdraw, but can receive funds)
+);
 
--- custom enum for discount types
 CREATE TYPE discount_type AS ENUM (
     'merchant',     -- Merchant-specific discount
     'referral',     -- Discount awarded for successful referrals
@@ -15,11 +22,39 @@ CREATE TYPE discount_type AS ENUM (
     'promotional'   -- Time-limited marketing promotion discount
 );
 
--- Create custom enum types (if you prefer enums)
-CREATE TYPE transaction_type AS ENUM ('withdrawal', 'deposit', 'transfer', 'charge','tax');
-CREATE TYPE transaction_status AS ENUM ('pending', 'confirmed', 'failed');
+CREATE TYPE transaction_type AS ENUM (
+    'withdrawal',  -- Money withdrawn from an account
+    'deposit',     -- Money added to an account
+    'transfer',    -- Money moved between accounts
+    'charge',      -- Fee charged for services
+    'tax',         -- Tax deduction from a transaction
+    'refund',      -- Money returned to a customer
+    'reversal',    -- A previously completed transaction is reversed
+    'cashback',    -- Rewards given to a user for transactions
+    'fee',         -- Additional processing or service fees
+    'payout',      -- Funds disbursed to merchants or users
+    'hold',        -- Funds temporarily locked for verification
+    'release',     -- Previously held funds are made available
+    'adjustment',  -- Manual correction to an account balance
+    'subscription',-- Recurring payment for a service
+); 
 
--- Create the combined transaction records table
+CREATE TYPE transaction_status AS ENUM (
+    'pending',       -- Transaction is initiated but not yet processed
+    'processing',    -- Transaction is currently being processed
+    'confirmed',     -- Successfully completed transaction
+    'failed',        -- Transaction failed due to an error
+    'reversed',      -- Funds returned after a successful transaction was reversed
+    'refunded',      -- Transaction amount has been refunded to the payer
+    'chargeback',    -- Payment disputed and refunded by financial institution
+    'on_hold',       -- Temporarily held for fraud checks or verification
+    'expired',       -- Transaction expired before completion
+    'canceled',      -- Transaction was manually canceled by user or system
+    'partially_paid', -- Partial payment received (e.g., installment payments)
+    'disputed'       -- Transaction is under review due to a dispute
+);
+
+-- Tables
 CREATE TABLE transaction
 (
     id               SERIAL PRIMARY KEY,
@@ -86,7 +121,6 @@ CREATE TABLE referral_usages (
     applied_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table for storing vouchers
 CREATE TABLE vouchers (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -98,7 +132,6 @@ CREATE TABLE vouchers (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table for merchant discounts
 CREATE TABLE discounts (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
