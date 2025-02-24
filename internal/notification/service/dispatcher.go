@@ -4,9 +4,8 @@ import (
 	"fmt"
 )
 
-// Dispatcher sends notifications through the appropriate channel
 type Dispatcher struct {
-	notifiers map[string]Notifier // Map of notification channels
+	notifiers map[string]Notifier 
 }
 
 func NewDispatcher() *Dispatcher {
@@ -19,6 +18,7 @@ func NewDispatcher() *Dispatcher {
 	}
 }
 
+// Dispatcher sends notifications through the appropriate channel
 // SendNotification sends a notification through the user's preferred channel
 func (d *Dispatcher) SendNotification(userID, channel, title, message string) error {
 	notifier, exists := d.notifiers[channel]

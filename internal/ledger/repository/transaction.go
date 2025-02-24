@@ -5,6 +5,7 @@ import (
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	"time"
 
+	"github.com/mavrk-mose/pay/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -98,4 +99,27 @@ func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, sta
 		return fmt.Errorf("no transaction found with external_ref %s", externalRef)
 	}
 	return nil
+}
+
+func FetchTransactionsWithChecksum(db *sql.DB, date string) (map[string]string, error) {
+	query := `SELECT id, amount, currency, created_at FROM transactions WHERE DATE(created_at) = $1`
+	rows, err := db.Query(query, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	transactions := make(map[string]string)
+
+	for rows.Next() {
+		var txn Transaction
+		if err := rows.Scan(&txn.ID, &txn.Amount, &txn.Currency, &txn.Timestamp); err != nil {
+			return nil, err
+		}
+
+		txn.Checksum = utils.GenerateChecksum(txn.ID, txn.Amount, txn.Currency, txn.Timestamp)
+		transactions[txn.ID] = txn.Checksum
+	}
+
+	return transactions, nil
 }

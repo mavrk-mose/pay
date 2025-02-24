@@ -16,8 +16,17 @@ func NewPushNotifier() *PushNotifier {
 	return &PushNotifier{}
 }
 
+// TODO: for push notification require device id & platform in the http handler
+// deviceID := ctx.GetHeader("device-id")
+// if deviceID == "" {
+// 	response.BadRequestError(ctx, "device-id missing")
+// 	return
+// }
+// platform := ctx.GetHeader("platform") -- do android only for now
+
+
 func (n *PushNotifier) Send(userID, title, message string) error {
-	// Initialize Firebase app
+	// Initialize Firebase app for Android
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("path/to/serviceAccountKey.json")
 	app, err := firebase.NewApp(ctx, nil, opt)
