@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/lib/pq"
 	"time"
 )
 
@@ -26,5 +27,5 @@ type PushItem struct {
 	UserToken string
 	Amount    float64
 	Direction Direction
-	Platform  push.Platform
+	Platform  Platform
 }

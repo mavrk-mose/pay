@@ -1,11 +1,15 @@
 package jobs
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
+	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
+	"github.com/mavrk-mose/pay/pkg/utils"
+	"log"
 	"os"
-	"path/filepath"
-	"strings"
+	"strconv"
+
 	"sync"
 	"time"
 
@@ -13,8 +17,8 @@ import (
 )
 
 const (
-	settlementDir  = "/path/to/settlement/files"
-	processedDir   = "/path/to/processed/files"
+	settlementDir          = "/path/to/settlement/files"
+	processedDir           = "/path/to/processed/files"
 	reconciliationInterval = 24 * time.Hour
 )
 
@@ -34,10 +38,9 @@ func StartReconciliationJob(db *sql.DB) {
 			<-ticker.C
 
 			date := time.Now().Format("2006-01-02") // Get today's date
-			settlementFile := fmt.Sprintf("%s/settlement_%s.csv", settlementDir, date)
 
 			log.Println("🔄 Running reconciliation job...")
-			service.ReconcileTransactions(db, settlementFile, date)
+			ReconcileTransactions(db, date)
 		}
 	}()
 }
@@ -50,7 +53,7 @@ func ReconcileTransactions(db *sql.DB, date string) {
 	}
 
 	// Read transactions from settlement file
-	fileTransactions, err := utils.ReadSettlementFile(settlementDir)
+	fileTransactions, err := ReadSettlementFile(settlementDir)
 	if err != nil {
 		log.Fatalf("Error reading settlement file: %v", err)
 	}

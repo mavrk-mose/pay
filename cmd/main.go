@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/mavrk-mose/pay/internal/middleware"
 	"github.com/mavrk-mose/pay/internal/user"
+	"github.com/mavrk-mose/pay/pkg/middleware"
 	"golang.org/x/time/rate"
 	"log"
 	"os"

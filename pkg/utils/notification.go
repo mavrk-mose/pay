@@ -1,5 +1,7 @@
 package utils
 
+import "strings"
+
 func ReplaceTemplatePlaceholders(message string, details map[string]string) string {
 	for key, value := range details {
 		placeholder := "{{" + key + "}}"

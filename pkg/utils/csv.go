@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
 	"encoding/csv"
@@ -77,4 +77,3 @@ func ReadCSV[T any](fileName string, rowParser func([]string) (T, error), skipHe
 	}
 	return results, nil
 }
-
