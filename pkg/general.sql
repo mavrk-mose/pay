@@ -16,7 +16,7 @@ CREATE TYPE discount_type AS ENUM (
 );
 
 -- Create custom enum types (if you prefer enums)
-CREATE TYPE transaction_type AS ENUM ('withdrawal', 'deposit', 'transfer', 'charge');
+CREATE TYPE transaction_type AS ENUM ('withdrawal', 'deposit', 'transfer', 'charge','tax');
 CREATE TYPE transaction_status AS ENUM ('pending', 'confirmed', 'failed');
 
 -- Create the combined transaction records table

@@ -11,7 +11,6 @@ import (
 
 type WalletRepo interface {
 	GetBalance(ctx context.Context, userID string) (float64, error)
-	UpdateBalance(ctx context.Context, userID string, amount float64) error
 	Create(ctx *gin.Context, wallet Wallet) error
 	GetByID(ctx *gin.Context, userID string) (Wallet, error)
 	CreateTransfer(ctx *gin.Context, transfer *TransferRequest) error
@@ -36,11 +35,6 @@ func (r *walletRepo) GetBalance(ctx context.Context, userID string) (float64, er
 		return 0, fmt.Errorf("error fetching wallet balance: %v", err)
 	}
 	return balance, nil
-}
-
-func (r *walletRepo) UpdateBalance(ctx context.Context, userID string, amount float64) error {
-	_, err := r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance + ? WHERE user_id = ?", amount, userID)
-	return err
 }
 
 func (r *walletRepo) Create(ctx *gin.Context, wallet Wallet) error {
@@ -157,13 +151,11 @@ func (r *walletRepo) Withdraw(ctx *gin.Context, walletID int64, amount float64, 
 	return transactionID, nil
 }
 
-// Debit subtracts funds from a wallet
 func (r *walletRepo) Debit(ctx context.Context, walletID uuid.UUID, amount float64) error {
 	_, err := r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance - $1 WHERE id = $2", amount, walletID)
 	return err
 }
 
-// Credit adds funds to a wallet
 func (r *walletRepo) Credit(ctx context.Context, walletID uuid.UUID, amount float64) error {
 	_, err := r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance + $1 WHERE id = $2", amount, walletID)
 	return err
