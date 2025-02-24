@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mavrk-mose/pay/pkg/utils"
 	cmap "github.com/orcaman/concurrent-map/v2"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"log"
-	"sync"
+	"time"
 )
 
 // NotificationService handles SSE and notifications.
@@ -31,19 +32,19 @@ func (s *NotificationService) loadTemplates() map[string]NotificationTemplate {
 		"welcome": {
 			ID:      "welcome",
 			Title:   "Welcome!",
-			Message: "Thank you for joining our platform.",
+			Message: "Hello {{name}}, thank you for joining our platform.",
 			Type:    "info",
 		},
 		"payment_success": {
 			ID:      "payment_success",
 			Title:   "Payment Successful",
-			Message: "Your payment has been processed successfully.",
+			Message: "Hi {{name}}, your payment of {{amount}} has been processed successfully.",
 			Type:    "success",
 		},
 		"alert": {
 			ID:      "alert",
 			Title:   "Alert!",
-			Message: "An important update requires your attention.",
+			Message: "Dear {{name}}, an important update requires your attention.",
 			Type:    "alert",
 		},
 	}
@@ -58,18 +59,14 @@ func (s *NotificationService) SSEHandler(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 
-	// Create a channel for this client
 	notifyChan := make(chan Notification)
-	s.mu.Lock()
-	s.clients[userID] = notifyChan
-	s.mu.Unlock()
+	// Store the channel in the concurrent map.
+	s.clients.Set(userID, notifyChan)
 
-	// Ensure the channel is removed when the client disconnects
+	// Ensure the channel is removed when the client disconnects.
 	defer func() {
-		s.mu.Lock()
-		delete(s.clients, userID)
+		s.clients.Remove(userID)
 		close(notifyChan)
-		s.mu.Unlock()
 	}()
 
 	// Listen for client disconnection
@@ -94,20 +91,12 @@ func (s *NotificationService) SSEHandler(c *gin.Context) {
 // SendNotification sends a notification to a specific user
 // SSE provides real-time updates to web clients.
 func (s *NotificationService) SendNotification(userID, templateID string, details map[string]string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Get the preconfigured template
 	template, exists := s.templates[templateID]
 	if !exists {
 		return fmt.Errorf("template %s not found", templateID)
 	}
 
-	// Replace placeholders in the template message with details
-	message := template.Message
-	for _, value := range details {
-		message = fmt.Sprintf(message, value)
-	}
+	message := utils.ReplaceTemplatePlaceHolders(template.Message, details)
 
 	// Create the notification
 	notification := Notification{
@@ -116,11 +105,12 @@ func (s *NotificationService) SendNotification(userID, templateID string, detail
 		Title:   template.Title,
 		Message: message,
 		Type:    template.Type,
+		Time:    time.Now(),
 	}
 
-	// Send the notification to the user's channel
-	if clientChan, ok := s.clients[userID]; ok {
-		clientChan <- notification
+	if notifyChan, ok := s.clients.Get(userID); ok {
+		// send notification to client channel
+		notifyChan <- notification
 	} else {
 		return fmt.Errorf("user %s is not connected", userID)
 	}
