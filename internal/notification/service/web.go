@@ -5,18 +5,24 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	cmap "github.com/orcaman/concurrent-map/v2"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"log"
 	"sync"
 )
 
-//  Notifications (email, SMS, webhooks)
-// NotificationService handles SSE and notifications
-
+// NotificationService handles SSE and notifications.
+// It uses a concurrent map for clients where each userID maps to its notification channel.
 type NotificationService struct {
-	clients   map[string]chan Notification    // Map of user IDs to their SSE channels -> should be use concurrent hashmap
-	templates map[string]NotificationTemplate // Preconfigured notification templates
-	mu        sync.Mutex                      // Mutex to protect concurrent access to clients
+	clients   cmap.ConcurrentMap[string, chan Notification]
+	templates map[string]NotificationTemplate // Loaded from DB in production.
+}
+
+func NewNotificationService() *NotificationService {
+	return &NotificationService{
+		clients:   cmap.New[chan Notification](),
+		templates: loadTemplates(), // In production, load these from the DB.
+	}
 }
 
 // loadTemplates loads preconfigured notification templates
