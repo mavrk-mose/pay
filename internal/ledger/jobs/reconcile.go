@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"fmt"
-	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
+	repo "github.com/mavrk-mose/pay/internal/ledger/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
+	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"strconv"
@@ -21,102 +22,121 @@ const (
 	processedDir           = "/path/to/processed/files"
 	reconciliationInterval = 24 * time.Hour
 )
-
-type Jobs struct {
-	db *sqlx.DB
-	mu sync.Mutex
+type ReconciliationService struct {
+	db         *sqlx.DB
+	s3Path     string
+	watchDirs []string
 }
 
-func NewJobs(db *sqlx.DB) *Jobs {
-	return &Jobs{db: db}
+func NewReconciliationService(db *sqlx.DB, s3Path string) *ReconciliationService {
+	return &ReconciliationService{
+		db:     db,
+		s3Path: s3Path,
+		watchDirs: viper.GetStringSlice("settlement_directories"),
+	}
 }
 
-func StartReconciliationJob(db *sql.DB) {
-	ticker := time.NewTicker(reconciliationInterval) // Runs every 24 hours
+// gets triggered the moment a file is dumped in the directory : a file watcher
+func (r *ReconciliationService) StartReconciliationJob() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		panic(err)
+	}
+	defer watcher.Close()
+	done := make(chan bool)
 	go func() {
 		for {
-			<-ticker.C
-
-			date := time.Now().Format("2006-01-02") // Get today's date
-
-			log.Println("🔄 Running reconciliation job...")
-			ReconcileTransactions(db, date)
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					fmt.Println("New file detected:", event.Name)
+					go r.ProcessSettlementFile(event.Name) 
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				fmt.Println("Watcher error:", err)
+			}
 		}
 	}()
+
+	for _, dir := range r.watchDirs {
+		if err := watcher.Add(dir); err != nil {
+			panic(err)
+		}
+	}
+	<-done
 }
 
-func ReconcileTransactions(db *sql.DB, date string) {
-	// Fetch transactions from database
-	dbTransactions, err := repository.FetchTransactionsWithChecksum(db, date)
+func (r *ReconciliationService) ProcessSettlementFile(filePath string) {
+	paymentProvider := extractPaymentProvider(filePath)
+	
+	settlementTransactions, err := utils.ReadCSV(filePath, parseSettlementRow, true)
 	if err != nil {
-		log.Fatalf("Error fetching transactions: %v", err)
+		fmt.Println("Error reading settlement file:", err)
+		return
 	}
 
-	// Read transactions from settlement file
-	fileTransactions, err := ReadSettlementFile(settlementDir)
-	if err != nil {
-		log.Fatalf("Error reading settlement file: %v", err)
-	}
+	dbTransactions := repo.FetchTransactionsWithChecksum(r.db, paymentProvider)
 
-	matches := 0
-	mismatches := 0
-	missingDB := 0
-	missingFile := 0
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	report := [][]string{{"Transaction ID", "Status"}}
 
-	for id, checksum := range dbTransactions {
-		if fileChecksum, found := fileTransactions[id]; found {
-			if checksum == fileChecksum {
-				matches++
+	jobs := make(chan Transaction, len(settlementTransactions))
+	results := make(chan []string, len(settlementTransactions))
+
+	worker := func() {
+		for txn := range jobs {
+			status := "Matched"
+			if dbChecksum, exists := dbTransactions[txn.ID]; exists {
+				if dbChecksum != txn.Checksum {
+					status = "Mismatch"
+				}
 			} else {
-				fmt.Printf("⚠️ Mismatch: Transaction %s has different checksums!\n", id)
-				mismatches++
+				status = "Missing in DB"
 			}
-		} else {
-			fmt.Printf("❌ Missing in Settlement File: %s\n", id)
-			missingFile++
+			results <- []string{txn.ID, status}
 		}
+		wg.Done()
 	}
 
-	for id := range fileTransactions {
-		if _, found := dbTransactions[id]; !found {
-			fmt.Printf("❌ Missing in Database: %s\n", id)
-			missingDB++
-		}
+	workerCount := len(watchDirs) // Number of concurrent workers
+	wg.Add(workerCount)
+	for i := 0; i < workerCount; i++ {
+		go worker()
 	}
 
-	fmt.Printf("\n✅ Matches: %d\n⚠️ Mismatches: %d\n❌ Missing in Settlement File: %d\n❌ Missing in Database: %d\n",
-		matches, mismatches, missingFile, missingDB)
+	for _, txn := range settlementTransactions {
+		jobs <- txn
+	}
+	close(jobs)
+	wg.Wait()
+	close(results)
+
+	for res := range results {
+		report = append(report, res)
+	}
+
+	timestamp := time.Now().Format("20060102_150405")
+	reportFileName := fmt.Sprintf("reconciliation_report_%s.csv", timestamp)
+	utils.WriteCSV(reportFileName, report, nil, func(row []string) []string { return row })
 }
 
-func ReadSettlementFile(filePath string) (map[string]string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
+func parseSettlementRow(row []string) (Transaction, error) {
+	if len(row) < 4 {
+		return Transaction{}, fmt.Errorf("invalid row format")
 	}
-	defer file.Close()
+	return Transaction{ID: row[0], Checksum: row[3]}, nil
+}
 
-	reader := csv.NewReader(file)
-	_, err = reader.Read() // Skip header
-	if err != nil {
-		return nil, err
-	}
-
-	transactions := make(map[string]string)
-
-	for {
-		record, err := reader.Read()
-		if err != nil {
-			break // EOF
-		}
-
-		transactionID := record[0]
-		amount, _ := strconv.ParseFloat(record[1], 64)
-		currency := record[2]
-		timestamp := record[3]
-
-		checksum := utils.GenerateChecksum(transactionID, amount, currency, timestamp)
-		transactions[transactionID] = checksum
-	}
-
-	return transactions, nil
+// Extracts the provider from the path format: provider/{{current_date}}/file.csv
+// paypal/ , adyen/ & stripe/ directories
+func extractPaymentProvider(filePath string) string {
+	dirPath := filepath.Dir(filePath)
+	return filepath.Base(filepath.Dir(dirPath)) 
 }

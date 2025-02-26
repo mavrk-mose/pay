@@ -67,17 +67,19 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 }
 
 func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
-	for _, entry := range entries {
+	for i := range entries {
+		entries[i].Checksum = GenerateChecksum(entries[i]) 
+
 		_, err := txn.NamedExecContext(ctx, `
 			INSERT INTO transactions (
 				id, external_ref, type, status, details, currency, 
 				debit_wallet_id, debit_amount, entry_type, 
-				credit_wallet_id, credit_amount, created_at, updated_at
+				credit_wallet_id, credit_amount, created_at, updated_at, checksum
 			) VALUES (
 				:id, :external_ref, :type, :status, :details, :currency, 
 				:debit_wallet_id, :debit_amount, :entry_type, 
-				:credit_wallet_id, :credit_amount, :created_at, :updated_at
-			)`, entry)
+				:credit_wallet_id, :credit_amount, :created_at, :updated_at, :checksum
+			)`, entries[i])
 		if err != nil {
 			return err
 		}
@@ -103,24 +105,41 @@ func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, sta
 }
 
 func FetchTransactionsWithChecksum(db *sql.DB, date string) (map[string]string, error) {
-	query := `SELECT id, amount, currency, created_at FROM transactions WHERE DATE(created_at) = $1`
-	rows, err := db.Query(query, date)
+	query := `SELECT id, checksum FROM transactions WHERE provider = $1 AND created_at >= NOW() - INTERVAL '1 DAY'`
+	rows, err := db.Query(query, provider)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	defer rows.Close()
 
-	transactions := make(map[string]string)
+	dbTransactions := make(map[string]string)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 
 	for rows.Next() {
 		var txn Transaction
-		if err := rows.Scan(&txn.ID, &txn.Amount, &txn.Currency, &txn.Timestamp); err != nil {
-			return nil, err
+		if err := rows.Scan(&txn.ID, &txn.Checksum); err != nil {
+			panic(err)
 		}
-
-		txn.Checksum = utils.GenerateChecksum(txn.ID, txn.Amount, txn.Currency, txn.Timestamp)
-		transactions[txn.ID] = txn.Checksum
+		wg.Add(1)
+		go func(txn Transaction) {
+			defer wg.Done()
+			mu.Lock()
+			dbTransactions[txn.ID] = txn.Checksum
+			mu.Unlock()
+		}(txn)
 	}
+	wg.Wait()
 
-	return transactions, nil
+	return dbTransactions, nil
+}
+
+
+func GenerateChecksum(txn Transaction) string {
+	data := fmt.Sprintf("%s|%s|%s|%s|%f|%f|%s|%s",
+		txn.ExternalRef, txn.Type, txn.Status, txn.Currency,
+		txn.DebitAmount, txn.CreditAmount, txn.DebitWalletID, txn.CreditWalletID,
+	)
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }

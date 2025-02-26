@@ -67,6 +67,7 @@ CREATE TABLE transaction
     debit_amount     NUMERIC(20, 2)      NOT NULL,
     credit_wallet_id BIGINT              NOT NULL,
     credit_amount    NUMERIC(20, 2)      NOT NULL,
+    checksum         TEXT                NOT NULL,
     created_at       TIMESTAMPTZ                  DEFAULT NOW(),
     updated_at       TIMESTAMPTZ                  DEFAULT NOW()
 );
