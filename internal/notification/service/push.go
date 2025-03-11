@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/mavrk-mose/pay/config"
 	repo "github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"google.golang.org/api/option"
@@ -43,7 +44,12 @@ func NewPushNotifier(
 // }
 // platform := ctx.GetHeader("platform") -- do android only for now
 
-func (n *PushNotifier) Send(ctx context.Context, userID, templateID string, details map[string]string) error {
+func (n *PushNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
+	if user.DeviceToken == "" {
+		n.logger.Warnf("No device token found for user %s", user.ID.String())
+		return fmt.Errorf("no device token registered for user")
+	}
+
 	credJSON, err := json.Marshal(n.firebase)
 	if err != nil {
 		return fmt.Errorf("failed to marshal Firebase credentials: %v", err)
@@ -60,17 +66,6 @@ func (n *PushNotifier) Send(ctx context.Context, userID, templateID string, deta
 	if err != nil {
 		n.logger.Errorf("Failed to get messaging client: %v", err)
 		return fmt.Errorf("failed to get messaging client: %v", err)
-	}
-
-	user, err := n.userRepo.GetUserByID(ctx, userID)
-	if err != nil {
-		n.logger.Errorf("Failed to get user %s: %v", userID, err)
-		return fmt.Errorf("failed to get user: %w", err)
-	}
-
-	if user.DeviceToken == "" {
-		n.logger.Warnf("No device token found for user %s", userID)
-		return fmt.Errorf("no device token registered for user")
 	}
 
 	template, err := n.repo.GetTemplate(ctx, templateID)

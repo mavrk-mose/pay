@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	notificationRepo "github.com/mavrk-mose/pay/internal/notification/repository"
-	userRepo "github.com/mavrk-mose/pay/internal/user/repository"
+	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"net/smtp"
 )
@@ -15,7 +15,6 @@ type EmailNotifier struct {
 	smtpHost         string // SMTP server host
 	smtpPort         string // SMTP server port
 	auth             smtp.Auth
-	userRepo         userRepo.UserRepository
 	notificationRepo notificationRepo.NotificationRepo
 	logger           utils.Logger
 }
@@ -26,7 +25,6 @@ func NewEmailNotifier(
 	smtpPort,
 	smtpUser,
 	smtpPass string,
-	userRepo userRepo.UserRepository,
 	notificationRepo notificationRepo.NotificationRepo,
 	logger utils.Logger,
 ) *EmailNotifier {
@@ -36,18 +34,13 @@ func NewEmailNotifier(
 		smtpHost:         smtpHost,
 		smtpPort:         smtpPort,
 		auth:             auth,
-		userRepo:         userRepo,
 		notificationRepo: notificationRepo,
 		logger:           logger,
 	}
 }
 
-func (n *EmailNotifier) Send(ctx context.Context, userID, templateID string, details map[string]string) error {
-	user, err := n.userRepo.GetUserByID(ctx, userID)
-	if err != nil {
-		n.logger.Errorf("Failed to get user %s: %v", userID, err)
-		return fmt.Errorf("failed to get user: %w", err)
-	}
+func (n *EmailNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
+	userID := user.ID.String()
 
 	if user.Email == "" {
 		n.logger.Warnf("User %s has no email registered", userID)

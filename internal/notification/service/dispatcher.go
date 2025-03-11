@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/internal/user/models"
 	user "github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
@@ -81,8 +82,8 @@ func NewDispatcher(
 
 // SendNotification Dispatcher sends notifications through the appropriate channel
 // SendNotification sends a notification through the user's preferred channel
-func (d *Dispatcher) SendNotification(ctx context.Context, userID, channel, title string, details map[string]string) error {
-	d.logger.Infof("Dispatching notification to user %s via %s channel", userID, channel)
+func (d *Dispatcher) SendNotification(ctx context.Context, user models.User, channel, title string, details map[string]string) error {
+	d.logger.Infof("Dispatching notification to user %s via %s channel", user.ID.String(), channel)
 
 	notifier, exists := d.notifiers[channel]
 	if !exists {
@@ -90,11 +91,11 @@ func (d *Dispatcher) SendNotification(ctx context.Context, userID, channel, titl
 		return fmt.Errorf("notification channel %s not supported", channel)
 	}
 
-	if err := notifier.Send(ctx, userID, title, details); err != nil {
+	if err := notifier.Send(ctx, user, title, details); err != nil {
 		d.logger.Errorf("Failed to send notification via %s: %v", channel, err)
 		return err
 	}
 
-	d.logger.Infof("Successfully sent notification to user %s via %s channel", userID, channel)
+	d.logger.Infof("Successfully sent notification to user %s via %s channel", user.ID.String(), channel)
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	cmap "github.com/orcaman/concurrent-map/v2"
 	"time"
@@ -21,7 +22,10 @@ type WebNotifier struct {
 	logger  utils.Logger
 }
 
-func NewWebNotifier(repo repository.NotificationRepo, logger utils.Logger) *WebNotifier {
+func NewWebNotifier(
+	repo repository.NotificationRepo,
+	logger utils.Logger,
+) *WebNotifier {
 	return &WebNotifier{
 		clients: cmap.New[chan Notification](),
 		repo:    repo,
@@ -80,7 +84,9 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 
 // SendNotification sends a notification to a specific user
 // SSE provides real-time updates to web clients.
-func (s *WebNotifier) Send(ctx context.Context, userID, templateID string, details map[string]string) error {
+func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
+	userID := user.ID.String()
+
 	s.logger.Infof("Sending notification to user %s using template %s", userID, templateID)
 
 	template, err := s.repo.GetTemplate(ctx, templateID)
