@@ -21,6 +21,7 @@ type Config struct {
 	Logger   Logger
 	AWS      AWS
 	Jaeger   Jaeger
+	Firebase Firebase
 }
 
 // Server config struct
@@ -83,6 +84,20 @@ type Twilio struct {
 	AccountSID string
 	AuthToken  string
 	From       string
+}
+
+// Firebase config struct
+type Firebase struct {
+	Type                string `mapstructure:"type" json:"type"`
+	ProjectID           string `mapstructure:"project_id" json:"project_id"`
+	PrivateKeyID        string `mapstructure:"private_key_id" json:"private_key_id"`
+	PrivateKey          string `mapstructure:"private_key" json:"private_key"`
+	ClientEmail         string `mapstructure:"client_email" json:"client_email"`
+	ClientID            string `mapstructure:"client_id" json:"client_id"`
+	AuthURI             string `mapstructure:"auth_uri" json:"auth_uri"`
+	TokenURI            string `mapstructure:"token_uri" json:"token_uri"`
+	AuthProviderCertURL string `mapstructure:"auth_provider_x509_cert_url" json:"auth_provider_x509_cert_url"`
+	ClientCertURL       string `mapstructure:"client_x509_cert_url" json:"client_x509_cert_url"`
 }
 
 // Cookie config

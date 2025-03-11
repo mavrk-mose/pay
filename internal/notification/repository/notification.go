@@ -22,7 +22,7 @@ func NewNotificationRepo(db *sqlx.DB) NotificationRepo {
 
 func (s *notificationRepo) GetTemplate(ctx context.Context, templateID string) (NotificationTemplate, error) {
 	var template NotificationTemplate
-	query := `SELECT id, title, message, type FROM notification_templates WHERE id = $1`
+	query := `SELECT id, title, message, type FROM templates WHERE id = $1`
 	err := s.DB.GetContext(ctx, &template, query, templateID)
 	if err != nil {
 		return NotificationTemplate{}, fmt.Errorf("failed to get template: %w", err)
@@ -35,7 +35,7 @@ func (s *notificationRepo) StoreNotification(ctx context.Context, notification N
 		INSERT INTO notifications (id, user_id, title, message, type, created_at)
 		VALUES ($1, $2, $3, $4, $5, NOW())
 		RETURNING id, user_id, title, message, type, created_at
-	`			
+	`
 	err := s.DB.QueryRowx(query, notification.ID, notification.UserID, notification.Title, notification.Message, notification.Type).StructScan(&notification)
 	if err != nil {
 		return fmt.Errorf("failed to store notification: %w", err)

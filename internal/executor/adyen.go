@@ -3,7 +3,6 @@ package executor
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/adyen/adyen-go-api-library/v7/src/checkout"
 	"github.com/adyen/adyen-go-api-library/v7/src/common"
@@ -32,22 +31,74 @@ func NewAdyenProvider(apiKey, merchantAccount string, isLive bool) (*AdyenProvid
 // ExecutePayment processes a payment request using Adyen
 func (a *AdyenProvider) ExecutePayment(order PaymentOrder) (*checkout.PaymentResponse, error) {
 	request := checkout.PaymentRequest{
+		AccountInfo:      nil,
+		AdditionalAmount: nil,
+		AdditionalData:   nil,
 		Amount: checkout.Amount{
 			Currency: order.Currency,
 			Value:    int64(order.Amount * 100), // Convert to minor units
 		},
-		MerchantAccount: a.MerchantAccount,
-		Reference:       order.OrderID,
-		PaymentMethod: map[string]interface{}{
-			"type":        "scheme",    // Card Payments
-			"number":      order.Card.Number,
-			"expiryMonth": order.Card.ExpiryMonth,
-			"expiryYear":  order.Card.ExpiryYear,
-			"cvc":         order.Card.CVC,
-			"holderName":  order.Card.HolderName,
-		},
-		ReturnURL: "https://yourdomain.com/payment-result",
-	}
+		ApplicationInfo:           nil,
+		AuthenticationData:        nil,
+		BillingAddress:            nil,
+		BrowserInfo:               nil,
+		CaptureDelayHours:         nil,
+		Channel:                   nil,
+		CheckoutAttemptId:         nil,
+		Company:                   nil,
+		ConversionId:              nil,
+		CountryCode:               nil,
+		DateOfBirth:               nil,
+		DccQuote:                  nil,
+		DeliveryAddress:           nil,
+		DeliveryDate:              nil,
+		DeviceFingerprint:         nil,
+		EnableOneClick:            nil,
+		EnablePayOut:              nil,
+		EnableRecurring:           nil,
+		EntityType:                nil,
+		FraudOffset:               nil,
+		IndustryUsage:             nil,
+		Installments:              nil,
+		LineItems:                 nil,
+		LocalizedShopperStatement: nil,
+		Mandate:                   nil,
+		Mcc:                       nil,
+		MerchantAccount:           a.MerchantAccount,
+		MerchantOrderReference:    nil,
+		MerchantRiskIndicator:     nil,
+		Metadata:                  nil,
+		MpiData:                   nil,
+		Order:                     nil,
+		OrderReference:            nil,
+		Origin:                    nil,
+		PaymentMethod:				nil,
+		PlatformChargebackLogic:   nil,
+		RecurringExpiry:           nil,
+		RecurringFrequency:        nil,
+		RecurringProcessingModel:  nil,
+		RedirectFromIssuerMethod:  nil,
+		RedirectToIssuerMethod:    nil,
+		Reference:                 order.OrderID,
+		ReturnUrl:                 "",
+		RiskData:                  nil,
+		SessionValidity:           nil,
+		ShopperEmail:              nil,
+		ShopperIP:                 nil,
+		ShopperInteraction:        nil,
+		ShopperLocale:             nil,
+		ShopperName:               nil,
+		ShopperReference:          nil,
+		ShopperStatement:          nil,
+		SocialSecurityNumber:      nil,
+		Splits:                    nil,
+		Store:                     nil,
+		StorePaymentMethod:        nil,
+		TelephoneNumber:           nil,
+		ThreeDS2RequestData:       nil,
+		ThreeDSAuthenticationOnly: nil,
+		TrustedShopper:            nil,
+	}:
 
 	response, httpResp, err := a.Client.PaymentsApi.Payments(context.Background(), request)
 	if err != nil {
@@ -59,8 +110,8 @@ func (a *AdyenProvider) ExecutePayment(order PaymentOrder) (*checkout.PaymentRes
 }
 
 // CapturePayment captures an authorized payment
-func (a *AdyenProvider) CapturePayment(paymentID string, amount float64, currency string) (*checkout.ModificationResponse, error) {
-	request := checkout.CaptureRequest{
+func (a *AdyenProvider) CapturePayment(paymentID string, amount float64, currency string) (*checkout.ModificationsApi, error) {
+	request := checkout.PaymentCaptureRequest{
 		Amount: checkout.Amount{
 			Currency: currency,
 			Value:    int64(amount * 100),
@@ -68,7 +119,7 @@ func (a *AdyenProvider) CapturePayment(paymentID string, amount float64, currenc
 		MerchantAccount: a.MerchantAccount,
 	}
 
-	response, httpResp, err := a.Client.PaymentsApi.Captures(context.Background(), paymentID, request)
+	response, httpResp, err := a.Client.PaymentsApi.Payments(context.Background(), paymentID, request)
 	if err != nil {
 		return nil, fmt.Errorf("capture failed: %w", err)
 	}

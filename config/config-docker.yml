@@ -53,3 +53,42 @@ twilio:
   AuthToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   From: +1234567890
 
+firebase:
+  type: "service_account"
+  project_id: "fir-realtime-db-demo-xxxxx"
+  private_key_id: "9b40ce1e420b06c04b4c8e543bebbd43cd731a22"
+  private_key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvgIxxxxxxxxxxxxxxw0BAQEFAASCBKgwggSkAgEAAoIBAQDllkqdmGaEonsN
+    SsACNopfNG92Ak548KEqDPzw+xxxxxxxxyRMj97Zzz50dY2cUXHmvCwFQhq3KRh7
+    9VAFeNflKSmlhw5+ch8eiI1hfqiIpS6Vl+TwVcOSY7SJZaWP9WjCo1inKL6Ur829
+    TrKw/54i7TAocaund54ZEFnlhbk0UTSdRwtfzUny5A35EvPXlJazjvkhB5VuB/+F
+    xxxxx/ffFcbeqMBwi1Vb9hi1zT2BXV22NUmBxZyp6VQwVfl34XTEZBAutqnVinqz
+    uCtkxo+RiZY5yG4csOIkVqsFJ7NYnZE6iwYc1cFtp5IKmP7TZEchyje4crtJUZTf
+    C3jyAbrnAgMBAAECggEAXxDBaspNQQSKkXFvWjs9RrjOon3IApoZEfF410rPozAp
+    XcbAZBd6vpPrF4wJjD3JPTKTw8WgjFEu+z0T2oA0XYaS4SCwZrlYm2sNp94raRGE
+    3ZqcyMuqhLZWbkIxsQ98RoQe1HCxoZ2+QnIQ2euujmXKeCTBYEHOrDAyGTErBDcH
+    C98ikFKq/pd6B8ZJ9PbCYIth8KgxQBk+TsY2zEMZN0zM+7fDuTEr914OstT6t6Bb
+    Ale5aXTYxZNHsTY2mR/4Zo88k4JazEZzQ26BHmi5vdcez6uJuqwoRru0jWAoneTi
+    rsUKhajwuKK2nwn+t5m4PABy4hU2VlrJhwPr0o0diQKBgQD42EIP9f9d1JC4OJ3b
+    JsQdytTEzcKziF12VAj4rPjGbnWMoIc/6UHO3DNSJyrdZUjakZnaXBnJZkljXsE4
+    hJck2s5U80elXH2eWw4qNzLuOxeHlNrZs6HzTzoG0ZGEC2ALvGy5USUsO+a3idsO
+    EnklJTEwFdBtqx4MEXPsiyQptQKBgQDsMEcnn9QZLi3SMC+mEeOQDmq7Jm4KygL2
+    eHVDrq4P4X1Pn7IYqi7iJDxWKBzgCutxFwQOJiZdoedhAg1HhIZckT4VFvkwUHlS
+    xu0l21OTFmu/2OUANNDoS8cJwOx+NDe23xbOk6PrVjD4OJtSRc5CDd+reSm1lwVq
+    IHizueHDqwKBgD7RWNvunahyIJZgtHi+MIPU0CFeT+hCZFWaoSklgSeWetYlL/9S
+    QuqVa98xRADfsKR8XPpihZ/x0lTjdqNt1TnYgn2vbEayMoPnOIwvowvAnw/648RR
+    NHDXby6JeNJ8jKJpzoh5k4i3Fmb+xe2nfC2EVgZte1A0AkHJphnwhhCBAoGBAIgl
+    5D5xIYBKYFtzL2RZl4Xo6ZlsM67AeCi/k0kqnmfFIckOU0logJIXNTis8sgrQ0Dz
+    dYD6eM8sjwYaerEpMZKWnuTlU0uIeAdBaF6UKX72Q7JZQth1mZ7uX5O9xBWT4DHo
+    M2ttK+ZyztOnPdGVL6pf+PkNZP+qSJK+mRVxJzT1AoGBANqiyWyH/D26pi1VvoMR
+    1DyCWgJIa+Lm0CwR/CE0a1ATdSw1H96WvjEd5oHxlGER7Y9j0nfmvPabWFyNxKbu
+    P8ly2aiFffAPKI2e2ZmXXrpcesj0IS5Uk5Mk/1hVwOtNLxGN/ayvk0DqwoIbvFEM
+    2EzEYqr/xxxxxxxxxxxxxxxx
+    -----END PRIVATE KEY-----
+  client_email: "firebase-adminsdk-2zjoi@fir-realtime-db-demo-xxxxx.iam.gserviceaccount.com"
+  client_id: "105636361475399593303"
+  auth_uri: "https://accounts.google.com/o/oauth2/auth"
+  token_uri: "https://oauth2.googleapis.com/token"
+  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+  client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-2zjoi%40fir-realtime-db-demo-fc492.iam.gserviceaccount.com"

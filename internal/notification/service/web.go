@@ -1,37 +1,37 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mavrk-mose/pay/pkg/utils"
-	cmap "github.com/orcaman/concurrent-map/v2"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/pkg/utils"
+	cmap "github.com/orcaman/concurrent-map/v2"
 	"time"
 )
 
-// NotificationService handles SSE and notifications.
+// WebNotifier handles SSE and notifications.
 // It uses a concurrent map for clients where each userID maps to its notification channel.
 type WebNotifier struct {
-	clients   cmap.ConcurrentMap[string, chan Notification]
-	repo      repository.NotificationRepo
-	logger    utils.Logger
+	clients cmap.ConcurrentMap[string, chan Notification]
+	repo    repository.NotificationRepo
+	logger  utils.Logger
 }
 
 func NewWebNotifier(repo repository.NotificationRepo, logger utils.Logger) *WebNotifier {
 	return &WebNotifier{
-		clients:   cmap.New[chan Notification](),
-		repo: 	   repo,
-		logger:    logger,
+		clients: cmap.New[chan Notification](),
+		repo:    repo,
+		logger:  logger,
 	}
 }
 
 // SSEHandler handles Server-Sent Events (SSE) connections
 func (s *WebNotifier) SSEHandler(c *gin.Context) {
-	userID := c.Param("userID") 
+	userID := c.Param("userID")
 	s.logger.Infof("SSE connection established for user: %s", userID)
 
 	// Set headers for SSE
@@ -65,7 +65,7 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 				s.logger.Errorf("Failed to marshal notification for user %s: %v", userID, err)
 				continue
 			}
-			
+
 			_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", data)
 			if err != nil {
 				s.logger.Errorf("Failed to write SSE data for user %s: %v", userID, err)

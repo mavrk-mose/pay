@@ -45,10 +45,11 @@ type Transaction struct {
 	CreditWalletID int64   `db:"credit_wallet_id" json:"credit_wallet_id"`
 	CreditAmount   float64 `db:"credit_amount" json:"credit_amount"`
 
-	Checksum    string  `db:"checksum" json:"checksum"`
+	Checksum string `db:"checksum" json:"checksum"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	Checksum  string    `db:"checksum" json:"checksum"`
 }
 
 type Report struct {

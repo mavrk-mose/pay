@@ -1,11 +1,11 @@
 package service
 
 import (
-	"fmt"
-	"net/smtp"
 	"context"
+	"fmt"
 	user "github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
+	"net/smtp"
 )
 
 // EmailNotifier sends email notifications via SMTP
@@ -18,7 +18,7 @@ type EmailNotifier struct {
 	logger   utils.Logger
 }
 
-func NewEmailNotifier(from, smtpHost, smtpPort, smtpUser, smtpPass string, repo user.UserRepository, logger  utils.Logger) *EmailNotifier {
+func NewEmailNotifier(from, smtpHost, smtpPort, smtpUser, smtpPass string, repo user.UserRepository, logger utils.Logger) *EmailNotifier {
 	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
 	return &EmailNotifier{
 		from:     from,
@@ -30,7 +30,7 @@ func NewEmailNotifier(from, smtpHost, smtpPort, smtpUser, smtpPass string, repo 
 	}
 }
 
-func (n *EmailNotifier) Send(ctx context.Context, userID, title string, details map[string]string) error {
+func (n *EmailNotifier) Send(ctx context.Context, userID, templateID string, details map[string]string) error {
 	// Fetch the user's email from the database (mock implementation)
 	to := "user@example.com" // Replace with the user's email
 
@@ -38,8 +38,8 @@ func (n *EmailNotifier) Send(ctx context.Context, userID, title string, details 
 	//get template attach details send message
 
 	// Compose the email
-	subject := fmt.Sprintf("Subject: %s\n", title)
-	body := fmt.Sprintf("%s\n\n%s", title, message)
+	subject := fmt.Sprintf("Subject: %s\n", templateID)
+	body := fmt.Sprintf("%s\n\n%s", templateID, message)
 	msg := []byte(subject + "\n" + body)
 
 	// Send the email
