@@ -21,7 +21,12 @@ type PushNotifier struct {
 	firebase config.Firebase
 }
 
-func NewPushNotifier(repo repo.NotificationRepo, userRepo repository.UserRepository, logger utils.Logger, firebaseConfig config.Firebase) *PushNotifier {
+func NewPushNotifier(
+	repo repo.NotificationRepo,
+	userRepo repository.UserRepository,
+	logger utils.Logger,
+	firebaseConfig config.Firebase,
+) *PushNotifier {
 	return &PushNotifier{
 		repo:     repo,
 		userRepo: userRepo,

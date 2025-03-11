@@ -42,8 +42,8 @@ func NewSMSNotifier(
 }
 
 // SendSMS sends an SMS notification using a template
-func (n *SMSNotifier) SendSMS(ctx context.Context, userID, title string, details map[string]string) error {
-	n.logger.Infof("Preparing SMS for user %s using template %s", userID, title)
+func (n *SMSNotifier) SendSMS(ctx context.Context, userID, templateID string, details map[string]string) error {
+	n.logger.Infof("Preparing SMS for user %s using template %s", userID, templateID)
 
 	user, err := n.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
@@ -56,9 +56,9 @@ func (n *SMSNotifier) SendSMS(ctx context.Context, userID, title string, details
 		return fmt.Errorf("user %s has no phone number registered", userID)
 	}
 
-	template, err := n.notificationRepo.GetTemplate(ctx, title)
+	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
 	if err != nil {
-		n.logger.Errorf("Failed to get template %s: %v", title, err)
+		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
 		return fmt.Errorf("failed to get template: %w", err)
 	}
 

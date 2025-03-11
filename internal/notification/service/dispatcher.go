@@ -1,11 +1,11 @@
 package service
 
 import (
-	"fmt"
 	"context"
+	"fmt"
+	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
 	user "github.com/mavrk-mose/pay/internal/user/repository"
-	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
@@ -24,11 +24,16 @@ func NewDispatcher(
 
 	notifiers := make(map[string]Notifier)
 
-	notifiers["push"] = NewPushNotifier()
+	notifiers["push"] = NewPushNotifier(
+		notificationRepo,
+		userRepo,
+		logger,
+		cfg.Firebase,
+	)
 	logger.Debug("Push notifier initialized")
 
 	if cfg.Twilio.AccountSID != "" && cfg.Twilio.AuthToken != "" && cfg.Twilio.From != "" {
-		
+
 		notifiers["sms"] = NewSMSNotifier(
 			cfg.Twilio.AccountSID,
 			cfg.Twilio.AuthToken,
@@ -51,6 +56,7 @@ func NewDispatcher(
 			cfg.Server.SMTPUser,
 			cfg.Server.SMTPPassword,
 			userRepo,
+			notificationRepo,
 			logger,
 		)
 		logger.Infof("Email notifier initialized with sender: %s", cfg.Server.EmailFrom)
@@ -75,7 +81,7 @@ func NewDispatcher(
 
 // SendNotification Dispatcher sends notifications through the appropriate channel
 // SendNotification sends a notification through the user's preferred channel
-func (d *Dispatcher) SendNotification(ctx context.Context, userID, channel, title string, details map[string]string ) error {
+func (d *Dispatcher) SendNotification(ctx context.Context, userID, channel, title string, details map[string]string) error {
 	d.logger.Infof("Dispatching notification to user %s via %s channel", userID, channel)
 
 	notifier, exists := d.notifiers[channel]
@@ -88,7 +94,7 @@ func (d *Dispatcher) SendNotification(ctx context.Context, userID, channel, titl
 		d.logger.Errorf("Failed to send notification via %s: %v", channel, err)
 		return err
 	}
-	
+
 	d.logger.Infof("Successfully sent notification to user %s via %s channel", userID, channel)
 	return nil
 }
