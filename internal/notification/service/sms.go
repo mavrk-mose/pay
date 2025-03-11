@@ -1,40 +1,113 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
+	"github.com/mavrk-mose/pay/internal/notification/repository"
+	user "github.com/mavrk-mose/pay/internal/user/repository"
+	utils "github.com/mavrk-mose/pay/pkg/utils"
 )
 
 // SMSNotifier sends SMS notifications via Twilio
 type SMSNotifier struct {
-	client *twilio.RestClient
-	from   string // Twilio phone number
+	client           *twilio.RestClient
+	from             string // Twilio phone number from config
+	userRepo         user.UserRepository
+	notificationRepo repository.NotificationRepo
+	logger           utils.Logger
 }
 
-func NewSMSNotifier(accountSID, authToken, from string) *SMSNotifier {
+func NewSMSNotifier(
+	accountSID, 
+	authToken, 
+	from string, 
+	userRepo user.UserRepository, 
+	notificationRepo repository.NotificationRepo,
+	logger utils.Logger,
+) *SMSNotifier {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
 		Username: accountSID,
 		Password: authToken,
 	})
-	return &SMSNotifier{client: client, from: from}
+	return &SMSNotifier{
+		client:           client, 
+		from:             from,
+		userRepo:         userRepo,
+		notificationRepo: notificationRepo,
+		logger:           logger,
+	}
 }
 
-func (n *SMSNotifier) Send(userID, title, message string) error {
-	// Fetch the user's phone number from the database (mock implementation)
-	to := "+1234567890" // Replace with the user's phone number
-
-	// Send the SMS
+// SendSMS sends an SMS notification using a template
+func (n *SMSNotifier) SendSMS(ctx context.Context, userID, templateID string, details map[string]string) error {
+	n.logger.Infof("Preparing SMS for user %s using template %s", userID, templateID)
+	
+	user, err := n.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		n.logger.Errorf("Failed to get user %s: %v", userID, err)
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	
+	if user.PhoneNumber == "" {
+		n.logger.Warnf("User %s has no phone number registered", userID)
+		return fmt.Errorf("user %s has no phone number registered", userID)
+	}
+	
+	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
+	if err != nil {
+		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
+		return fmt.Errorf("failed to get template: %w", err)
+	}
+	
+	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
+	
 	params := &api.CreateMessageParams{}
 	params.SetFrom(n.from)
-	params.SetTo(to)
-	params.SetBody(fmt.Sprintf("%s: %s", title, message))
-
-	_, err := n.client.Api.CreateMessage(params)
+	params.SetTo(user.PhoneNumber)
+	params.SetBody(fmt.Sprintf("%s: %s", template.Title, message))
+	
+	n.logger.Debugf("Sending SMS to %s with message: %s", user.PhoneNumber, message)
+	
+	resp, err := n.client.Api.CreateMessage(params)
 	if err != nil {
-		return fmt.Errorf("failed to send SMS: %v", err)
+		n.logger.Errorf("Failed to send SMS to %s: %v", user.PhoneNumber, err)
+		return fmt.Errorf("failed to send SMS: %w", err)
 	}
+	
+	n.logger.Infof("SMS sent successfully to user %s (Twilio SID: %s)", userID, *resp.Sid)
+	return nil
+}
 
+// Send sends a simple SMS without using a template (for backward compatibility)
+func (n *SMSNotifier) Send(ctx context.Context, userID, title, message string) error {
+	n.logger.Infof("Sending direct SMS to user %s", userID)
+	
+	user, err := n.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		n.logger.Errorf("Failed to get user %s: %v", userID, err)
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	
+	if user.PhoneNumber == "" {
+		n.logger.Warnf("User %s has no phone number registered", userID)
+		return fmt.Errorf("user %s has no phone number registered", userID)
+	}
+	
+	params := &api.CreateMessageParams{}
+	params.SetFrom(n.from)
+	params.SetTo(user.PhoneNumber)
+	params.SetBody(fmt.Sprintf("%s: %s", title, message))
+	
+	// Send the SMS
+	resp, err := n.client.Api.CreateMessage(params)
+	if err != nil {
+		n.logger.Errorf("Failed to send SMS to %s: %v", user.PhoneNumber, err)
+		return fmt.Errorf("failed to send SMS: %w", err)
+	}
+	
+	n.logger.Infof("Direct SMS sent successfully to user %s (Twilio SID: %s)", userID, *resp.Sid)
 	return nil
 }

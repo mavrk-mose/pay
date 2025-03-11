@@ -1,16 +1,21 @@
 package repository
 
 import (
+	"fmt"
+	"time"
+	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
-	"github.com/mavrk-mose/pay/internal/user/models"
+	. "github.com/mavrk-mose/pay/internal/wallet/models"
+	. "github.com/mavrk-mose/pay/internal/user/models"
 )
 
 // UserRepository defines the methods for user operations.
 type UserRepository interface {
-	CreateOrUpdateUser(user goth.User) (*models.User, error)
-	CreateWallet(userID string, currency string) (*models.Wallet, error)
-	GetUserWallets(userID string) ([]models.Wallet, error)
+	CreateOrUpdateUser(user goth.User) (*User, error)
+	CreateWallet(userID string, currency string) (*Wallet, error)
+	GetUserWallets(userID string) ([]Wallet, error)
+	GetUserByID(ctx context.Context, userID string) (*User, error)
 }
 
 // userRepo implements UserRepository
@@ -24,8 +29,8 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 // CreateOrUpdateUser creates or updates a user in the database
-func (r *userRepo) CreateOrUpdateUser(user goth.User) (*models.User, error) {
-	var dbUser models.User
+func (r *userRepo) CreateOrUpdateUser(user goth.User) (*User, error) {
+	var dbUser User
 	query := `
 		INSERT INTO users (google_id, name, email, avatar_url, location, language, currency, created_at, updated_at, last_login_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -72,8 +77,8 @@ func (r *userRepo) CreateOrUpdateUser(user goth.User) (*models.User, error) {
 
 //TODO: move this to the wallet module
 // CreateWallet allows users to create additional wallets
-func (r *userRepo) CreateWallet(userID string, currency string) (*models.Wallet, error) {
-	var wallet models.Wallet
+func (r *userRepo) CreateWallet(userID string, currency string) (*Wallet, error) {
+	var wallet Wallet
 	query := `
 		INSERT INTO wallets (user_id, balance, currency, created_at)
 		VALUES ($1, 0.00, $2, NOW())
@@ -87,12 +92,22 @@ func (r *userRepo) CreateWallet(userID string, currency string) (*models.Wallet,
 }
 
 // GetUserWallets fetches all wallets belonging to a user
-func (r *userRepo) GetUserWallets(userID string) ([]models.Wallet, error) {
-	var wallets []models.Wallet
+func (r *userRepo) GetUserWallets(userID string) ([]Wallet, error) {
+	var wallets []Wallet
 	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1`
 	err := r.db.Select(&wallets, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch wallets: %v", err)
 	}
 	return wallets, nil
+}
+
+func (r *userRepo) GetUserByID(ctx context.Context, userID string) (*User, error) {
+	var user User
+	query := `SELECT id, google_id, name, email, phone_number, avatar_url, location, language, currency, created_at, updated_at, last_login_at FROM users WHERE google_id = $1`
+	err := r.db.GetContext(ctx, &user, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %v", err)
+	}
+	return &user, nil
 }

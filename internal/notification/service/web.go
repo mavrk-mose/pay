@@ -3,12 +3,13 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mavrk-mose/pay/pkg/utils"
+	utils "github.com/mavrk-mose/pay/pkg/utils"
 	cmap "github.com/orcaman/concurrent-map/v2"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
-	"log"
+	"github.com/mavrk-mose/pay/internal/notification/repository"
 	"time"
 )
 
@@ -16,43 +17,22 @@ import (
 // It uses a concurrent map for clients where each userID maps to its notification channel.
 type NotificationService struct {
 	clients   cmap.ConcurrentMap[string, chan Notification]
-	templates map[string]NotificationTemplate // Loaded from DB in production.
+	repo      repository.NotificationRepo
+	logger    utils.Logger
 }
 
-func NewNotificationService() *NotificationService {
+func NewNotificationService(repo repository.NotificationRepo, logger utils.Logger) *NotificationService {
 	return &NotificationService{
 		clients:   cmap.New[chan Notification](),
-		templates: loadTemplates(), // In production, load these from the DB.
-	}
-}
-
-// loadTemplates loads preconfigured notification templates
-func (s *NotificationService) loadTemplates() map[string]NotificationTemplate {
-	return map[string]NotificationTemplate{
-		"welcome": {
-			ID:      "welcome",
-			Title:   "Welcome!",
-			Message: "Hello {{name}}, thank you for joining our platform.",
-			Type:    "info",
-		},
-		"payment_success": {
-			ID:      "payment_success",
-			Title:   "Payment Successful",
-			Message: "Hi {{name}}, your payment of {{amount}} has been processed successfully.",
-			Type:    "success",
-		},
-		"alert": {
-			ID:      "alert",
-			Title:   "Alert!",
-			Message: "Dear {{name}}, an important update requires your attention.",
-			Type:    "alert",
-		},
+		repo: 	   repo,
+		logger:    logger,
 	}
 }
 
 // SSEHandler handles Server-Sent Events (SSE) connections
 func (s *NotificationService) SSEHandler(c *gin.Context) {
-	userID := c.Param("userID") // Get the user ID from the request
+	userID := c.Param("userID") 
+	s.logger.Infof("SSE connection established for user: %s", userID)
 
 	// Set headers for SSE
 	c.Header("Content-Type", "text/event-stream")
@@ -60,13 +40,15 @@ func (s *NotificationService) SSEHandler(c *gin.Context) {
 	c.Header("Connection", "keep-alive")
 
 	notifyChan := make(chan Notification)
-	// Store the channel in the concurrent map.
+
 	s.clients.Set(userID, notifyChan)
+	s.logger.Debugf("Created new channel for user %s", userID)
 
 	// Ensure the channel is removed when the client disconnects.
 	defer func() {
 		s.clients.Remove(userID)
 		close(notifyChan)
+		s.logger.Debugf("Removed user %s from active clients map", userID)
 	}()
 
 	// Listen for client disconnection
@@ -74,31 +56,42 @@ func (s *NotificationService) SSEHandler(c *gin.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("Client %s disconnected", userID)
+			s.logger.Infof("Client %s disconnected", userID)
 			return
 		case notification := <-notifyChan:
 			// Send the notification as an SSE event
-			data, _ := json.Marshal(notification)
-			_, err := fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+			data, err := json.Marshal(notification)
 			if err != nil {
+				s.logger.Errorf("Failed to marshal notification for user %s: %v", userID, err)
+				continue
+			}
+			
+			_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+			if err != nil {
+				s.logger.Errorf("Failed to write SSE data for user %s: %v", userID, err)
 				return
 			}
+
 			c.Writer.Flush()
+			s.logger.Debugf("Notification sent to user %s: %s", userID, notification.ID)
 		}
 	}
 }
 
 // SendNotification sends a notification to a specific user
 // SSE provides real-time updates to web clients.
-func (s *NotificationService) SendNotification(userID, templateID string, details map[string]string) error {
-	template, exists := s.templates[templateID]
-	if !exists {
-		return fmt.Errorf("template %s not found", templateID)
+func (s *NotificationService) SendNotification(ctx context.Context, userID, templateID string, details map[string]string) error {
+	s.logger.Infof("Sending notification to user %s using template %s", userID, templateID)
+
+	template, err := s.repo.GetTemplate(ctx, templateID)
+	if err != nil {
+		s.logger.Errorf("Failed to get template %s: %v", templateID, err)
+		return fmt.Errorf("failed to get template: %w", err)
 	}
 
-	message := utils.ReplaceTemplatePlaceHolders(template.Message, details)
+	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
+	s.logger.Debugf("Processed template message: %s", message)
 
-	// Create the notification
 	notification := Notification{
 		ID:      uuid.New(),
 		UserID:  userID,
@@ -109,11 +102,16 @@ func (s *NotificationService) SendNotification(userID, templateID string, detail
 	}
 
 	if notifyChan, ok := s.clients.Get(userID); ok {
-		// send notification to client channel
+		s.logger.Debugf("User %s is connected, sending notification directly", userID)
 		notifyChan <- notification
 	} else {
+		s.logger.Infof("User %s is not connected, storing notification", userID)
+		if err := s.repo.StoreNotification(ctx, notification); err != nil {
+			s.logger.Errorf("Failed to store notification for user %s: %v", userID, err)
+		}
 		return fmt.Errorf("user %s is not connected", userID)
 	}
 
+	s.logger.Infof("Notification %s successfully queued for user %s", notification.ID, userID)
 	return nil
 }

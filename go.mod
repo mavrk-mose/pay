@@ -15,6 +15,7 @@ require (
 require (
 	github.com/adyen/adyen-go-api-library/v7 v7.3.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/netlify/PayPal-Go-SDK v1.0.2 // indirect
 	github.com/stripe/stripe-go v70.15.0+incompatible // indirect
 )

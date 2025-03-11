@@ -1,6 +1,9 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"time"
+	"github.com/google/uuid"
+)
 
 type Notification struct {
 	ID      uuid.UUID `json:"id"`
@@ -8,6 +11,7 @@ type Notification struct {
 	Title   string    `json:"title"`
 	Message string    `json:"message"`
 	Type    string    `json:"type"` // e.g., "info", "alert", "success"
+	Time    time.Time `json:"time"`
 }
 
 type NotificationTemplate struct {

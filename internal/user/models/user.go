@@ -1,8 +1,8 @@
 package models
 
 import (
-	uuid "github.com/jackc/pgx/pgtype/ext/satori-uuid"
 	"time"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -10,6 +10,7 @@ type User struct {
 	GoogleID    string    `json:"google_id" db:"google_id"`         // Google's unique ID for the user
 	Name        string    `json:"name" db:"name"`                   // Full name
 	Email       string    `json:"email" db:"email"`                 // Email address
+	PhoneNumber string    `json:"phone_number" db:"phone_number"`   // Phone number
 	AvatarURL   string    `json:"avatar_url" db:"avatar_url"`       // Profile picture URL
 	Location    string    `json:"location" db:"location"`           // User's location (e.g., "New York, USA")
 	Language    string    `json:"language" db:"language"`           // Preferred language (e.g., "en")
