@@ -1,5 +1,7 @@
 package service
 
+import "context"
+
 type Notifier interface {
-	Send(userID, title, message string) error
+	Send(ctx context.Context, userID, title string, details map[string]string) error
 }

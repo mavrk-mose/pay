@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	utils "github.com/mavrk-mose/pay/pkg/utils"
+	"github.com/mavrk-mose/pay/pkg/utils"
 	cmap "github.com/orcaman/concurrent-map/v2"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
@@ -15,14 +15,14 @@ import (
 
 // NotificationService handles SSE and notifications.
 // It uses a concurrent map for clients where each userID maps to its notification channel.
-type NotificationService struct {
+type WebNotifier struct {
 	clients   cmap.ConcurrentMap[string, chan Notification]
 	repo      repository.NotificationRepo
 	logger    utils.Logger
 }
 
-func NewNotificationService(repo repository.NotificationRepo, logger utils.Logger) *NotificationService {
-	return &NotificationService{
+func NewWebNotifier(repo repository.NotificationRepo, logger utils.Logger) *WebNotifier {
+	return &WebNotifier{
 		clients:   cmap.New[chan Notification](),
 		repo: 	   repo,
 		logger:    logger,
@@ -30,7 +30,7 @@ func NewNotificationService(repo repository.NotificationRepo, logger utils.Logge
 }
 
 // SSEHandler handles Server-Sent Events (SSE) connections
-func (s *NotificationService) SSEHandler(c *gin.Context) {
+func (s *WebNotifier) SSEHandler(c *gin.Context) {
 	userID := c.Param("userID") 
 	s.logger.Infof("SSE connection established for user: %s", userID)
 
@@ -80,7 +80,7 @@ func (s *NotificationService) SSEHandler(c *gin.Context) {
 
 // SendNotification sends a notification to a specific user
 // SSE provides real-time updates to web clients.
-func (s *NotificationService) SendNotification(ctx context.Context, userID, templateID string, details map[string]string) error {
+func (s *WebNotifier) Send(ctx context.Context, userID, templateID string, details map[string]string) error {
 	s.logger.Infof("Sending notification to user %s using template %s", userID, templateID)
 
 	template, err := s.repo.GetTemplate(ctx, templateID)

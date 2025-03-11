@@ -48,4 +48,8 @@ jaeger:
   ServiceName: REST_API
   LogSpans: true
 
+twilio:
+  AccountSID: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  AuthToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  From: +1234567890
 

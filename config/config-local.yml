@@ -47,3 +47,8 @@ jaeger:
   Host: localhost:6831
   ServiceName: REST_API
   LogSpans: false
+
+twilio:
+  AccountSID: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  AuthToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  From: +1234567890

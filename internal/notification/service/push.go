@@ -10,7 +10,9 @@ import (
 )
 
 // PushNotifier sends push notifications via Firebase Cloud Messaging (FCM)
-type PushNotifier struct{}
+type PushNotifier struct{
+
+}
 
 func NewPushNotifier() *PushNotifier {
 	return &PushNotifier{}
@@ -25,9 +27,8 @@ func NewPushNotifier() *PushNotifier {
 // platform := ctx.GetHeader("platform") -- do android only for now
 
 
-func (n *PushNotifier) Send(userID, title, message string) error {
+func (n *PushNotifier) Send(ctx context.Context, userID, title string, details map[string]string) error {
 	// Initialize Firebase app for Android
-	ctx := context.Background()
 	opt := option.WithCredentialsFile("path/to/serviceAccountKey.json")
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
@@ -39,6 +40,9 @@ func (n *PushNotifier) Send(userID, title, message string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get messaging client: %v", err)
 	}
+
+	var message string
+	//get template attach details send message
 
 	// Send the notification
 	_, err = client.Send(ctx, &messaging.Message{

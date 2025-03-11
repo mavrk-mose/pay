@@ -3,6 +3,9 @@ package service
 import (
 	"fmt"
 	"net/smtp"
+	"context"
+	user "github.com/mavrk-mose/pay/internal/user/repository"
+	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
 // EmailNotifier sends email notifications via SMTP
@@ -11,21 +14,28 @@ type EmailNotifier struct {
 	smtpHost string // SMTP server host
 	smtpPort string // SMTP server port
 	auth     smtp.Auth
+	repo     user.UserRepository
+	logger   utils.Logger
 }
 
-func NewEmailNotifier(from, smtpHost, smtpPort, smtpUser, smtpPass string) *EmailNotifier {
+func NewEmailNotifier(from, smtpHost, smtpPort, smtpUser, smtpPass string, repo user.UserRepository, logger  utils.Logger) *EmailNotifier {
 	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
 	return &EmailNotifier{
 		from:     from,
 		smtpHost: smtpHost,
 		smtpPort: smtpPort,
 		auth:     auth,
+		repo:     repo,
+		logger:   logger,
 	}
 }
 
-func (n *EmailNotifier) Send(userID, title, message string) error {
+func (n *EmailNotifier) Send(ctx context.Context, userID, title string, details map[string]string) error {
 	// Fetch the user's email from the database (mock implementation)
 	to := "user@example.com" // Replace with the user's email
+
+	var message string
+	//get template attach details send message
 
 	// Compose the email
 	subject := fmt.Sprintf("Subject: %s\n", title)
