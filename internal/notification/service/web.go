@@ -48,14 +48,12 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 	s.clients.Set(userID, notifyChan)
 	s.logger.Debugf("Created new channel for user %s", userID)
 
-	// Ensure the channel is removed when the client disconnects.
 	defer func() {
 		s.clients.Remove(userID)
 		close(notifyChan)
 		s.logger.Debugf("Removed user %s from active clients map", userID)
 	}()
 
-	// Listen for client disconnection
 	ctx := c.Request.Context()
 	for {
 		select {

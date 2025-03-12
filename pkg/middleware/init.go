@@ -1,7 +1,5 @@
 package middleware
 
-import "github.com/mavrk-mose/pay/internal/ports"
-
 type ApiMiddleware struct {
 	apiService ports.ApiService
 }

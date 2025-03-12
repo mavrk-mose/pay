@@ -15,8 +15,12 @@ type discountRepository struct {
 	db *sqlx.DB
 }
 
-func NewDiscountRepository(db *sqlx.DB) DiscountRepository {
-	return &discountRepository{db: db}
+func NewDiscountRepository(
+	db *sqlx.DB,
+	) *discountRepository {
+	return &discountRepository{
+		db: db,
+	}
 }
 
 // GetMerchantDiscount returns the discount percentage if a valid discount exists.
@@ -31,7 +35,7 @@ func (r *discountRepository) GetDiscount(userId string, discountType string) (fl
 	now := time.Now()
 	err := r.db.Get(&discount, query, userId, discountType, now)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get discount for merchant %s: %v", merchantID, err)
+		return 0, fmt.Errorf("failed to get discount for merchant %s: %v", userId, err)
 	}
 	return discount, nil
 }

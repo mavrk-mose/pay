@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/your_project/models"
+	"github.com/mavrk-mose/pay/internal/payment/models"
 )
 
 type VoucherRepository interface {

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/your_project/models"
-	"github.com/your_project/repository"
+	"github.com/mavrk-mose/pay/internal/payment/models"
+	"github.com/mavrk-mose/pay/internal/payment/repository"
 )
 
 type VoucherService interface {

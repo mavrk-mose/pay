@@ -2,7 +2,7 @@ package payment
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/internal/middleware"
+	"github.com/mavrk-mose/pay/pkg/middleware"
 	"github.com/mavrk-mose/pay/internal/payment/ports"
 )
 
@@ -32,9 +32,9 @@ func NewApiHandler(s ports.ApiService, m *middleware.ApiMiddleware, r *gin.Engin
 		payment.POST("/id/:paymentID/process", handler.ProcessPayment)            // Process authorized payment
 	}
 
-	r.GET("/users/:userID/referral", refHandler.GenerateReferralCode)
-	r.POST("/users/:userID/referral", refHandler.ApplyReferralCode)
-	r.GET("/users/:userID/bonus", refHandler.GetReferralBonus)
+	r.GET("/users/:userID/referral", handler.GenerateReferralCode)
+	r.POST("/users/:userID/referral", handler.ApplyReferralCode)
+	r.GET("/users/:userID/bonus", handler.GetReferralBonus)
 
 
 	return handler

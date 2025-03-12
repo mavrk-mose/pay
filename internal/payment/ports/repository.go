@@ -1,7 +1,7 @@
 package ports
 
 import (
-	. "github.com/mavrk-mose/pay/internal/model"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
 	"time"
 )
 

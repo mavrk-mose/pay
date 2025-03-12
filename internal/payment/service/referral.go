@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/your_project/repository"
+	"github.com/mavrk-mose/pay/internal/payment/repository"
 )
 
 type ReferralService interface {

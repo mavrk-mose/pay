@@ -1,6 +1,8 @@
 package service
 
-import "github.com/your_project/repository"
+import (
+	"github.com/mavrk-mose/pay/internal/payment/repository"
+)
 
 type DiscountService interface {
 	GetMerchantDiscount(merchantID string) (float64, error)
