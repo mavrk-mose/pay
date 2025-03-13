@@ -22,6 +22,7 @@ type Config struct {
 	AWS      AWS
 	Jaeger   Jaeger
 	Firebase Firebase
+	OAuth    OAuth
 }
 
 // Server config struct
@@ -98,6 +99,21 @@ type Firebase struct {
 	TokenURI            string `mapstructure:"token_uri" json:"token_uri"`
 	AuthProviderCertURL string `mapstructure:"auth_provider_x509_cert_url" json:"auth_provider_x509_cert_url"`
 	ClientCertURL       string `mapstructure:"client_x509_cert_url" json:"client_x509_cert_url"`
+}
+
+// OAuth config struct
+type OAuth struct {
+	Google      OAuthProvider
+	Facebook    OAuthProvider
+	Apple       OAuthProvider
+	StateString string
+}
+
+type OAuthProvider struct {
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	RedirectURL  string `mapstructure:"redirect_url"`
+	Enabled      bool   `mapstructure:"enabled"`
 }
 
 // Cookie config

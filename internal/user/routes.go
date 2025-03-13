@@ -3,24 +3,20 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"github.com/mavrk-mose/pay/config"
 	auth "github.com/mavrk-mose/pay/internal/user/handler"
 )
 
-func AuthRoute(db *sqlx.DB) {
-	// Initialize Google OAuth
-	// TODO: read these from the yaml config using viper
-	auth.InitGoogleOAuth(
-		"your-google-client-id",
-		"your-google-client-secret",
-		"http://localhost:8080/auth/google/callback",
-	)
+func AuthRoute(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
+	auth.InitAuth(cfg)
+    
+    // Create repository
+    userRepo := repository.NewUserRepository(/* dependencies */)
+    
+    // Create handler
+    userHandler := auth.NewUserHandler(userRepo)
 
-	// Initialize Gin router
-	r := gin.Default()
-
-	// Routes
-	r.GET("/auth/google/login", auth.HandleGoogleLogin)
-	r.GET("/auth/google/callback", func(c *gin.Context) {
-		auth.HandleGoogleCallback(c, db)
-	})
+	// Common auth routes
+    r.GET("/auth/:provider", auth.BeginAuthHandler)
+    r.GET("/auth/:provider/callback", userHandler.AuthCallbackHandler)
 }
