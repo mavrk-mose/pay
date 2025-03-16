@@ -32,7 +32,6 @@ var (
 func InitAuth(cfg *config.Config) {
 	var providers []goth.Provider
 
-	// Initialize session store
 	middleware.InitSessionStore(cfg)
 	gothic.Store = middleware.GetSessionStore()
 

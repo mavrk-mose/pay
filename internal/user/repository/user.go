@@ -1,20 +1,21 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"time"
-	"context"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
-	. "github.com/mavrk-mose/pay/internal/wallet/models"
 	. "github.com/mavrk-mose/pay/internal/user/models"
+	. "github.com/mavrk-mose/pay/internal/wallet/models"
 )
 
 // UserRepository defines the methods for user operations.
 type UserRepository interface {
-	CreateOrUpdateUser(user goth.User) (*User, error)
-	CreateWallet(userID string, currency string) (*Wallet, error)
-	GetUserWallets(userID string) ([]Wallet, error)
+	CreateOrUpdateUser(ctx context.Context, user goth.User) (*User, error)
+	CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error)
+	GetUserWallets(ctx context.Context, userID string) ([]Wallet, error)
 	GetUserByID(ctx context.Context, userID string) (*User, error)
 }
 
@@ -29,7 +30,7 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 // CreateOrUpdateUser creates or updates a user in the database
-func (r *userRepo) CreateOrUpdateUser(user goth.User) (*User, error) {
+func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*User, error) {
 	var dbUser User
 	query := `
 		INSERT INTO users (google_id, name, email, avatar_url, location, language, currency, created_at, updated_at, last_login_at)
@@ -75,9 +76,9 @@ func (r *userRepo) CreateOrUpdateUser(user goth.User) (*User, error) {
 	return &dbUser, nil
 }
 
-//TODO: move this to the wallet module
+// TODO: move this to the wallet module
 // CreateWallet allows users to create additional wallets
-func (r *userRepo) CreateWallet(userID string, currency string) (*Wallet, error) {
+func (r *userRepo) CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error) {
 	var wallet Wallet
 	query := `
 		INSERT INTO wallets (user_id, balance, currency, created_at)
@@ -92,7 +93,7 @@ func (r *userRepo) CreateWallet(userID string, currency string) (*Wallet, error)
 }
 
 // GetUserWallets fetches all wallets belonging to a user
-func (r *userRepo) GetUserWallets(userID string) ([]Wallet, error) {
+func (r *userRepo) GetUserWallets(ctx context.Context, userID string) ([]Wallet, error) {
 	var wallets []Wallet
 	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1`
 	err := r.db.Select(&wallets, query, userID)
