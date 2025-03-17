@@ -17,7 +17,6 @@ type RateLimiter struct {
 	burst    int
 }
 
-// NewRateLimiter initializes the rate limiter middleware
 func NewRateLimiter(r rate.Limit, b int) *RateLimiter {
 	rl := &RateLimiter{
 		limiters: make(map[string]*rate.Limiter),
@@ -25,7 +24,6 @@ func NewRateLimiter(r rate.Limit, b int) *RateLimiter {
 		burst:    b,
 	}
 
-	// Start a cleanup routine to remove stale entries
 	go rl.cleanupExpiredEntries()
 	return rl
 }
@@ -43,7 +41,6 @@ func (rl *RateLimiter) GetLimiter(ip string) *rate.Limiter {
 	return limiter
 }
 
-// Cleanup expired rate limiters (runs periodically)
 func (rl *RateLimiter) cleanupExpiredEntries() {
 	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
@@ -57,7 +54,6 @@ func (rl *RateLimiter) cleanupExpiredEntries() {
 	}
 }
 
-// RateLimitMiddleware applies the rate limiter to incoming requests
 func (rl *RateLimiter) RateLimitMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := c.ClientIP()

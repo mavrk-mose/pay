@@ -20,6 +20,7 @@ type User struct {
 	UpdatedAt   time.Time     `json:"updated_at" db:"updated_at"`       // Timestamp when the user was last updated
 	LastLoginAt time.Time     `json:"last_login_at" db:"last_login_at"` // Timestamp of the last login
 	DeviceToken string        `json:"deviceToken" db:"device_token"`
+	Onboarded   bool          `json:"onboarded" db:"onboarded"`
 	Provider    string        `json:"provider" db:"provider"`
 }
 
