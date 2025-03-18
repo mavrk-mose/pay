@@ -6,18 +6,17 @@ import (
 	"github.com/mavrk-mose/pay/config"
 	auth "github.com/mavrk-mose/pay/internal/user/handler"
 	"github.com/mavrk-mose/pay/internal/user/repository"
+	"github.com/mavrk-mose/pay/internal/user/service"
 )
 
 func AuthRoute(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	auth.InitAuth(cfg)
 
-	// Create repository
-	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(repository.NewUserRepository(db))
 
-	// Create handler
-	userHandler := auth.NewUserHandler(userRepo)
+	userHandler := auth.NewUserHandler(userService)
 
-	// Common auth routes
 	r.GET("/auth/:provider", auth.BeginAuthHandler)
 	r.GET("/auth/:provider/callback", userHandler.AuthCallbackHandler)
+	r.GET("/auth/logout/:provider", userHandler.LogoutHandler)
 }

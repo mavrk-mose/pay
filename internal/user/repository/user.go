@@ -9,9 +9,9 @@ import (
 	"github.com/markbates/goth"
 	. "github.com/mavrk-mose/pay/internal/user/models"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
+	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
-// UserRepository defines the methods for user operations.
 type UserRepository interface {
 	CreateOrUpdateUser(ctx context.Context, user goth.User) (*User, error)
 	CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error)
@@ -19,17 +19,15 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, userID string) (*User, error)
 }
 
-// userRepo implements UserRepository
 type userRepo struct {
 	db *sqlx.DB
+	logger utils.Logger
 }
 
-// NewUserRepository creates a new instance of UserRepository
 func NewUserRepository(db *sqlx.DB) UserRepository {
 	return &userRepo{db: db}
 }
 
-// CreateOrUpdateUser creates or updates a user in the database
 func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*User, error) {
 	var dbUser User
 	query := `
@@ -46,29 +44,31 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*Use
 		user.Name,
 		user.Email,
 		user.AvatarURL,
-		"",    // Default location
-		"sw",  // Default language
-		"TZS", // Default currency
+		"",    
+		"sw",  
+		"TZS",
 		now,
 		now,
 		now,
 	).StructScan(&dbUser)
 	if err != nil {
+		r.logger.Errorf("Failed to create/update user: %v", err)
 		return nil, fmt.Errorf("failed to create/update user: %v", err)
 	}
 	return &dbUser, nil
 
 	// Check if user has at least one wallet
 	var walletCount int
-	err = r.db.Get(&walletCount, "SELECT COUNT(*) FROM wallets WHERE user_id = $1", dbUser.GoogleID)
+	err = r.db.Get(&walletCount, "SELECT COUNT(*) FROM wallets WHERE user_id = $1", dbUser.UserId)
 	if err != nil {
+		r.logger.Errorf("Failed to check wallet existence: %v", err)
 		return nil, fmt.Errorf("failed to check wallet existence: %v", err)
 	}
 
-	// If no wallet exists, create a default wallet
 	if walletCount == 0 {
-		_, err = r.CreateWallet(dbUser.GoogleID, dbUser.Currency)
+		_, err = r.CreateWallet(ctx, dbUser.UserId, dbUser.Currency)
 		if err != nil {
+			r.logger.Errorf("Failed to create default wallet: %v", err)
 			return nil, fmt.Errorf("failed to create default wallet: %v", err)
 		}
 	}
@@ -77,7 +77,6 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*Use
 }
 
 // TODO: move this to the wallet module
-// CreateWallet allows users to create additional wallets
 func (r *userRepo) CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error) {
 	var wallet Wallet
 	query := `
@@ -87,17 +86,18 @@ func (r *userRepo) CreateWallet(ctx context.Context, userID string, currency str
 	`
 	err := r.db.QueryRowx(query, userID, currency).StructScan(&wallet)
 	if err != nil {
+		r.logger.Errorf("Failed to create wallet: %v", err)
 		return nil, fmt.Errorf("failed to create wallet: %v", err)
 	}
 	return &wallet, nil
 }
 
-// GetUserWallets fetches all wallets belonging to a user
 func (r *userRepo) GetUserWallets(ctx context.Context, userID string) ([]Wallet, error) {
 	var wallets []Wallet
 	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1`
 	err := r.db.Select(&wallets, query, userID)
 	if err != nil {
+		r.logger.Errorf("Failed to fetch wallets: %v", err)
 		return nil, fmt.Errorf("failed to fetch wallets: %v", err)
 	}
 	return wallets, nil
@@ -108,6 +108,7 @@ func (r *userRepo) GetUserByID(ctx context.Context, userID string) (*User, error
 	query := `SELECT id, google_id, name, email, phone_number, avatar_url, location, language, currency, created_at, updated_at, last_login_at FROM users WHERE google_id = $1`
 	err := r.db.GetContext(ctx, &user, query, userID)
 	if err != nil {
+		r.logger.Errorf("Failed to get user: %v", err)
 		return nil, fmt.Errorf("failed to get user: %v", err)
 	}
 	return &user, nil

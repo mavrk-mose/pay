@@ -94,7 +94,9 @@ CREATE TABLE users
     notification_channel TEXT NOT NULL, -- e.g., "push", "sms", "email"
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP.
+    onboarded     BOOLEAN DEFAULT FALSE,
+    provider      TEXT DEFAULT 'google'
 );
 
 CREATE TABLE wallets (

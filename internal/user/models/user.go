@@ -7,7 +7,7 @@ import (
 
 type User struct {
 	ID          uuid.UUID     `json:"id" db:"id"`
-	GoogleID    string        `json:"google_id" db:"google_id"`       // Google's unique ID for the user
+	UserId      string        `json:"user_id" db:"user_id"`
 	Name        string        `json:"name" db:"name"`                 // Full name
 	Email       string        `json:"email" db:"email"`               // Email address
 	PhoneNumber string        `json:"phone_number" db:"phone_number"` // Phone number

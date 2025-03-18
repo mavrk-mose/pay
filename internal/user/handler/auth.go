@@ -3,6 +3,8 @@ package handler
 import (
 	"net/http"
 	"time"
+    
+    "github.com/mavrk-mose/pay/config"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -10,13 +12,14 @@ import (
 	"github.com/markbates/goth/providers/facebook"
 	"github.com/markbates/goth/providers/google"
 	"github.com/mavrk-mose/pay/pkg/middleware"
+    "github.com/mavrk-mose/pay/internal/user/service"
 )
 
 type UserHandler struct {
 	service service.UserService
 }
 
-func NewUserHandler(service service.UserService) *UserHandler {
+func NewUserHandler() *UserHandler {
 	return &UserHandler{service: service}
 }
 
@@ -34,7 +37,6 @@ func InitAuth(cfg *config.Config) {
     jwtSecret = []byte(cfg.Server.JwtSecretKey)
     expirationTime = time.Now().Add(24 * time.Hour)
     
-    // Register Google provider if enabled
     if cfg.OAuth.Google.Enabled {
         providers = append(providers, 
             google.New(
@@ -73,11 +75,6 @@ func InitAuth(cfg *config.Config) {
     }
     
     goth.UseProviders(providers...)
-    
-    gothic.Store = gothic.SessionStore{}
-    
-    // Set the OAuth state string from config or generate a secure random one
-    gothic.SetState(cfg.OAuth.StateString)
 }
 
 func BeginAuthHandler(c *gin.Context) {
@@ -91,15 +88,9 @@ func (h *UserHandler) AuthCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.CreateOrUpdateUser(c, user)
+	token, err := h.service.RegisterUser(c.Request.Context(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create/update user: " + err.Error()})
-		return
-	}
-
-	token, err := GenerateJWT(dbUser.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate JWT: " + err.Error()})
 		return
 	}
 
@@ -110,11 +101,11 @@ func (h *UserHandler) AuthCallbackHandler(c *gin.Context) {
 	})
 }
 
-func GenerateJWT(userID string) (string, error) {
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-        "user_id": userID,
-        "exp":     expirationTime.Unix(),
-    })
-
-    return token.SignedString(jwtSecret)
+func (h *UserHandler) LogoutHandler(c *gin.Context) {
+    gothic.Logout(c.Writer, c.Request)
+    c.Writer.Header().Set("Set-Cookie", "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure")
+    c.Redirect(http.StatusFound, "/")
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logout successful",
+	})
 }
