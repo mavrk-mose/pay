@@ -22,7 +22,7 @@ type UserService interface {
 }
 
 type userService struct {
-	repo repository.UserRepository
+	repo   repository.UserRepository
 	logger utils.Logger
 }
 
@@ -54,7 +54,6 @@ func (s *userService) GetUserByID(ctx context.Context, userID string) (User, err
 	return *user, nil
 }
 
-
 func GenerateJWT(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": userID,
@@ -63,4 +62,3 @@ func GenerateJWT(userID string) (string, error) {
 
 	return token.SignedString(jwtSecret)
 }
-

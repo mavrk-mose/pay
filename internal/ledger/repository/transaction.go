@@ -1,15 +1,15 @@
 package ledger
 
 import (
-	"database/sql"
+	"sync"
 	"fmt"
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	"time"
-
+	"crypto/sha256"
+	"encoding/hex"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
 type Repo struct {
@@ -104,7 +104,7 @@ func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, sta
 	return nil
 }
 
-func FetchTransactionsWithChecksum(db *sql.DB, date string) (map[string]string, error) {
+func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
 	query := `SELECT id, checksum FROM transactions WHERE provider = $1 AND created_at >= NOW() - INTERVAL '1 DAY'`
 	rows, err := db.Query(query, provider)
 	if err != nil {
@@ -125,7 +125,7 @@ func FetchTransactionsWithChecksum(db *sql.DB, date string) (map[string]string, 
 		go func(txn Transaction) {
 			defer wg.Done()
 			mu.Lock()
-			dbTransactions[txn.ID] = txn.Checksum
+			dbTransactions[txn.ID.String()] = txn.Checksum
 			mu.Unlock()
 		}(txn)
 	}
@@ -143,3 +143,39 @@ func GenerateChecksum(txn Transaction) string {
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
 }
+
+// TODO: add a transaction record for transfers
+// // Insert the transfer record
+// insertQuery := `
+// INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, currency, status, external_ref) 
+// VALUES (:from_wallet_id, :to_wallet_id, :amount, :currency, :status, :external_ref)
+// `
+// _, err = tx.NamedExecContext(ctx, insertQuery, transfer)
+// if err != nil {
+// tx.Rollback()
+// r.logger.Errorf("Failed to create transfer record: %v", err)
+// return fmt.Errorf("failed to create transfer record: %v", err)
+// }
+
+
+// TODO: add withdraw transaction
+// debitQuery := `
+// 		INSERT INTO transaction (transaction_id, wallet_id, entry_type, amount, currency)
+// 		VALUES ($1, $2, $3, $4, $5)
+// 	`
+// 	_, err = tx.ExecContext(ctx, debitQuery, transactionID, walletID, "DEBIT", amount, currency)
+// 	if err != nil {
+// 		tx.Rollback()
+// 		return "", err
+// 	}
+
+
+// creditQuery := `
+// 		INSERT INTO transaction (transaction_id, wallet_id, entry_type, amount, currency)
+// 		VALUES ($1, $2, $3, $4, $5)
+// 	`
+// 	_, err = tx.ExecContext(ctx, creditQuery, transactionID, walletID, "CREDIT", amount, currency)
+// 	if err != nil {
+// 		tx.Rollback()
+// 		return "", err
+// 	}
