@@ -11,6 +11,7 @@ import (
 	"github.com/markbates/goth/providers/facebook"
 	"github.com/markbates/goth/providers/google"
 	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/internal/user/service"
 	"github.com/mavrk-mose/pay/pkg/middleware"
 )
@@ -43,8 +44,6 @@ func InitAuth(cfg *config.Config) {
 				cfg.OAuth.Google.ClientID,
 				cfg.OAuth.Google.ClientSecret,
 				cfg.OAuth.Google.RedirectURL,
-				"email",
-				"profile",
 			),
 		)
 	}
@@ -55,8 +54,6 @@ func InitAuth(cfg *config.Config) {
 				cfg.OAuth.Facebook.ClientID,
 				cfg.OAuth.Facebook.ClientSecret,
 				cfg.OAuth.Facebook.RedirectURL,
-				"email",
-				"public_profile",
 			),
 		)
 	}
@@ -110,4 +107,86 @@ func (h *UserHandler) LogoutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logout successful",
 	})
+}
+
+// ListUsers retrieves users based on filters
+func (h *UserHandler) ListUsers(c *gin.Context) {
+	var filter models.UserFilter
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filter parameters"})
+		return
+	}
+
+	users, err := h.service.ListUsers(c.Request.Context(), filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// AssignRole assigns a role to a user
+func (h *UserHandler) AssignRole(c *gin.Context) {
+	userID := c.Param("userID")
+	var request struct {
+		Role string `json:"role" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role is required"})
+		return
+	}
+
+	if err := h.service.AssignRole(c.Request.Context(), userID, request.Role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign role: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Role assigned successfully"})
+}
+
+// RevokeRole removes a role from a user
+func (h *UserHandler) RevokeRole(c *gin.Context) {
+	userID := c.Param("userID")
+	role  := c.Param("role")
+
+	if err := h.service.RevokeRole(c.Request.Context(), userID, role); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke role: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Role revoked successfully"})
+}
+
+// BanUser bans a user and records the reason
+func (h *UserHandler) BanUser(c *gin.Context) {
+	userID := c.Param("userID")
+	var request struct {
+		Reason string `json:"reason" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ban reason is required"})
+		return
+	}
+
+	if err := h.service.BanUser(c.Request.Context(), userID, request.Reason); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to ban user: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User banned successfully"})
+}
+
+// UnbanUser removes the ban from a user
+func (h *UserHandler) UnbanUser(c *gin.Context) {
+	userID := c.Param("userID")
+
+	if err := h.service.UnbanUser(c.Request.Context(), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unban user: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User unbanned successfully"})
 }

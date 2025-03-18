@@ -37,7 +37,7 @@ cookie:
 session:
   Name: session-id
   Prefix: api-session
-  Expire: 3600
+  Expire: 86400
 
 metrics:
   Url: 0.0.0.0:7070

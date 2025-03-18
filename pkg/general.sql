@@ -91,6 +91,7 @@ CREATE TABLE users
     location      TEXT,
     language      TEXT,
     currency      TEXT,
+    role          TEXT,
     notification_channel TEXT NOT NULL, -- e.g., "push", "sms", "email"
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
