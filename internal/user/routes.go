@@ -23,7 +23,7 @@ func AuthRoute(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	r.GET("/auth/logout/:provider", userHandler.LogoutHandler)
 
 	// Admin routes
-	adminRoutes := r.Group("/admin/users", middleware.AuthMiddleware(), middleware.AdminMiddleware())
+	adminRoutes := r.Group("/admin/users", middleware.AuthMiddleware(), middleware.AdminMiddleware(cfg))
 	{
 		adminRoutes.GET("/", userHandler.ListUsers)
 		adminRoutes.POST("/:userID/assign-role", userHandler.AssignRole)
