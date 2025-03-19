@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/your_project/service"
+	"github.com/mavrk-mose/pay/internal/payment/service"
+	"net/http"
 )
 
 type ReferralHandler struct {

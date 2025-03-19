@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	wallet "github.com/mavrk-mose/pay/internal/wallet/models"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -60,7 +61,6 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*mod
 		r.logger.Errorf("Failed to create/update user: %v", err)
 		return nil, fmt.Errorf("failed to create/update user: %v", err)
 	}
-	return &dbUser, nil
 
 	var walletCount int
 	err = r.db.Get(&walletCount, "SELECT COUNT(*) FROM wallets WHERE user_id = $1", dbUser.UserId)
@@ -70,7 +70,14 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*mod
 	}
 
 	if walletCount == 0 {
-		_, err = r.walletRepo.CreateWallet(ctx, dbUser.UserId, dbUser.Currency)
+		wallet := wallet.Wallet{
+			UserId:    dbUser.UserId,
+			Balance:   0,
+			Currency:  dbUser.Currency,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		_, err = r.walletRepo.CreateWallet(ctx, wallet)
 		if err != nil {
 			r.logger.Errorf("Failed to create default wallet: %v", err)
 			return nil, fmt.Errorf("failed to create default wallet: %v", err)
@@ -169,12 +176,18 @@ func (r *userRepo) BanUser(ctx context.Context, userID, reason string) error {
 	_, err = tx.ExecContext(ctx, "UPDATE users SET is_active = false WHERE id = $1", userID)
 	if err != nil {
 		r.logger.Errorf("Failed to update user %s", err)
-		tx.Rollback()
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		return err
 	}
 	_, err = tx.ExecContext(ctx, "INSERT INTO user_bans (user_id, reason) VALUES ($1, $2)", userID, reason)
 	if err != nil {
-		tx.Rollback()
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		return err
 	}
 	return tx.Commit()

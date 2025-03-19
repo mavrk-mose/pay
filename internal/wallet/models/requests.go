@@ -3,9 +3,8 @@ package wallet
 import "github.com/google/uuid"
 
 type CreateWalletRequest struct {
-	CustomerID     string  `json:"customer_id"`
-	InitialBalance float64 `json:"initial_balance"`
-	Currency       string  `json:"currency"`
+	CustomerID string `json:"customer_id"`
+	Currency   string `json:"currency"`
 }
 
 type TransferRequest struct {

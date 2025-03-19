@@ -13,11 +13,11 @@ const (
 )
 
 type Wallet struct {
-	ID         uuid.UUID `db:"id" json:"id"`
-	userId     uuid.UUID `db:"user_id" json:"customer_id"`
-	Balance    float64   `db:"balance" json:"balance"`
-	Status     Status    `db:"status" json:"status,omitempty"`
-	Currency   string    `db:"currency" json:"currency"`
-	CreatedAt  time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at" json:"updated_at"`
+	ID        uuid.UUID `db:"id" json:"id"`
+	UserId    string    `db:"user_id" json:"customer_id"`
+	Balance   float64   `db:"balance" json:"balance"`
+	Status    Status    `db:"status" json:"status,omitempty"`
+	Currency  string    `db:"currency" json:"currency"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

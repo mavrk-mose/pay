@@ -7,8 +7,6 @@ import (
 
 type ApiService interface {
 	ReceivePaymentEvent(event PaymentEvent) error
-	QueryOutgoingPayments(userID string) ([]PaymentOrder, error)
-	QueryIncomingPayments(userID string) ([]PaymentOrder, error)
 	AuthorizePayment(paymentID string) (bool, error) // Checks if a payment can be authorized
 	ProcessPayment(paymentID string) error           // Processes an authorized payment
 

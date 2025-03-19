@@ -25,7 +25,6 @@ func NewUserHandler(service service.UserService) *UserHandler {
 }
 
 var (
-	jwtSecret      []byte
 	expirationTime time.Time
 )
 
@@ -35,7 +34,6 @@ func InitAuth(cfg *config.Config) {
 	middleware.InitSessionStore(cfg)
 	gothic.Store = middleware.GetSessionStore()
 
-	jwtSecret = []byte(cfg.Server.JwtSecretKey)
 	expirationTime = time.Now().Add(24 * time.Hour)
 
 	if cfg.OAuth.Google.Enabled {
@@ -149,7 +147,7 @@ func (h *UserHandler) AssignRole(c *gin.Context) {
 // RevokeRole removes a role from a user
 func (h *UserHandler) RevokeRole(c *gin.Context) {
 	userID := c.Param("userID")
-	role  := c.Param("role")
+	role := c.Param("role")
 
 	if err := h.service.RevokeRole(c.Request.Context(), userID, role); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke role: " + err.Error()})

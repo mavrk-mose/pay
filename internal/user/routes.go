@@ -5,9 +5,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
 	auth "github.com/mavrk-mose/pay/internal/user/handler"
-	"github.com/mavrk-mose/pay/pkg/middleware"
 	"github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/internal/user/service"
+	"github.com/mavrk-mose/pay/pkg/middleware"
 )
 
 func AuthRoute(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {

@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
 	. "github.com/mavrk-mose/pay/internal/wallet/repository"
+	"time"
 )
 
 type WalletService interface {
@@ -16,6 +17,7 @@ type WalletService interface {
 	GetWallet(ctx *gin.Context, userID string) (Wallet, error)
 	UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error
 	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
+	GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error)
 }
 
 type walletService struct {
@@ -28,13 +30,20 @@ func NewWalletService(repo WalletRepo) WalletService {
 
 // CreateWallet creates a new wallet for a user
 func (s *walletService) CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error) {
-	wallet := Wallet{
-		CustomerID: uuid.New(),
-		Balance:    req.InitialBalance,
-		Currency:   req.Currency,
+	newWallet := Wallet{
+		UserId:    req.CustomerID,
+		Balance:   0.00,
+		Currency:  req.Currency,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
-	err := s.repo.Create(ctx, wallet)
-	return wallet, err
+
+	wallet, err := s.repo.CreateWallet(ctx, newWallet)
+	if err != nil {
+		return Wallet{}, err
+	}
+
+	return *wallet, nil
 }
 
 // Transfer moves funds from one wallet to another
@@ -102,4 +111,8 @@ func (s *walletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float6
 // UpdateBalance updates the balance of a wallet
 func (s *walletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error {
 	return s.repo.Credit(ctx, walletID, amount)
+}
+
+func (s *walletService) GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error) {
+	return s.repo.GetUserWallets(ctx.Request.Context(), id)
 }

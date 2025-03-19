@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// modules
-	user.AuthRoute(db)
+	user.AuthRoute(r, db, cfg)
 
 	// Use cfg for PORT configuration
 	PORT := cfg.Server.Port

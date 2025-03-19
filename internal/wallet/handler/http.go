@@ -1,47 +1,44 @@
 package handler
 
 import (
+	wallet "github.com/mavrk-mose/pay/internal/wallet/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/internal/user/repository"
+	"github.com/mavrk-mose/pay/internal/wallet/service"
 )
 
 type WalletHandler struct {
-	repo repository.UserRepository
+	service service.WalletService
 }
 
-func NewWalletHandler(repo repository.UserRepository) *WalletHandler {
-	return &WalletHandler{repo: repo}
+func NewWalletHandler(service service.WalletService) *WalletHandler {
+	return &WalletHandler{service: service}
 }
 
 // CreateWallet allows a user to create a new wallet
 func (h *WalletHandler) CreateWallet(c *gin.Context) {
-	userID := c.Param("userID")
-	var req struct {
-		Currency string `json:"currency"`
-	}
+	var req wallet.CreateWalletRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request data"})
 		return
 	}
 
-	//TODO: move the create wallet from user repo to wallet repo
-	wallet, err := h.repo.CreateWallet(userID, req.Currency)
+	dbWallet, err := h.service.CreateWallet(c, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create wallet"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"wallet": wallet})
+	c.JSON(http.StatusOK, gin.H{"wallet": dbWallet})
 }
 
 // GetUserWallets retrieves all wallets for a user
 func (h *WalletHandler) GetUserWallets(c *gin.Context) {
 	userID := c.Param("userID")
 
-	wallets, err := h.repo.GetUserWallets(userID)
+	wallets, err := h.service.GetUserWallets(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch wallets"})
 		return

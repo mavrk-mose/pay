@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mavrk-mose/pay/config"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/mavrk-mose/pay/config"
 )
 
 type Claims struct {
@@ -62,7 +62,7 @@ func AdminMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == authHeader { 
+		if tokenString == authHeader {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token format"})
 			c.Abort()
 			return

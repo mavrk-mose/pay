@@ -2,6 +2,7 @@ package service
 
 import (
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
+	"github.com/mavrk-mose/pay/pkg/utils"
 	"net/http"
 	"time"
 
@@ -18,6 +19,7 @@ type PaymentService struct {
 	ledgerService     ledger.LedgerService
 	executor          executor.PaymentExecutor
 	productConfigRepo ProductConfigRepo
+	logger            utils.Logger
 }
 
 func NewPaymentService(
@@ -42,14 +44,16 @@ type ExternalPaymentResponse struct {
 func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 	productConfig, err := h.productConfigRepo.GetProductConfig(ctx, req.ProductName)
 	if err != nil {
+		h.logger.Errorf("Failed to fetch product configuration: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product configuration"})
-		return err
+		panic(err)
 	}
 
 	balance, err := h.walletService.GetBalance(ctx, req.Customer)
 	if err != nil || balance < req.Amount {
+		h.logger.Errorf("Insufficient balance: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
-		return err
+		panic(err)
 	}
 
 	feeAmount := req.Amount * productConfig.FeePercentage / 100
@@ -57,8 +61,9 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 
 	err, _ = h.executor.ExecutePayment(req)
 	if err != nil {
+		h.logger.Errorf("Payment failed: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})
-		return err
+		panic(err)
 	}
 
 	txn := Transaction{
@@ -75,29 +80,34 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	if err := h.ledgerService.RecordTransaction(ctx, txn); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record transaction in ledger"})
-		return err
-	}
 
-	feeTxn := Transaction{
-		ExternalRef:    req.ReceiptNumber + "-fee",
-		Type:           TransactionType("fee"),
-		Status:         TransactionStatus("completed"),
-		Details:        "Transaction fee for payment",
-		Currency:       req.Currency,
-		DebitWalletID:  23423342424, // Customer's wallet ID
-		DebitAmount:    feeAmount,   // Fee amount deducted from customer
-		EntryType:      EntryType("debit"),
-		CreditWalletID: 25234534254, // System's fee wallet ID
-		CreditAmount:   feeAmount,   // Fee amount credited to system's fee wallet
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
-	if err := h.ledgerService.RecordTransaction(ctx, feeTxn); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record fee transaction in ledger"})
-		return err
-	}
+	go func() {
+		if err := h.ledgerService.RecordTransaction(ctx, txn); err != nil {
+			h.logger.Errorf("Failed to record transaction in ledger: %v", err)
+			panic(err)
+		}
+	}()
+
+	go func() {
+		feeTxn := Transaction{
+			ExternalRef:    req.ReceiptNumber + "-fee",
+			Type:           TransactionType("fee"),
+			Status:         TransactionStatus("completed"),
+			Details:        "Transaction fee for payment",
+			Currency:       req.Currency,
+			DebitWalletID:  23423342424, // Customer's wallet ID
+			DebitAmount:    feeAmount,   // Fee amount deducted from customer
+			EntryType:      EntryType("debit"),
+			CreditWalletID: 25234534254, // System's fee wallet ID
+			CreditAmount:   feeAmount,   // Fee amount credited to system's fee wallet
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		}
+		if err := h.ledgerService.RecordTransaction(ctx, feeTxn); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record fee transaction in ledger"})
+			panic(err)
+		}
+	}()
 
 	if err := h.walletService.UpdateBalance(ctx, req.Customer, -req.Amount); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update wallet balance"})
@@ -124,14 +134,6 @@ func (h *PaymentService) GetPaymentDetails(id string) (PaymentIntent, error) {
 
 func (h *PaymentService) GetPaymentStatus(id string) (PaymentStatus, error) {
 	return "", nil
-}
-
-func (h *PaymentService) QueryIncomingPayments(id string) ([]PaymentIntent, error) {
-	return []PaymentIntent{}, nil
-}
-
-func (h *PaymentService) QueryOutgoingPayments(id string) ([]PaymentIntent, error) {
-	return []PaymentIntent{}, nil
 }
 
 func (h *PaymentService) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {

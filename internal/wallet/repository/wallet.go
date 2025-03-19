@@ -11,7 +11,7 @@ import (
 )
 
 type WalletRepo interface {
-	CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error)
+	CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, error)
 	GetUserWallets(ctx context.Context, userID string) ([]Wallet, error)
 	GetBalance(ctx context.Context, userID string) (float64, error)
 	GetByID(ctx context.Context, walletID string) (Wallet, error)
@@ -31,15 +31,14 @@ func NewWalletRepo(db *sqlx.DB) WalletRepo {
 	return &walletRepo{DB: db}
 }
 
-func (r *walletRepo) CreateWallet(ctx context.Context, userID string, currency string) (*Wallet, error) {
-	r.logger.Infof("Creating wallet for user %s", userID)
-	var wallet Wallet
+func (r *walletRepo) CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, error) {
+	r.logger.Infof("Creating wallet for user %s", wallet.UserId)
 	query := `
 		INSERT INTO wallets (user_id, balance, currency, created_at)
 		VALUES ($1, 0.00, $2, NOW())
 		RETURNING id, user_id, balance, currency, created_at
 	`
-	err := r.DB.QueryRowx(query, userID, currency).StructScan(&wallet)
+	err := r.DB.QueryRowx(query, wallet.UserId, wallet.Currency).StructScan(&wallet)
 	if err != nil {
 		r.logger.Errorf("Failed to create wallet: %v", err)
 		return nil, fmt.Errorf("failed to create wallet: %v", err)
