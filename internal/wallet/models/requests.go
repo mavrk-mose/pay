@@ -20,8 +20,10 @@ type WithdrawalRequest struct {
 	Currency string    `json:"currency"`
 }
 
-type DepositRequest struct {
-	WalletID uuid.UUID `json:"wallet_id"`
-	Amount   float64   `json:"amount"`
-	Currency string    `json:"currency"`
+type WalletTransactionRequest struct {
+	WalletID    string  `json:"walletID" binding:"required"`    // the target wallet
+	Amount      float64 `json:"amount" binding:"required,gt=0"` // must be greater than 0
+	Currency    string  `json:"currency" binding:"required"`    // e.g., "USD"
+	Description string  `json:"description,omitempty"`          // optional description
+	ReferenceID string  `json:"referenceID,omitempty"`          // optional for idempotency tracking
 }

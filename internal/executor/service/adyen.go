@@ -1,9 +1,10 @@
-package executor
+package service
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/adyen/adyen-go-api-library/v7/src/checkout"
 	"github.com/adyen/adyen-go-api-library/v7/src/common"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
@@ -12,6 +13,7 @@ import (
 type AdyenProvider struct {
 	Client *checkout.APIClient
 	MerchantAccount string
+	logger          utils.Logger
 }
 
 func NewAdyenProvider(apiKey, merchantAccount string, isLive bool) (*AdyenProvider, error) {
@@ -102,7 +104,7 @@ func (a *AdyenProvider) ExecutePayment(order PaymentOrder) (*checkout.PaymentRes
 
 	response, httpResp, err := a.Client.PaymentsApi.Payments(context.Background(), request)
 	if err != nil {
-		return nil, fmt.Errorf("payment failed: %w", err)
+		return nil, a.logger.Errorf("payment failed: %w", err)
 	}
 	defer httpResp.Body.Close()
 
@@ -121,7 +123,7 @@ func (a *AdyenProvider) CapturePayment(paymentID string, amount float64, currenc
 
 	response, httpResp, err := a.Client.PaymentsApi.Payments(context.Background(), paymentID, request)
 	if err != nil {
-		return nil, fmt.Errorf("capture failed: %w", err)
+		return nil, a.logger.Errorf("capture failed: %w", err)
 	}
 	defer httpResp.Body.Close()
 
@@ -140,7 +142,7 @@ func (a *AdyenProvider) RefundPayment(paymentID string, amount float64, currency
 
 	response, httpResp, err := a.Client.PaymentsApi.Refunds(context.Background(), paymentID, request)
 	if err != nil {
-		return nil, fmt.Errorf("refund failed: %w", err)
+		return nil, a.logger.Errorf("refund failed: %w", err)
 	}
 	defer httpResp.Body.Close()
 
@@ -155,7 +157,7 @@ func (a *AdyenProvider) CancelPayment(paymentID string) (*checkout.ModificationR
 
 	response, httpResp, err := a.Client.PaymentsApi.Cancels(context.Background(), paymentID, request)
 	if err != nil {
-		return nil, fmt.Errorf("cancel failed: %w", err)
+		return nil, a.logger.Errorf("cancel failed: %w", err)
 	}
 	defer httpResp.Body.Close()
 

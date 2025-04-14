@@ -1,19 +1,18 @@
-package executor
+package service
 
 import (
 	"errors"
+	. "github.com/mavrk-mose/pay/internal/executor/models"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
 )
 
-// Payment execution (Stripe, PayPal, Bank API)
-
 type PaymentExecutorService interface {
-	ExecutePayment(order PaymentIntent) (PaymentExecutionResult, error)
+	ExecutePayment(order PaymentIntent) (PaymentResult, error)
 	RecordPaymentOrder(order PaymentIntent) error
 }
 
 type PaymentGateway interface {
-	ExecutePayment(order PaymentOrder) (PaymentExecutionResult, error)
+	ExecutePayment(order PaymentOrder) (PaymentResult, error)
 }
 
 type PaymentExecutor struct {
@@ -28,17 +27,17 @@ func NewPaymentExecutor(gateways map[string]PaymentGateway) PaymentExecutorServi
 
 func NewDefaultPaymentExecutor() PaymentExecutorService {
 	gateways := map[string]PaymentGateway{
-		"stripe": &StripeGateway{},
-		"paypal": &PaypalGateway{},
-		"adyen":  &AdyenGateway{},
+		"stripe": &StripeProvider{},
+		"paypal": &PayPalProvider{},
+		"adyen":  &AdyenProvider{},
 	}
 	return NewPaymentExecutor(gateways)
 }
 
-func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentExecutionResult, error) {
+func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentResult, error) {
 	gateway, exists := pe.gateways[order.PaymentMethod]
 	if !exists {
-		return PaymentExecutionResult{}, errors.New("unsupported payment gateway: " + order.PaymentMethod)
+		return PaymentResult{}, errors.New("unsupported payment gateway: " + order.PaymentMethod)
 	}
 	paymentOrder := PaymentOrder{
 		Amount:        order.Amount,

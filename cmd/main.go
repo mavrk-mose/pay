@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/mavrk-mose/pay/internal/user"
+	"github.com/mavrk-mose/pay/internal/payment"
 	"github.com/mavrk-mose/pay/pkg/middleware"
 	"golang.org/x/time/rate"
 	"log"
@@ -45,19 +46,18 @@ func main() {
 	db, err := config.NewPsqlDB(cfg)
 	if err != nil {
 		panic("Failed to connect to database!")
-		return
 	}
 
 	// modules
 	user.AuthRoute(r, db, cfg)
+	payment.NewApiHandler(r, cfg)
+	wallet.
 
-	// Use cfg for PORT configuration
 	PORT := cfg.Server.Port
 	if PORT == "" {
-		PORT = "8080" // Fallback to a default port if not specified
+		PORT = "8080"
 	}
 
-	// Start the server
 	err = r.Run(":" + PORT)
 	if err != nil {
 		appLogger.Fatalf("Server failed to start: %v", err)

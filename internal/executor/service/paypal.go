@@ -1,35 +1,32 @@
-package executor
+package service
 
 import (
 	"context"
 	"fmt"
-	"log"
-
-	"github.com/netlify/PayPal-Go-SDK/paypal"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
+	"github.com/mavrk-mose/pay/pkg/utils"
+	paypalsdk "github.com/netlify/PayPal-Go-SDK"
 )
 
-// PayPalProvider struct to manage PayPal payments
 type PayPalProvider struct {
-	Client *paypal.Client
+	Client *paypalsdk.Client
+	logger utils.Logger
 }
 
-// NewPayPalProvider initializes a new PayPal client
 func NewPayPalProvider(clientID, secret string, isSandbox bool) (*PayPalProvider, error) {
 	var apiBase string
 	if isSandbox {
-		apiBase = paypal.APIBaseSandBox
+		apiBase = paypalsdk.APIBaseSandBox
 	} else {
-		apiBase = paypal.APIBaseLive
+		apiBase = paypalsdk.APIBaseLive
 	}
 
-	client, err := paypal.NewClient(clientID, secret, apiBase)
+	client, err := paypalsdk.NewClient(clientID, secret, apiBase)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PayPal client: %w", err)
 	}
 
-	// Automatically retrieve an access token
-	_, err = client.GetAccessToken(context.Background())
+	_, err = client.GetAccessToken()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve PayPal access token: %w", err)
 	}
@@ -37,12 +34,11 @@ func NewPayPalProvider(clientID, secret string, isSandbox bool) (*PayPalProvider
 	return &PayPalProvider{Client: client}, nil
 }
 
-// CreateOrder creates a PayPal order
-func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL string, cancelURL string) (*paypal.Order, error) {
-	orderIntent := paypal.IntentCapture
-	orderRequest := paypal.OrderRequest{
+func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL string, cancelURL string) (*paypalsdk.Order, error) {
+	orderIntent := p.Client.IntentCapture()
+	orderRequest := p.Client.OrderRequest{
 		Intent: orderIntent,
-		PurchaseUnits: []paypal.PurchaseUnitRequest{
+		PurchaseUnits: []p.Client.PurchaseUnitRequest{
 			{
 				Amount: &paypal.PurchaseUnitAmount{
 					Currency: currency,
@@ -50,13 +46,13 @@ func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL s
 				},
 			},
 		},
-		ApplicationContext: &paypal.ApplicationContext{
+		ApplicationContext: &p.Client{
 			ReturnURL: returnURL,
 			CancelURL: cancelURL,
 		},
 	}
 
-	order, err := p.Client.CreateOrder(context.Background(), orderRequest)
+	order, err := p.Client.CreatePayment(context.Background(), orderRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PayPal order: %w", err)
 	}
@@ -65,8 +61,8 @@ func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL s
 }
 
 // CapturePayment captures a PayPal order after user approval
-func (p *PayPalProvider) CapturePayment(orderID string) (*paypal.CaptureOrderResponse, error) {
-	captureResponse, err := p.Client.CaptureOrder(context.Background(), orderID, paypal.CaptureOrderRequest{})
+func (p *PayPalProvider) CapturePayment(orderID string) (*paypalsdk.CaptureOrderResponse, error) {
+	captureResponse, err := p.Client.CaptureOrder(context.Background(), orderID, paypalsdk.CaptureOrderRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to capture PayPal payment: %w", err)
 	}
@@ -75,9 +71,9 @@ func (p *PayPalProvider) CapturePayment(orderID string) (*paypal.CaptureOrderRes
 }
 
 // RefundPayment issues a refund for a PayPal transaction
-func (p *PayPalProvider) RefundPayment(captureID string, amount string, currency string) (*paypal.RefundResponse, error) {
-	refundRequest := paypal.CaptureRefundRequest{
-		Amount: &paypal.PurchaseUnitAmount{
+func (p *PayPalProvider) RefundPayment(captureID string, amount string, currency string) (*paypalsdk.RefundResponse, error) {
+	refundRequest := p.Client.RefundRequest{
+		Amount: &p.Client.PurchaseUnitAmount{
 			Currency: currency,
 			Value:    amount,
 		},
@@ -92,16 +88,16 @@ func (p *PayPalProvider) RefundPayment(captureID string, amount string, currency
 }
 
 // CreatePayout sends a payment to a recipient
-func (p *PayPalProvider) CreatePayout(email string, amount string, currency string) (*paypal.PayoutBatch, error) {
-	payout := &paypal.PayoutRequest{
-		SenderBatchHeader: &paypal.SenderBatchHeader{
+func (p *PayPalProvider) CreatePayout(email string, amount string, currency string) (*paypalsdk.Payout, error) { // supposed to be payout in batches
+	payout := &p.Client.PayoutRequest{ // supposed to be payout in batches
+		SenderBatchHeader: &p.Client.SenderBatchHeader{
 			EmailSubject: "You have received a payout!",
 		},
-		Items: []paypal.PayoutItem{
+		Items: []p.Client.PayoutItem{
 			{
 				RecipientType: "EMAIL",
 				Receiver:      email,
-				Amount: &paypal.PayoutAmount{
+				Amount: &p.Client.PayoutAmount{
 					Value:    amount,
 					Currency: currency,
 				},

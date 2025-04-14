@@ -12,12 +12,13 @@ import (
 type WalletService interface {
 	CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error)
 	Transfer(ctx *gin.Context, req TransferRequest) error
-	Withdraw(ctx *gin.Context, req WithdrawalRequest) error
-	Deposit(ctx *gin.Context, req DepositRequest) error
+	DebitWallet(ctx *gin.Context, req WalletTransactionRequest) error
+	CreditWallet(ctx *gin.Context, req WalletTransactionRequest) error
 	GetWallet(ctx *gin.Context, userID string) (Wallet, error)
 	UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error
 	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
 	GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error)
+	DeleteWallet(c *gin.Context, walletID string) any
 }
 
 type walletService struct {
@@ -76,8 +77,8 @@ func (s *walletService) Transfer(ctx *gin.Context, req TransferRequest) error {
 }
 
 // Withdraw handles withdrawing funds from a wallet
-func (s *walletService) Withdraw(ctx *gin.Context, req WithdrawalRequest) error {
-	wallet, err := s.repo.GetByID(ctx, req.WalletID.String())
+func (s *walletService) DebitWallet(ctx *gin.Context, req WalletTransactionRequest) error {
+	wallet, err := s.repo.GetByID(ctx, req.WalletID)
 	if err != nil {
 		return err
 	}
@@ -86,12 +87,12 @@ func (s *walletService) Withdraw(ctx *gin.Context, req WithdrawalRequest) error 
 		return errors.New("insufficient funds")
 	}
 
-	return s.repo.Debit(ctx, req.WalletID, req.Amount)
+	return s.repo.Debit(ctx, uuid.MustParse(req.WalletID), req.Amount)
 }
 
 // Deposit adds funds to a wallet
-func (s *walletService) Deposit(ctx *gin.Context, req DepositRequest) error {
-	return s.repo.Credit(ctx, req.WalletID, req.Amount)
+func (s *walletService) CreditWallet(ctx *gin.Context, req WalletTransactionRequest) error {
+	return s.repo.Credit(ctx, uuid.MustParse(req.WalletID), req.Amount)
 }
 
 // GetWallet retrieves a wallet by user ID
@@ -115,4 +116,9 @@ func (s *walletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amou
 
 func (s *walletService) GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error) {
 	return s.repo.GetUserWallets(ctx.Request.Context(), id)
+}
+
+
+func (s *walletService) DeleteWallet(c *gin.Context, walletID string) any {
+	panic("unimplemented")
 }
