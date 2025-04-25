@@ -37,29 +37,28 @@ type Transaction struct {
 	Details     string            `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
 	Currency    string            `db:"currency" json:"currency"`
 
-	DebitWalletID int64   `db:"debit_wallet_id" json:"debit_wallet_id"`
-	DebitAmount   float64 `db:"debit_amount" json:"debit_amount"`
+	DebitWalletID int64   		  `db:"debit_wallet_id" json:"debit_wallet_id"`
+	DebitAmount   float64         `db:"debit_amount" json:"debit_amount"`
 
-	EntryType EntryType `db:"entry_type" json:"entry_type"`
+	EntryType EntryType           `db:"entry_type" json:"entry_type"`
 
-	CreditWalletID int64   `db:"credit_wallet_id" json:"credit_wallet_id"`
-	CreditAmount   float64 `db:"credit_amount" json:"credit_amount"`
+	CreditWalletID int64          `db:"credit_wallet_id" json:"credit_wallet_id"`
+	CreditAmount   float64        `db:"credit_amount" json:"credit_amount"`
 
-	Checksum string `db:"checksum" json:"checksum"`
+	Checksum string               `db:"checksum" json:"checksum"`
 
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
-	Checksum  string    `db:"checksum" json:"checksum"`
+	CreatedAt time.Time           `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time           `db:"updated_at" json:"updated_at"`
 }
 
 type Report struct {
-	ReportID      uuid.UUID `json:"report_id" db:"report_id"`
-	GeneratedAt   time.Time `json:"generated_at" db:"generated_at"`
-	Period        string    `json:"period" db:"period"`
-	TotalCases    int       `json:"total_cases" db:"total_cases"`
-	TotalAmount   float64   `json:"total_amount" db:"total_amount"`
-	HighRiskUsers []string  `json:"high_risk_users" db:"high_risk_users"`
-	Details       string    `json:"details" db:"details"`
+	ReportID      uuid.UUID       `json:"report_id" db:"report_id"`
+	GeneratedAt   time.Time       `json:"generated_at" db:"generated_at"`
+	Period        string          `json:"period" db:"period"`
+	TotalCases    int             `json:"total_cases" db:"total_cases"`
+	TotalAmount   float64         `json:"total_amount" db:"total_amount"`
+	HighRiskUsers []string        `json:"high_risk_users" db:"high_risk_users"`
+	Details       string          `json:"details" db:"details"`
 }
 
 type SettlementFile struct {

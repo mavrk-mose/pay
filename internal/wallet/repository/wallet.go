@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
+	"github.com/stretchr/testify/mock"
 )
 
 type WalletRepo interface {
@@ -24,6 +25,7 @@ type WalletRepo interface {
 
 type walletRepo struct {
 	DB     *sqlx.DB
+	mock.Mock
 	logger utils.Logger
 }
 

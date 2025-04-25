@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mavrk-mose/pay/internal/executor"
+	executor "github.com/mavrk-mose/pay/internal/executor/service"
 	ledger "github.com/mavrk-mose/pay/internal/ledger/service"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
 	. "github.com/mavrk-mose/pay/internal/payment/repository"

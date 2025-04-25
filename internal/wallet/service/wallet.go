@@ -19,6 +19,7 @@ type WalletService interface {
 	GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error)
 	GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error)
 	DeleteWallet(c *gin.Context, walletID string) any
+	CanWithdraw(request string, i int) (any, error)
 }
 
 type walletService struct {
@@ -27,6 +28,10 @@ type walletService struct {
 
 func NewWalletService(repo WalletRepo) WalletService {
 	return &walletService{repo: repo}
+}
+
+func (s *walletService) CanWithdraw(request string, i int) (any, error) {
+	panic("unimplemented")
 }
 
 // CreateWallet creates a new wallet for a user
@@ -117,7 +122,6 @@ func (s *walletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amou
 func (s *walletService) GetUserWallets(ctx *gin.Context, id string) ([]Wallet, error) {
 	return s.repo.GetUserWallets(ctx.Request.Context(), id)
 }
-
 
 func (s *walletService) DeleteWallet(c *gin.Context, walletID string) any {
 	panic("unimplemented")
