@@ -17,28 +17,29 @@ func NewStripeProvider(secretKey string) *StripeProvider {
 	return &StripeProvider{SecretKey: secretKey}
 }
 
-func (s *StripeProvider) ExecutePayment(order PaymentOrder) (PaymentResult, error) {
-	stripe.Key = s.SecretKey
+func (s *StripeProvider) ExecutePayment(order PaymentOrder) (any, error) {
+	// stripe.Key = s.SecretKey
 
-	params := &stripe.PaymentIntentParams{
-		Amount:   stripe.Int64(order.Amount), // amount in cents
-		Currency: stripe.String(order.Currency),
-		Confirm:  stripe.Bool(true),
-		PaymentMethodTypes: stripe.StringSlice([]string{
-			"card",
-		}),
-	}
+	// params := &stripe.PaymentIntentParams{
+	// 	Amount:   stripe.Int64(order.Amount), // amount in cents
+	// 	Currency: stripe.String(order.Currency),
+	// 	Confirm:  stripe.Bool(true),
+	// 	PaymentMethodTypes: stripe.StringSlice([]string{
+	// 		"card",
+	// 	}),
+	// }
 
-	intent, err := paymentintent.New(params)
-	if err != nil {
-		return PaymentResult{}, fmt.Errorf("failed to create payment intent: %w", err)
-	}
+	// intent, err := paymentintent.New(params)
+	// if err != nil {
+	// 	return PaymentResult{}, fmt.Errorf("failed to create payment intent: %w", err)
+	// }
 
-	return PaymentResult{
-		Success:       true,
-		Message:       "Payment processed successfully",
-		TransactionID: intent.ID,
-	}, nil
+	// return PaymentResult{
+	// 	Success:       true,
+	// 	Message:       "Payment processed successfully",
+	// 	TransactionID: intent.ID,
+	// }, nil
+    panic("unimplemented")
 }
 
 func (s *StripeProvider) CreateCustomer() (*stripe.Customer, error) {
@@ -55,7 +56,7 @@ func (s *StripeProvider) CreateCustomer() (*stripe.Customer, error) {
         },
     }
     result, err := customer.New(params)
-    return result, nil
+    return result, err
 }
 
 func (s *StripeProvider) CreateCheckoutSession() (*stripe.CheckoutSession, error) {
@@ -69,7 +70,7 @@ func (s *StripeProvider) CreateCheckoutSession() (*stripe.CheckoutSession, error
         }),
     }
     result, err := session.New(params)
-    return result, nil
+    return result, err
 }
 
 // {
@@ -88,8 +89,8 @@ func (s *StripeProvider) CreatePaymentIntent() (*stripe.PaymentIntent, error) {
         Currency:    stripe.String("usd"), // Currency such as "usd"
         Confirm:     stripe.Bool(true),
         PaymentMethod: stripe.String("payment_method_id after saving card"),
-        PaymentMethodTypes: stripe.StringSlice(["card"]),
-        Customer:    stripe.String(customer_id), 
+        // PaymentMethodTypes: stripe.StringSlice(["card"]),
+        // Customer:    stripe.String(customer_id), 
         OffSession:  stripe.Bool(true),
         ConfirmationMethod: stripe.String("automatic"), 
         Description: stripe.String("Example payment intent for invoice"), // Description of the transaction
@@ -113,7 +114,7 @@ func (s *StripeProvider) CreateCharge() (*stripe.Charge, error) {
 	params := &stripe.ChargeParams{
 		Amount:   stripe.Int64(2000),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),
-		Desc:     stripe.String("Test Charge"),
+		// Desc:     stripe.String("Test Charge"),
 	}
 	params.SetSource("tok_visa") // use a test card token provided by Stripe
 	ch, err := charge.New(params)

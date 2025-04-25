@@ -3,16 +3,16 @@ package service
 import (
 	"errors"
 	. "github.com/mavrk-mose/pay/internal/executor/models"
-	. "github.com/mavrk-mose/pay/internal/payment/models"
+	models "github.com/mavrk-mose/pay/internal/payment/models"
 )
 
 type PaymentExecutorService interface {
-	ExecutePayment(order PaymentIntent) (PaymentResult, error)
-	RecordPaymentOrder(order PaymentIntent) error
+	ExecutePayment(order models.PaymentIntent) (any, error)
+	RecordPaymentOrder(order models.PaymentIntent) error
 }
 
 type PaymentGateway interface {
-	ExecutePayment(order PaymentOrder) (PaymentResult, error)
+	ExecutePayment(order models.PaymentOrder) (any, error)
 }
 
 type PaymentExecutor struct {
@@ -34,12 +34,12 @@ func NewDefaultPaymentExecutor() PaymentExecutorService {
 	return NewPaymentExecutor(gateways)
 }
 
-func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentResult, error) {
+func (pe *PaymentExecutor) ExecutePayment(order models.PaymentIntent) (any, error) {
 	gateway, exists := pe.gateways[order.PaymentMethod]
 	if !exists {
 		return PaymentResult{}, errors.New("unsupported payment gateway: " + order.PaymentMethod)
 	}
-	paymentOrder := PaymentOrder{
+	paymentOrder := models.PaymentOrder{
 		Amount:        order.Amount,
 		Currency:      order.Currency,
 		Description:   order.Description,
@@ -50,7 +50,7 @@ func (pe *PaymentExecutor) ExecutePayment(order PaymentIntent) (PaymentResult, e
 	return gateway.ExecutePayment(paymentOrder)
 }
 
-func (pe *PaymentExecutor) RecordPaymentOrder(order PaymentIntent) error {
+func (pe *PaymentExecutor) RecordPaymentOrder(order models.PaymentIntent) error {
 	// Implementation for recording payment order
 	return nil
 }

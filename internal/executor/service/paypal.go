@@ -1,11 +1,10 @@
 package service
 
 import (
-	"context"
 	"fmt"
-	. "github.com/mavrk-mose/pay/internal/payment/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	paypalsdk "github.com/netlify/PayPal-Go-SDK"
+	. "github.com/mavrk-mose/pay/internal/payment/models"
 )
 
 type PayPalProvider struct {
@@ -34,35 +33,40 @@ func NewPayPalProvider(clientID, secret string, isSandbox bool) (*PayPalProvider
 	return &PayPalProvider{Client: client}, nil
 }
 
+func (p *PayPalProvider) ExecutePayment(order PaymentOrder) (any, error) { 
+	panic("unimplemented")
+}
+
 func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL string, cancelURL string) (*paypalsdk.Order, error) {
-	orderIntent := p.Client.IntentCapture()
-	orderRequest := p.Client.OrderRequest{
-		Intent: orderIntent,
-		PurchaseUnits: []p.Client.PurchaseUnitRequest{
-			{
-				Amount: &paypal.PurchaseUnitAmount{
-					Currency: currency,
-					Value:    amount,
-				},
-			},
-		},
-		ApplicationContext: &p.Client{
-			ReturnURL: returnURL,
-			CancelURL: cancelURL,
-		},
-	}
+	// orderIntent := p.Client.IntentCapture()
+	// orderRequest := p.Client.OrderRequest{
+	// 	Intent: orderIntent,
+	// 	PurchaseUnits: []p.Client.PurchaseUnitRequest{
+	// 		{
+	// 			Amount: &paypal.PurchaseUnitAmount{
+	// 				Currency: currency,
+	// 				Value:    amount,
+	// 			},
+	// 		},
+	// 	},
+	// 	ApplicationContext: &p.Client{
+	// 		ReturnURL: returnURL,
+	// 		CancelURL: cancelURL,
+	// 	},
+	// }
 
-	order, err := p.Client.CreatePayment(context.Background(), orderRequest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create PayPal order: %w", err)
-	}
+	// order, err := p.Client.CreatePayment(context.Background(), orderRequest)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create PayPal order: %w", err)
+	// }
 
-	return order, nil
+	// return order, nil
+	panic("unimplemented")
 }
 
 // CapturePayment captures a PayPal order after user approval
-func (p *PayPalProvider) CapturePayment(orderID string) (*paypalsdk.CaptureOrderResponse, error) {
-	captureResponse, err := p.Client.CaptureOrder(context.Background(), orderID, paypalsdk.CaptureOrderRequest{})
+func (p *PayPalProvider) CapturePayment(orderID string) (*paypalsdk.Capture, error) {
+	captureResponse, err := p.Client.CaptureOrder(orderID, nil, true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to capture PayPal payment: %w", err)
 	}
@@ -71,44 +75,48 @@ func (p *PayPalProvider) CapturePayment(orderID string) (*paypalsdk.CaptureOrder
 }
 
 // RefundPayment issues a refund for a PayPal transaction
-func (p *PayPalProvider) RefundPayment(captureID string, amount string, currency string) (*paypalsdk.RefundResponse, error) {
-	refundRequest := p.Client.RefundRequest{
-		Amount: &p.Client.PurchaseUnitAmount{
-			Currency: currency,
-			Value:    amount,
-		},
-	}
+func (p *PayPalProvider) RefundPayment(captureID string, amount string, currency string) (*paypalsdk.Refund, error) {
+	// refundRequest := p.Client.RefundRequest{
+	// 	Amount: &p.Client.PurchaseUnitAmount{
+	// 		Currency: currency,
+	// 		Value:    amount,
+	// 	},
+	// }
 
-	refundResponse, err := p.Client.RefundCapture(context.Background(), captureID, refundRequest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to process PayPal refund: %w", err)
-	}
+	// refundResponse, err := p.Client.RefundCapture(context.Background(), captureID, refundRequest)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to process PayPal refund: %w", err)
+	// }
 
-	return refundResponse, nil
+	// return refundResponse, nil
+
+	panic("unimplemented")
 }
 
 // CreatePayout sends a payment to a recipient
 func (p *PayPalProvider) CreatePayout(email string, amount string, currency string) (*paypalsdk.Payout, error) { // supposed to be payout in batches
-	payout := &p.Client.PayoutRequest{ // supposed to be payout in batches
-		SenderBatchHeader: &p.Client.SenderBatchHeader{
-			EmailSubject: "You have received a payout!",
-		},
-		Items: []p.Client.PayoutItem{
-			{
-				RecipientType: "EMAIL",
-				Receiver:      email,
-				Amount: &p.Client.PayoutAmount{
-					Value:    amount,
-					Currency: currency,
-				},
-			},
-		},
-	}
+	// payout := &p.Client.PayoutRequest{ // supposed to be payout in batches
+	// 	SenderBatchHeader: &p.Client.SenderBatchHeader{
+	// 		EmailSubject: "You have received a payout!",
+	// 	},
+	// 	Items: []p.Client.PayoutItem{
+	// 		{
+	// 			RecipientType: "EMAIL",
+	// 			Receiver:      email,
+	// 			Amount: &p.Client.PayoutAmount{
+	// 				Value:    amount,
+	// 				Currency: currency,
+	// 			},
+	// 		},
+	// 	},
+	// }
 
-	payoutResponse, err := p.Client.CreatePayout(context.Background(), payout)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create PayPal payout: %w", err)
-	}
+	// payoutResponse, err := p.Client.CreatePayout(context.Background(), payout)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create PayPal payout: %w", err)
+	// }
 
-	return payoutResponse, nil
+	// return payoutResponse, nil
+
+	panic("unimplemented")
 }

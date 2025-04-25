@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+//go:generate mockery generate WalletRepo --output=internal/wallet/repository/mocks
 type WalletRepo interface {
 	CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, error)
 	GetUserWallets(ctx context.Context, userID string) ([]Wallet, error)
@@ -24,7 +25,7 @@ type WalletRepo interface {
 }
 
 type walletRepo struct {
-	DB     *sqlx.DB
+	DB *sqlx.DB
 	mock.Mock
 	logger utils.Logger
 }

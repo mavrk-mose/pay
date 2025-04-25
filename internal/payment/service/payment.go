@@ -59,7 +59,7 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 	feeAmount := req.Amount * productConfig.FeePercentage / 100
 	netAmount := req.Amount - feeAmount
 
-	err, _ = h.executor.ExecutePayment(req)
+	_, err = h.executor.ExecutePayment(req)
 	if err != nil {
 		h.logger.Errorf("Payment failed: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Payment failed"})

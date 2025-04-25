@@ -39,7 +39,6 @@ func NewDispatcher(
 			cfg.Twilio.AccountSID,
 			cfg.Twilio.AuthToken,
 			cfg.Twilio.From,
-			userRepo,
 			notificationRepo,
 			logger,
 		)
@@ -56,7 +55,6 @@ func NewDispatcher(
 			cfg.Server.SMTPPort,
 			cfg.Server.SMTPUser,
 			cfg.Server.SMTPPassword,
-			userRepo,
 			notificationRepo,
 			logger,
 		)

@@ -22,14 +22,8 @@ type WebhookPayload struct {
 	Status      string `json:"status"` // e.g., "confirmed" or "failed"
 }
 
-func NewPaymentHandler(
-	paymentService paymentService.PaymentService,
-	ledgerService ledgerService.LedgerService,
-	txnRepo repository.Repo,
-) *PaymentHandler {
+func NewPaymentHandler( txnRepo repository.Repo,) *PaymentHandler {
 	return &PaymentHandler{
-		paymentService: paymentService,
-		ledgerService:  ledgerService,
 		txnRepo:        txnRepo,
 	}
 }

@@ -12,6 +12,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type TransactionRepo interface {
+	RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error)
+	CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error
+	UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error
+	FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error)
+}
+
 type Repo struct {
 	DB *sqlx.DB
 }

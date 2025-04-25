@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
 	walletHandlers "github.com/mavrk-mose/pay/internal/wallet/handler"
+	"github.com/mavrk-mose/pay/internal/wallet/repository"
 	"github.com/mavrk-mose/pay/internal/wallet/service"
 	"github.com/mavrk-mose/pay/pkg/middleware"
 )
 
-func NewApiHandler(r *gin.Engine, cfg *config.Config) {
-	walletService := service.NewWalletService()
+func NewApiHandler(r *gin.Engine, cfg *config.Config, walletRepo repository.WalletRepo) {
+	walletService := service.NewWalletService(walletRepo)
 	walletHandler := walletHandlers.NewWalletHandler(walletService)
 
 	api := r.Group("/api/v1", middleware.AuthMiddleware())

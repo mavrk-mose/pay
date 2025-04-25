@@ -5,15 +5,16 @@ import (
 	"github.com/mavrk-mose/pay/config"
 	handlers "github.com/mavrk-mose/pay/internal/payment/handler"
 	"github.com/mavrk-mose/pay/pkg/middleware"
+	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
 )
 
-func NewApiHandler(r *gin.Engine, cfg *config.Config) {
+func NewApiHandler(r *gin.Engine, cfg *config.Config, ledgerRepo repository.Repo) {
+	handler := handlers.NewPaymentHandler(ledgerRepo)
+
 	publicKey, err := middleware.LoadPublicKey(cfg.Server.PublicKeyPath)
 	if err != nil {
 		panic(err)
 	}
-
-	handler := handlers.NewPaymentHandler()
 
 	r.GET("/check", handler.Check)
 
