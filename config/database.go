@@ -15,7 +15,7 @@ const (
 	connMaxIdleTime = 20
 )
 
-// Return new Postgresql db instance
+// NewPsqlDB Return new Postgresql db instance
 func NewPsqlDB(c *Config) (*sqlx.DB, error) {
 	dataSourceName := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 		c.Postgres.PostgresqlHost,
@@ -30,7 +30,12 @@ func NewPsqlDB(c *Config) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	defer db.Close()
+	defer func(db *sqlx.DB) {
+		err := db.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(db)
 
 	db.SetMaxOpenConns(maxOpenConns)
 	db.SetConnMaxLifetime(connMaxLifetime * time.Second)

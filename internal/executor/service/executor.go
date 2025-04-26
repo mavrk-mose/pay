@@ -3,10 +3,11 @@ package service
 import (
 	"errors"
 	. "github.com/mavrk-mose/pay/internal/executor/models"
-	models "github.com/mavrk-mose/pay/internal/payment/models"
+	"github.com/mavrk-mose/pay/internal/payment/models"
 )
 
-type PaymentExecutorService interface {
+//go:generate mockgen -destination mocks/ExecutorService.go -package mocks github.com/mavrk-mose/pay/internal/executor/service ExecutorService
+type ExecutorService interface {
 	ExecutePayment(order models.PaymentIntent) (any, error)
 	RecordPaymentOrder(order models.PaymentIntent) error
 }
@@ -19,13 +20,13 @@ type PaymentExecutor struct {
 	gateways map[string]PaymentGateway
 }
 
-func NewPaymentExecutor(gateways map[string]PaymentGateway) PaymentExecutorService {
+func NewPaymentExecutor(gateways map[string]PaymentGateway) ExecutorService {
 	return &PaymentExecutor{
 		gateways: gateways,
 	}
 }
 
-func NewDefaultPaymentExecutor() PaymentExecutorService {
+func NewDefaultPaymentExecutor() ExecutorService {
 	gateways := map[string]PaymentGateway{
 		"stripe": &StripeProvider{},
 		"paypal": &PayPalProvider{},

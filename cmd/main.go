@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/mavrk-mose/pay/internal/user"
 	"github.com/mavrk-mose/pay/internal/payment"
+	"github.com/mavrk-mose/pay/internal/user"
+	"github.com/mavrk-mose/pay/internal/wallet"
 	"github.com/mavrk-mose/pay/pkg/middleware"
 	"golang.org/x/time/rate"
 	"log"
@@ -51,7 +52,7 @@ func main() {
 	// modules
 	user.AuthRoute(r, db, cfg)
 	payment.NewApiHandler(r, cfg)
-	wallet.
+	wallet.NewApiHandler(r, cfg)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {

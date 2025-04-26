@@ -23,8 +23,6 @@ type ApiService interface {
 type PaymentActions interface {
 	RecordPaymentEvent(event PaymentEvent) error
 	ForwardPaymentOrder(order PaymentOrder) error
-	NotifyLedger(order PaymentOrder) error
-	NotifyWallet(order PaymentOrder) error
 
 	SchedulePayment(order PaymentOrder, scheduleTime time.Time) error // Schedules a payment for future processing
 	GetScheduledPayments(userID string) ([]PaymentOrder, error)       // Retrieves scheduled payments
