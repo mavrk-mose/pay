@@ -69,7 +69,8 @@ CREATE TABLE transaction
     credit_amount    NUMERIC(20, 2)      NOT NULL,
     checksum         TEXT                NOT NULL,
     created_at       TIMESTAMPTZ                  DEFAULT NOW(),
-    updated_at       TIMESTAMPTZ                  DEFAULT NOW()
+    updated_at       TIMESTAMPTZ                  DEFAULT NOW(),
+    INDEX(external_ref)
 );
 
 CREATE TABLE product_configurations
@@ -97,7 +98,8 @@ CREATE TABLE users
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP.
     onboarded     BOOLEAN DEFAULT FALSE,
-    provider      TEXT DEFAULT 'google'
+    provider      TEXT DEFAULT 'google',
+    INDEX(id)
 );
 
 CREATE TABLE wallets (
@@ -107,14 +109,16 @@ CREATE TABLE wallets (
     status wallet_status NOT NULL DEFAULT 'active',
     currency VARCHAR(10) DEFAULT 'USD',
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+    INDEX(user_id)
 );
 
 CREATE TABLE referrals (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     referral_code TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    INDEX(user_id)
 );
 
 CREATE TABLE referral_usages (
@@ -133,7 +137,8 @@ CREATE TABLE vouchers (
     currency TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     redeemed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    INDEX(user_id)
 );
 
 CREATE TABLE discounts (
@@ -142,5 +147,59 @@ CREATE TABLE discounts (
     type discount_type NOT NULL DEFAULT ,
     discount_percentage NUMERIC NOT NULL,
     valid_from TIMESTAMP NOT NULL,
-    valid_until TIMESTAMP NOT NULL
+    valid_until TIMESTAMP NOT NULL,
+    INDEX(user_id)
 );
+
+-- init sql from gitlab
+DROP USER IF EXISTS 'money_movement_user'@'localhost';
+CREATE USER 'money_movement_user'@'localhost' IDENTIFIED BY 'Auth123';
+
+DROP DATABASE IF EXISTS money_movement;
+CREATE DATABASE money_movement;
+
+GRANT ALL PRIVILEGES ON money_movement.* TO 'money_movement_user'@'localhost';
+
+USE money_movement;
+
+CREATE TABLE `wallet` (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL UNIQUE,
+    wallet_type VARCHAR(255) NOT NULL,
+    INDEX(user_id)
+);
+
+CREATE TABLE `account` (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cents INT NOT NULL DEFAULT 0,
+    account_type VARCHAR(255) NOT NULL,
+    wallet_id INT NOT NULL,
+    FOREIGN KEY (wallet_id) REFERENCES wallet(id)
+);
+
+CREATE TABLE `transaction` (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    pid VAR VARCHAR(255) NOT NULL,
+    src_user_id VARCHAR(255) NOT NULL,
+    dst_user_id VARCHAR(255) NOT NULL,
+    src_wallet_id INT NOT NULL,
+    dst_wallet_id INT NOT NULL,
+    src_account_id INT NOT NULL,
+    dst_account_id INT NOT NULL,
+    src_account_type VARCHAR(255) NOT NULL,
+    dst_account_type VARCHAR(255) NOT NULL,
+    final_dst_merchant_wallet_id INT,
+    amount INT NOT NULL,
+    INDEX(pid)
+);
+
+-- merchant and customer wallets
+INSERT INTO wallet (id, user_id, wallet_type) VALUES (1, 'georgio@email.com', 'CUSTOMER')
+INSERT INTO wallet (id, user_id, wallet_type) VALUES (2, 'merchant_id', 'MERCHANT')
+
+-- customer accounts
+INSERT INTO account (cents, account_type, wallet_id) VALUES (5000000, 'DEFAULT', 1)
+INSERT INTO account (cents, account_type, wallet_id) VALUES (0, 'PAYMENT', 1)
+
+-- merchant accounts
+INSERT INTO account (cents, account_type, wallet_id) VALUES (0, 'INCOMING', 2)
