@@ -22,9 +22,9 @@ type WebhookPayload struct {
 	Status      string `json:"status"` // e.g., "confirmed" or "failed"
 }
 
-func NewPaymentHandler( txnRepo repository.Repo,) *PaymentHandler {
+func NewPaymentHandler(txnRepo repository.Repo) *PaymentHandler {
 	return &PaymentHandler{
-		txnRepo:        txnRepo,
+		txnRepo: txnRepo,
 	}
 }
 

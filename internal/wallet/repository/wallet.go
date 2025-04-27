@@ -8,7 +8,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/internal/wallet/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
-	"github.com/stretchr/testify/mock"
 )
 
 //go:generate mockery generate WalletRepo --output=internal/wallet/repository/mocks
@@ -25,8 +24,7 @@ type WalletRepo interface {
 }
 
 type walletRepo struct {
-	DB *sqlx.DB
-	mock.Mock
+	DB     *sqlx.DB
 	logger utils.Logger
 }
 

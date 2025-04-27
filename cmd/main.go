@@ -51,8 +51,8 @@ func main() {
 
 	// modules
 	user.AuthRoute(r, db, cfg)
-	payment.NewApiHandler(r, cfg)
-	wallet.NewApiHandler(r, cfg)
+	payment.NewApiHandler(r, db, cfg)
+	wallet.NewApiHandler(r, db)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {

@@ -1,15 +1,15 @@
 package ledger
 
 import (
-	"sync"
-	"fmt"
-	. "github.com/mavrk-mose/pay/internal/ledger/models"
-	"time"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	. "github.com/mavrk-mose/pay/internal/ledger/models"
+	"sync"
+	"time"
 )
 
 type TransactionRepo interface {
@@ -75,7 +75,7 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 
 func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
 	for i := range entries {
-		entries[i].Checksum = GenerateChecksum(entries[i]) 
+		entries[i].Checksum = GenerateChecksum(entries[i])
 
 		_, err := txn.NamedExecContext(ctx, `
 			INSERT INTO transactions (
@@ -141,7 +141,6 @@ func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[stri
 	return dbTransactions, nil
 }
 
-
 func GenerateChecksum(txn Transaction) string {
 	data := fmt.Sprintf("%s|%s|%s|%s|%f|%f|%s|%s",
 		txn.ExternalRef, txn.Type, txn.Status, txn.Currency,
@@ -154,7 +153,7 @@ func GenerateChecksum(txn Transaction) string {
 // TODO: add a transaction record for transfers
 // // Insert the transfer record
 // insertQuery := `
-// INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, currency, status, external_ref) 
+// INSERT INTO transfers (from_wallet_id, to_wallet_id, amount, currency, status, external_ref)
 // VALUES (:from_wallet_id, :to_wallet_id, :amount, :currency, :status, :external_ref)
 // `
 // _, err = tx.NamedExecContext(ctx, insertQuery, transfer)
@@ -163,7 +162,6 @@ func GenerateChecksum(txn Transaction) string {
 // r.logger.Errorf("Failed to create transfer record: %v", err)
 // return fmt.Errorf("failed to create transfer record: %v", err)
 // }
-
 
 // TODO: add withdraw transaction
 // debitQuery := `
@@ -175,7 +173,6 @@ func GenerateChecksum(txn Transaction) string {
 // 		tx.Rollback()
 // 		return "", err
 // 	}
-
 
 // creditQuery := `
 // 		INSERT INTO transaction (transaction_id, wallet_id, entry_type, amount, currency)

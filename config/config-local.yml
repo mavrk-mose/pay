@@ -1,6 +1,6 @@
 server:
   AppVersion: 1.0.0
-  Port: :5000
+  Port: 5000
   PprofPort: :5555
   Mode: Development
   JwtSecretKey: secretkey
@@ -22,9 +22,9 @@ logger:
 postgres:
   PostgresqlHost: localhost
   PostgresqlPort: 5432
-  PostgresqlUser: postgres
-  PostgresqlPassword: postgres
-  PostgresqlDbname: auth_db
+  PostgresqlUser: pg
+  PostgresqlPassword: pass
+  PostgresqlDbname: lipa
   PostgresqlSslmode: false
   PgDriver: pgx
 

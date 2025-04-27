@@ -2,23 +2,23 @@ package payment
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
-	handlers "github.com/mavrk-mose/pay/internal/payment/handler"
-	"github.com/mavrk-mose/pay/pkg/middleware"
 	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
+	handlers "github.com/mavrk-mose/pay/internal/payment/handler"
 )
 
-func NewApiHandler(r *gin.Engine, cfg *config.Config, ledgerRepo repository.Repo) {
-	handler := handlers.NewPaymentHandler(ledgerRepo)
+func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
+	handler := handlers.NewPaymentHandler(repository.Repo{DB: db})
 
-	publicKey, err := middleware.LoadPublicKey(cfg.Server.PublicKeyPath)
-	if err != nil {
-		panic(err)
-	}
+	//publicKey, err := middleware.LoadPublicKey(cfg.Server.PublicKeyPath)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	r.GET("/check", handler.Check)
 
-	payment := r.Group("/api/v1", middleware.SignatureMiddleware(publicKey))
+	payment := r.Group("/api/v1")
 	{
 		payment.POST("/event", handler.ProcessPayment)                      // Receive payment event
 		payment.GET("/id/:paymentID", handler.GetPaymentDetails)            // Get payment details
