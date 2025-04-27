@@ -49,6 +49,17 @@ func main() {
 		panic("Failed to connect to database!")
 	}
 
+	// Read the SQL file
+	schema, err := os.ReadFile("pkg/general.sql")
+	if err != nil {
+		log.Fatalln("Failed to read SQL file:", err)
+	}
+
+	_, err = db.Exec(string(schema))
+	if err != nil {
+		log.Fatalln("Failed to execute schema:", err)
+	}
+
 	// modules
 	user.AuthRoute(r, db, cfg)
 	payment.NewApiHandler(r, db, cfg)

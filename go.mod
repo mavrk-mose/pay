@@ -12,7 +12,6 @@ require (
 	github.com/netlify/PayPal-Go-SDK v1.0.2
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	github.com/stripe/stripe-go v70.15.0+incompatible
 	go.uber.org/zap v1.27.0
 	google.golang.org/api v0.171.0
 )
@@ -34,6 +33,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/stripe/stripe-go/v82 v82.0.0 // indirect
 )
 
 require (

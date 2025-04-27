@@ -91,13 +91,19 @@ func (r *walletRepo) CreateTransfer(ctx context.Context, transfer *TransferReque
 	}
 
 	if err := r.Debit(ctx, transfer.FromWalletID, transfer.Amount); err != nil {
-		tx.Rollback()
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		r.logger.Errorf("Failed to debit from_wallet: %v", err)
 		return fmt.Errorf("failed to debit from_wallet: %w", err)
 	}
 
 	if err := r.Credit(ctx, transfer.ToWalletID, transfer.Amount); err != nil {
-		tx.Rollback()
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		r.logger.Errorf("Failed to credit to_wallet: %v", err)
 		return fmt.Errorf("failed to credit to_wallet: %w", err)
 	}
@@ -125,7 +131,10 @@ func (r *walletRepo) Withdraw(ctx context.Context, walletID uuid.UUID, amount fl
 	}
 
 	if err := r.Debit(ctx, walletID, amount); err != nil {
-		tx.Rollback()
+		err := tx.Rollback()
+		if err != nil {
+			return "", err
+		}
 		return "", err
 	}
 

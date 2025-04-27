@@ -2,15 +2,15 @@ package service
 
 import (
 	. "github.com/mavrk-mose/pay/internal/payment/models"
-	"github.com/stripe/stripe-go"
-	"github.com/stripe/stripe-go/charge"
-	"github.com/stripe/stripe-go/customer"
-	"github.com/stripe/stripe-go/paymentintent"
-	"github.com/stripe/stripe-go/checkout/session"
+	"github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/charge"
+	"github.com/stripe/stripe-go/v82/checkout/session"
+	"github.com/stripe/stripe-go/v82/customer"
+	"github.com/stripe/stripe-go/v82/paymentintent"
 )
 
 type StripeProvider struct {
-    SecretKey string // load from yaml config
+	SecretKey string // load from yaml config
 }
 
 func NewStripeProvider(secretKey string) *StripeProvider {
@@ -39,38 +39,38 @@ func (s *StripeProvider) ExecutePayment(order PaymentOrder) (any, error) {
 	// 	Message:       "Payment processed successfully",
 	// 	TransactionID: intent.ID,
 	// }, nil
-    panic("unimplemented")
+	panic("unimplemented")
 }
 
 func (s *StripeProvider) CreateCustomer() (*stripe.Customer, error) {
-    stripe.Key = s.SecretKey
-    params := &stripe.CustomerParams{
-        Name:  stripe.String("John Dey"),
-        Email: stripe.String("abcd123@gmail.com"),
-        Address: &stripe.AddressParams{
-        Line1:      stripe.String("1234 Elm St"),
-        City:       stripe.String("Smalltown"),
-        PostalCode: stripe.String("12345"),
-        State:      stripe.String("CA"),
-        Country:    stripe.String("US"),
-        },
-    }
-    result, err := customer.New(params)
-    return result, err
+	stripe.Key = s.SecretKey
+	params := &stripe.CustomerParams{
+		Name:  stripe.String("John Dey"),
+		Email: stripe.String("abcd123@gmail.com"),
+		Address: &stripe.AddressParams{
+			Line1:      stripe.String("1234 Elm St"),
+			City:       stripe.String("Smalltown"),
+			PostalCode: stripe.String("12345"),
+			State:      stripe.String("CA"),
+			Country:    stripe.String("US"),
+		},
+	}
+	result, err := customer.New(params)
+	return result, err
 }
 
 func (s *StripeProvider) CreateCheckoutSession() (*stripe.CheckoutSession, error) {
-    stripe.Key = s.SecretKey
-    params := &stripe.CheckoutSessionParams{
-        SuccessURL: stripe.String("https://example.com/success"), 
-        Mode:       stripe.String("setup"),                      
-        Customer:   stripe.String("cus_HKtmyFxyxPZQDm"),  
-        PaymentMethodTypes: stripe.StringSlice([]string{
-        "card",
-        }),
-    }
-    result, err := session.New(params)
-    return result, err
+	stripe.Key = s.SecretKey
+	params := &stripe.CheckoutSessionParams{
+		SuccessURL: stripe.String("https://example.com/success"),
+		Mode:       stripe.String("setup"),
+		Customer:   stripe.String("cus_HKtmyFxyxPZQDm"),
+		PaymentMethodTypes: stripe.StringSlice([]string{
+			"card",
+		}),
+	}
+	result, err := session.New(params)
+	return result, err
 }
 
 // {
@@ -83,31 +83,31 @@ func (s *StripeProvider) CreateCheckoutSession() (*stripe.CheckoutSession, error
 // }
 
 func (s *StripeProvider) CreatePaymentIntent() (*stripe.PaymentIntent, error) {
-    stripe.Key = s.SecretKey 
-    params := &stripe.PaymentIntentParams{
-        Amount:      stripe.Int64(1000000), // Assuming `Balance` from the request is the amount in cents
-        Currency:    stripe.String("usd"), // Currency such as "usd"
-        Confirm:     stripe.Bool(true),
-        PaymentMethod: stripe.String("payment_method_id after saving card"),
-        // PaymentMethodTypes: stripe.StringSlice(["card"]),
-        // Customer:    stripe.String(customer_id), 
-        OffSession:  stripe.Bool(true),
-        ConfirmationMethod: stripe.String("automatic"), 
-        Description: stripe.String("Example payment intent for invoice"), // Description of the transaction
-        Shipping: &stripe.ShippingDetailsParams{
-            Name: stripe.String("John Doe"),
-            Address: &stripe.AddressParams{
-              Line1: stripe.String("1234 Main Street"),
-              PostalCode: stripe.String("94105"),
-              City: stripe.String("San Francisco"),
-              State: stripe.String("CA"),
-              Country: stripe.String("US"),
-            },
-        },
-    }
+	stripe.Key = s.SecretKey
+	params := &stripe.PaymentIntentParams{
+		Amount:        stripe.Int64(1000000), // Assuming `Balance` from the request is the amount in cents
+		Currency:      stripe.String("usd"),  // Currency such as "usd"
+		Confirm:       stripe.Bool(true),
+		PaymentMethod: stripe.String("payment_method_id after saving card"),
+		// PaymentMethodTypes: stripe.StringSlice(["card"]),
+		// Customer:    stripe.String(customer_id),
+		OffSession:         stripe.Bool(true),
+		ConfirmationMethod: stripe.String("automatic"),
+		Description:        stripe.String("Example payment intent for invoice"), // Description of the transaction
+		Shipping: &stripe.ShippingDetailsParams{
+			Name: stripe.String("John Doe"),
+			Address: &stripe.AddressParams{
+				Line1:      stripe.String("1234 Main Street"),
+				PostalCode: stripe.String("94105"),
+				City:       stripe.String("San Francisco"),
+				State:      stripe.String("CA"),
+				Country:    stripe.String("US"),
+			},
+		},
+	}
 
-    result, err := paymentintent.New(params)
-    return result, err
+	result, err := paymentintent.New(params)
+	return result, err
 }
 
 func (s *StripeProvider) CreateCharge() (*stripe.Charge, error) {
@@ -116,8 +116,10 @@ func (s *StripeProvider) CreateCharge() (*stripe.Charge, error) {
 		Currency: stripe.String(string(stripe.CurrencyUSD)),
 		// Desc:     stripe.String("Test Charge"),
 	}
-	params.SetSource("tok_visa") // use a test card token provided by Stripe
+	err := params.SetSource("tok_visa")
+	if err != nil {
+		return nil, err
+	} // use a test card token provided by Stripe
 	ch, err := charge.New(params)
 	return ch, err
 }
-

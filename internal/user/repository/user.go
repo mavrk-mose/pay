@@ -88,7 +88,7 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*mod
 }
 
 func (r *userRepo) UpdateUser(ctx context.Context, userID string, updates models.UserUpdateRequest) error {
-	query := "UPDATE users SET "
+	query := "UPDATE users SET"
 	var args []interface{}
 	argCount := 1
 

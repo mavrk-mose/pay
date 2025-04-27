@@ -30,12 +30,12 @@ func NewPsqlDB(c *Config) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	defer func(db *sqlx.DB) {
-		err := db.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(db)
+	//defer func(db *sqlx.DB) {
+	//	err := db.Close()
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//}(db)
 
 	db.SetMaxOpenConns(maxOpenConns)
 	db.SetConnMaxLifetime(connMaxLifetime * time.Second)
