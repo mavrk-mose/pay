@@ -1,14 +1,16 @@
 package main
 
 import (
+	"log"
+	"os"
+
+	"github.com/dreson4/graceful/v2"
 	"github.com/mavrk-mose/pay/internal/notification"
 	"github.com/mavrk-mose/pay/internal/payment"
 	"github.com/mavrk-mose/pay/internal/user"
 	"github.com/mavrk-mose/pay/internal/wallet"
 	"github.com/mavrk-mose/pay/pkg/middleware"
 	"golang.org/x/time/rate"
-	"log"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
@@ -16,6 +18,8 @@ import (
 )
 
 func main() {
+	graceful.Initialize()
+	
 	r := gin.Default()
 
 	_, err := middleware.LoadPublicKey("public.pem")
@@ -70,4 +74,5 @@ func main() {
 		appLogger.Fatalf("Server failed to start: %v", err)
 	}
 
+	graceful.Wait()
 }

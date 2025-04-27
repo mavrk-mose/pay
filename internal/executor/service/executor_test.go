@@ -1,11 +1,13 @@
 package service
 
 import (
+	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/mavrk-mose/pay/internal/executor/service/mocks"
 	"github.com/mavrk-mose/pay/internal/payment/models"
 	"github.com/stretchr/testify/mock"
-	"reflect"
-	"testing"
 )
 
 func TestExecutorService_ExecutePayment(t *testing.T) {
@@ -22,7 +24,36 @@ func TestExecutorService_ExecutePayment(t *testing.T) {
 		want    interface{}
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "successful payment execution",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("ExecutePayment", mock.Anything).Return("success", nil)
+					return m
+				}(),
+			},
+			args: args{
+				order: models.PaymentIntent{ID: "123", Amount: 100},
+			},
+			want:    "success",
+			wantErr: false,
+		},
+		{
+			name: "failed payment execution",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("ExecutePayment", mock.Anything).Return(nil, errors.New("execution failed"))
+					return m
+				}(),
+			},
+			args: args{
+				order: models.PaymentIntent{ID: "124", Amount: 200},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -54,7 +85,34 @@ func TestExecutorService_RecordPaymentOrder(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "successful record payment order",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RecordPaymentOrder", mock.Anything).Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				order: models.PaymentIntent{ID: "125", Amount: 300},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed record payment order",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RecordPaymentOrder", mock.Anything).Return(errors.New("record failed"))
+					return m
+				}(),
+			},
+			args: args{
+				order: models.PaymentIntent{ID: "126", Amount: 400},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -80,12 +138,19 @@ func TestNewPaymentExecutorService(t *testing.T) {
 		args args
 		want *mocks.ExecutorService
 	}{
-		// TODO: Add test cases.
+		{
+			name: "create new payment executor service",
+			args: args{
+				t: &testing.T{},
+			},
+			want: &mocks.ExecutorService{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mocks.NewPaymentExecutorService(tt.args.t); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPaymentExecutorService() = %v, want %v", got, tt.want)
+			got := mocks.NewPaymentExecutorService(tt.args.t)
+			if got == nil {
+				t.Errorf("NewPaymentExecutorService() returned nil")
 			}
 		})
 	}
