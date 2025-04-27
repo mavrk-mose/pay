@@ -63,8 +63,6 @@ func NewDispatcher(
 		logger.Warn("Email notifier not initialized: missing email configuration")
 	}
 
-	// Add Web Notifier if configured
-	// Assuming webhook URL is in the config
 	if cfg.Server.WebhookURL != "" {
 		notifiers["web"] = NewWebNotifier(notificationRepo, logger)
 		logger.Infof("Web notifier initialized with webhook URL: %s", cfg.Server.WebhookURL)

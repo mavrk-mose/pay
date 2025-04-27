@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mavrk-mose/pay/internal/notification"
 	"github.com/mavrk-mose/pay/internal/payment"
 	"github.com/mavrk-mose/pay/internal/user"
 	"github.com/mavrk-mose/pay/internal/wallet"
@@ -22,34 +23,27 @@ func main() {
 		panic(err)
 	}
 
-	// Allow 20 requests per second, with a burst of 5
 	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
-
 	r.Use(rl.RateLimitMiddleware())
 
-	// Load configuration
 	configPath := GetConfigPath(os.Getenv("config"))
 
 	cfgFile, err := config.LoadConfig(configPath)
 	if err != nil {
 		log.Fatalf("LoadConfig: %v", err)
 	}
-
 	cfg, err := config.ParseConfig(cfgFile)
 	if err != nil {
 		log.Fatalf("ParseConfig: %v", err)
 	}
 
-	// Initialize logger
 	appLogger := NewApiLogger(cfg)
 
-	// Initialize database
 	db, err := config.NewPsqlDB(cfg)
 	if err != nil {
 		panic("Failed to connect to database!")
 	}
 
-	// Read the SQL file
 	schema, err := os.ReadFile("pkg/general.sql")
 	if err != nil {
 		log.Fatalln("Failed to read SQL file:", err)
@@ -64,6 +58,7 @@ func main() {
 	user.AuthRoute(r, db, cfg)
 	payment.NewApiHandler(r, db, cfg)
 	wallet.NewApiHandler(r, db)
+	notification.NewApiHandler(r, db)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {
