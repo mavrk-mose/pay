@@ -1,94 +1,87 @@
-package service
+package service_test
 
 import (
+	"errors"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/internal/ledger/models"
-	"github.com/mavrk-mose/pay/internal/ledger/service/mocks"
-	"github.com/stretchr/testify/mock"
-	"reflect"
-	"testing"
+	"github.com/mavrk-mose/pay/internal/ledger/mocks"
+	"github.com/mavrk-mose/pay/internal/payment"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestLedgerService_GetTransactionByID(t *testing.T) {
-	type fields struct {
-		Mock mock.Mock
-	}
-	type args struct {
-		transactionID string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    models.Transaction
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_m := &mocks.LedgerService{
-				Mock: tt.fields.Mock,
-			}
-			got, err := _m.GetTransactionByID(tt.args.transactionID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTransactionByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetTransactionByID() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+func TestPaymentService_MakePayment(t *testing.T) {
+	t.Parallel() 
 
-func TestLedgerService_RecordTransaction(t *testing.T) {
-	type fields struct {
-		Mock mock.Mock
-	}
-	type args struct {
-		ctx *gin.Context
-		txn models.Transaction
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+	testCases := []struct {
+		name        string
+		txn         models.Transaction
+		mockSetup   func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction)
+		expectedErr error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Successful transaction",
+			txn: models.Transaction{
+				ID:       "txn-001",
+				Amount:   100.0,
+				Currency: "USD",
+				Status:   models.StatusPending,
+			},
+			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
+				mock.On("RecordTransaction", ctx, txn).Return(nil)
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Ledger service error",
+			txn: models.Transaction{
+				ID:       "txn-002",
+				Amount:   250.0,
+				Currency: "KES",
+				Status:   models.StatusPending,
+			},
+			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
+				mock.On("RecordTransaction", ctx, txn).Return(errors.New("ledger service failure"))
+			},
+			expectedErr: errors.New("ledger service failure"),
+		},
+		{
+			name: "Duplicate transaction error",
+			txn: models.Transaction{
+				ID:       "txn-003",
+				Amount:   50.0,
+				Currency: "EUR",
+				Status:   models.StatusPending,
+			},
+			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
+				mock.On("RecordTransaction", ctx, txn).Return(errors.New("duplicate transaction"))
+			},
+			expectedErr: errors.New("duplicate transaction"),
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_m := &mocks.LedgerService{
-				Mock: tt.fields.Mock,
-			}
-			if err := _m.RecordTransaction(tt.args.ctx, tt.args.txn); (err != nil) != tt.wantErr {
-				t.Errorf("RecordTransaction() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
 
-func TestNewLedgerService(t *testing.T) {
-	type args struct {
-		t interface {
-			mock.TestingT
-			Cleanup(func())
-		}
-	}
-	tests := []struct {
-		name string
-		args args
-		want *mocks.LedgerService
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mocks.NewLedgerService(tt.args.t); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLedgerService() = %v, want %v", got, tt.want)
+	for _, tc := range testCases {
+		tc := tc 
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel() 
+
+			ctx := &gin.Context{}
+			mockLedger := mocks.NewLedgerService(t)
+
+			tc.mockSetup(mockLedger, ctx, tc.txn)
+
+			paymentService := payment.NewPaymentService(mockLedger)
+			err := paymentService.MakePayment(ctx, tc.txn)
+
+			if tc.expectedErr != nil {
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.NoError(t, err)
 			}
+
+			mockLedger.AssertExpectations(t)
 		})
 	}
 }
