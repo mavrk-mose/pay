@@ -31,7 +31,6 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 
 	transactionID := uuid.New()
 
-	// Create ledger entries: one debit and one credit
 	debitEntry := Transaction{
 		ID:            transactionID,
 		ExternalRef:   uuid.New().String(),
@@ -39,7 +38,7 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 		Status:        TransactionPending,
 		Currency:      currency,
 		DebitWalletID: payerWalletID,
-		DebitAmount:   amount,
+		Amount:        amount,
 		EntryType:     Debit,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
@@ -51,7 +50,7 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 		Status:         TransactionPending,
 		Currency:       currency,
 		CreditWalletID: payeeWalletID,
-		CreditAmount:   amount,
+		Amount:         amount,
 		EntryType:      Credit,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
@@ -144,7 +143,7 @@ func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[stri
 func GenerateChecksum(txn Transaction) string {
 	data := fmt.Sprintf("%s|%s|%s|%s|%f|%f|%s|%s",
 		txn.ExternalRef, txn.Type, txn.Status, txn.Currency,
-		txn.DebitAmount, txn.CreditAmount, txn.DebitWalletID, txn.CreditWalletID,
+		txn.Amount, txn.Amount, txn.DebitWalletID, txn.CreditWalletID,
 	)
 	hash := sha256.Sum256([]byte(data))
 	return hex.EncodeToString(hash[:])
