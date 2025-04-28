@@ -13,15 +13,15 @@ import (
 
 type Dispatcher struct {
 	notifiers map[string]Notifier
+	logger    utils.Logger
 }
 
 func NewDispatcher(
 	cfg *config.Config,
 	userRepo user.UserRepository,
 	notificationRepo repository.NotificationRepo,
+	logger utils.Logger,
 ) *Dispatcher {
-	logger := utils.Logger();
-	
 	logger.Info("Initializing notification dispatcher")
 
 	notifiers := make(map[string]Notifier)
@@ -35,7 +35,6 @@ func NewDispatcher(
 	logger.Debug("Push notifier initialized")
 
 	if cfg.Twilio.AccountSID != "" && cfg.Twilio.AuthToken != "" && cfg.Twilio.From != "" {
-
 		notifiers["sms"] = NewSMSNotifier(
 			cfg.Twilio.AccountSID,
 			cfg.Twilio.AuthToken,
@@ -43,7 +42,6 @@ func NewDispatcher(
 			notificationRepo,
 			logger,
 		)
-
 		logger.Infof("SMS notifier initialized with Twilio from: %s", cfg.Twilio.From)
 	} else {
 		logger.Warn("SMS notifier not initialized: missing Twilio configuration")
@@ -77,8 +75,6 @@ func NewDispatcher(
 	}
 }
 
-// SendNotification Dispatcher sends notifications through the appropriate channel
-// SendNotification sends a notification through the user's preferred channel
 func (d *Dispatcher) SendNotification(ctx context.Context, user models.User, channel, title string, details map[string]string) error {
 	d.logger.Infof("Dispatching notification to user %s via %s channel", user.ID.String(), channel)
 
