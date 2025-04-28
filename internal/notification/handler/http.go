@@ -24,6 +24,7 @@ func NewNotificationHandler(
 	cfg *config.Config,
 	userRepository userRepo.UserRepository,
 	notificationRepository repository.NotificationRepo,
+	logger utils.Logger,
 ) *NotificationHandler {
 	dispatcher := service.NewDispatcher(
 		cfg,
@@ -34,6 +35,7 @@ func NewNotificationHandler(
 	return &NotificationHandler{
 		dispatcher: *dispatcher,
 		repo:       notificationRepository,
+		logger:     logger,
 	}
 }
 
