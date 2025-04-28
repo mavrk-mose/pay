@@ -6,19 +6,34 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mavrk-mose/pay/config"
+	repository "github.com/mavrk-mose/pay/internal/notification/repository"
+	service "github.com/mavrk-mose/pay/internal/notification/service"
+	userRepo "github.com/mavrk-mose/pay/internal/user/repository"
+	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
 type NotificationHandler struct {
-	service NotificationService
+	dispatcher service.Dispatcher
+	repo       repository.NotificationRepo
+	logger    utils.Logger
 }
 
-func NewNotificationHandler(r *gin.Engine, service NotificationService) {
-	h := &NotificationHandler{service: service}
+func NewNotificationHandler(
+	r *gin.Engine,
+	cfg *config.Config,
+	userRepository userRepo.UserRepository,
+	notificationRepository repository.NotificationRepo,
+) *NotificationHandler {
+	dispatcher := service.NewDispatcher(
+		cfg,
+		userRepository,
+		notificationRepository,
+	)
 
-	api := r.Group("/api/notifications")
-	{
-		api.GET("/", h.GetNotifications)
-		api.POST("/:id/read", h.MarkAsRead)
+	return &NotificationHandler{
+		dispatcher: *dispatcher,
+		repo:       notificationRepository,
 	}
 }
 
@@ -28,7 +43,7 @@ func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	notifications, err := h.service.GetNotifications(userID, page, limit)
+	notifications, err := h.repo.FetchNotifications(userID, (page-1)*limit, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch notifications"})
 		return
@@ -48,7 +63,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	err = h.service.MarkNotificationAsRead(userID, notificationID)
+	err = h.repo.UpdateNotificationAsRead(userID, notificationID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to mark as read"})
 		return

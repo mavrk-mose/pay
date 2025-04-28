@@ -62,7 +62,7 @@ func main() {
 	user.AuthRoute(r, db, cfg)
 	payment.NewApiHandler(r, db, cfg)
 	wallet.NewApiHandler(r, db)
-	notification.NewApiHandler(r, db)
+	notification.NewApiHandler(r, db, cfg)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {

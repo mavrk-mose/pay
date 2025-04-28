@@ -73,10 +73,9 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 		Details:        req.Description,
 		Currency:       req.Currency,
 		DebitWalletID:  324532453245, // Use actual wallet ID
-		DebitAmount:    req.Amount,   // Full amount deducted from customer
+		Amount:         req.Amount,   // Full amount deducted from customer
 		EntryType:      EntryType("debit"),
 		CreditWalletID: 235432453455, // Use actual recipient wallet ID
-		CreditAmount:   netAmount,    // Net amount credited to recipient
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
@@ -96,10 +95,9 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 			Details:        "Transaction fee for payment",
 			Currency:       req.Currency,
 			DebitWalletID:  23423342424, // Customer's wallet ID
-			DebitAmount:    feeAmount,   // Fee amount deducted from customer
+			Amount:    feeAmount,   // Fee amount deducted from customer
 			EntryType:      EntryType("debit"),
 			CreditWalletID: 25234534254, // System's fee wallet ID
-			CreditAmount:   feeAmount,   // Fee amount credited to system's fee wallet
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
 		}

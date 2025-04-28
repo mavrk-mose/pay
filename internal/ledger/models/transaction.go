@@ -20,6 +20,9 @@ const (
 	TransactionPending   TransactionStatus = "pending"
 	TransactionConfirmed TransactionStatus = "confirmed"
 	TransactionFailed    TransactionStatus = "failed"
+	TransactionCancelled TransactionStatus = "cancelled"
+	TransactionReversed  TransactionStatus = "reversed"
+	TransactionCompleted TransactionStatus = "completed"
 )
 
 type EntryType string
@@ -38,12 +41,11 @@ type Transaction struct {
 	Currency    string            `db:"currency" json:"currency"`
 
 	DebitWalletID int64   		  `db:"debit_wallet_id" json:"debit_wallet_id"`
-	DebitAmount   float64         `db:"debit_amount" json:"debit_amount"`
+	Amount   float64              `db:"amount" json:"amount"`
 
 	EntryType EntryType           `db:"entry_type" json:"entry_type"`
 
 	CreditWalletID int64          `db:"credit_wallet_id" json:"credit_wallet_id"`
-	CreditAmount   float64        `db:"credit_amount" json:"credit_amount"`
 
 	Checksum string               `db:"checksum" json:"checksum"`
 

@@ -10,6 +10,7 @@ import (
 	"github.com/markbates/goth"
 	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/internal/user/service/mocks"
+	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -26,12 +27,12 @@ func TestNewUserService(t *testing.T) {
 		want *mocks.UserService
 	}{
 		{
-            name: "create new user service",
-            args: args{
-                t: &testing.T{},
-            },
-            want: &mocks.UserService{},
-        },
+			name: "create new user service",
+			args: args{
+				t: &testing.T{},
+			},
+			want: &mocks.UserService{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -58,37 +59,37 @@ func TestUserService_AssignRole(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful role assignment",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("AssignRole", mock.Anything, "user123", "admin").Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                role:   "admin",
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed role assignment",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("AssignRole", mock.Anything, "user123", "admin").Return(errors.New("assignment failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                role:   "admin",
-            },
-            wantErr: true,
-        },
+			name: "successful role assignment",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("AssignRole", mock.Anything, "user123", "admin").Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				role:   "admin",
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed role assignment",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("AssignRole", mock.Anything, "user123", "admin").Return(errors.New("assignment failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				role:   "admin",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -118,37 +119,37 @@ func TestUserService_BanUser(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user ban",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("BanUser", mock.Anything, "user123", "violation").Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                reason: "violation",
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed user ban",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("BanUser", mock.Anything, "user123", "violation").Return(errors.New("ban failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                reason: "violation",
-            },
-            wantErr: true,
-        },
+			name: "successful user ban",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("BanUser", mock.Anything, "user123", "violation").Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				reason: "violation",
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed user ban",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("BanUser", mock.Anything, "user123", "violation").Return(errors.New("ban failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				reason: "violation",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -178,37 +179,37 @@ func TestUserService_GetUserByID(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user retrieval",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("GetUserByID", mock.Anything, "user123").Return(models.User{ID: uuid.New(), Name: "John Doe"}, nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-            },
-            want:    models.User{ID: uuid.New(), Name: "John Doe"},
-            wantErr: false,
-        },
-        {
-            name: "failed user retrieval",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("GetUserByID", mock.Anything, "user123").Return(models.User{}, errors.New("user not found"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-            },
-            want:    models.User{},
-            wantErr: true,
-        },
+			name: "successful user retrieval",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("GetUserByID", mock.Anything, "user123").Return(models.User{ID: uuid.New(), Name: "John Doe"}, nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+			},
+			want:    models.User{ID: uuid.New(), Name: "John Doe"},
+			wantErr: false,
+		},
+		{
+			name: "failed user retrieval",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("GetUserByID", mock.Anything, "user123").Return(models.User{}, errors.New("user not found"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+			},
+			want:    models.User{},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -243,43 +244,43 @@ func TestUserService_ListUsers(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user list retrieval",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("ListUsers", mock.Anything, mock.Anything).Return([]models.User{
-                        {ID: uuid.New(), Name: "John Doe"},
-                        {ID: uuid.New(), Name: "Jane Doe"},
-                    }, nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                filter: models.UserFilter{},
-            },
-            want: []models.User{
-                {ID: uuid.New(), Name: "John Doe"},
-                {ID: uuid.New(), Name: "Jane Doe"},
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed user list retrieval",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("ListUsers", mock.Anything, mock.Anything).Return(nil, errors.New("list failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                filter: models.UserFilter{},
-            },
-            want:    nil,
-            wantErr: true,
-        },
+			name: "successful user list retrieval",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("ListUsers", mock.Anything, mock.Anything).Return([]models.User{
+						{ID: uuid.New(), Name: "John Doe"},
+						{ID: uuid.New(), Name: "Jane Doe"},
+					}, nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				filter: models.UserFilter{},
+			},
+			want: []models.User{
+				{ID: uuid.New(), Name: "John Doe"},
+				{ID: uuid.New(), Name: "Jane Doe"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed user list retrieval",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("ListUsers", mock.Anything, mock.Anything).Return(nil, errors.New("list failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				filter: models.UserFilter{},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -314,37 +315,37 @@ func TestUserService_RegisterUser(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user registration",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("RegisterUser", mock.Anything, mock.Anything).Return("user123", nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:  context.TODO(),
-                user: goth.User{UserID: "user123", Name: "John Doe"},
-            },
-            want:    "user123",
-            wantErr: false,
-        },
-        {
-            name: "failed user registration",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("RegisterUser", mock.Anything, mock.Anything).Return("", errors.New("registration failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:  context.TODO(),
-                user: goth.User{UserID: "user123", Name: "John Doe"},
-            },
-            want:    "",
-            wantErr: true,
-        },
+			name: "successful user registration",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RegisterUser", mock.Anything, mock.Anything).Return("user123", nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:  context.TODO(),
+				user: goth.User{UserID: "user123", Name: "John Doe"},
+			},
+			want:    "user123",
+			wantErr: false,
+		},
+		{
+			name: "failed user registration",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RegisterUser", mock.Anything, mock.Anything).Return("", errors.New("registration failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:  context.TODO(),
+				user: goth.User{UserID: "user123", Name: "John Doe"},
+			},
+			want:    "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -379,37 +380,37 @@ func TestUserService_RevokeRole(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful role revocation",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("RevokeRole", mock.Anything, "user123", "admin").Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                role:   "admin",
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed role revocation",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("RevokeRole", mock.Anything, "user123", "admin").Return(errors.New("revocation failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-                role:   "admin",
-            },
-            wantErr: true,
-        },
+			name: "successful role revocation",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RevokeRole", mock.Anything, "user123", "admin").Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				role:   "admin",
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed role revocation",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("RevokeRole", mock.Anything, "user123", "admin").Return(errors.New("revocation failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+				role:   "admin",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -438,35 +439,35 @@ func TestUserService_UnbanUser(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user unban",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("UnbanUser", mock.Anything, "user123").Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed user unban",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("UnbanUser", mock.Anything, "user123").Return(errors.New("unban failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:    context.TODO(),
-                userID: "user123",
-            },
-            wantErr: true,
-        },
+			name: "successful user unban",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("UnbanUser", mock.Anything, "user123").Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed user unban",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("UnbanUser", mock.Anything, "user123").Return(errors.New("unban failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:    context.TODO(),
+				userID: "user123",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -496,37 +497,37 @@ func TestUserService_UpdateUser(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful user update",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("UpdateUser", mock.Anything, "user123", mock.Anything).Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:     context.TODO(),
-                userID:  "user123",
-                updates: models.UserUpdateRequest{Name: "Updated Name"},
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed user update",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("UpdateUser", mock.Anything, "user123", mock.Anything).Return(errors.New("update failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:     context.TODO(),
-                userID:  "user123",
-                updates: models.UserUpdateRequest{Name: "Updated Name"},
-            },
-            wantErr: true,
-        },
+			name: "successful user update",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("UpdateUser", mock.Anything, "user123", mock.Anything).Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:     context.TODO(),
+				userID:  "user123",
+				updates: models.UserUpdateRequest{Name: utils.Ptr("Updated Name")},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed user update",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("UpdateUser", mock.Anything, "user123", mock.Anything).Return(errors.New("update failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:     context.TODO(),
+				userID:  "user123",
+				updates: models.UserUpdateRequest{Name: utils.Ptr("Updated Name")},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

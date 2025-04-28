@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/internal/user/models"
@@ -12,15 +13,15 @@ import (
 
 type Dispatcher struct {
 	notifiers map[string]Notifier
-	logger    utils.Logger
 }
 
 func NewDispatcher(
 	cfg *config.Config,
 	userRepo user.UserRepository,
 	notificationRepo repository.NotificationRepo,
-	logger utils.Logger,
 ) *Dispatcher {
+	logger := utils.Logger();
+	
 	logger.Info("Initializing notification dispatcher")
 
 	notifiers := make(map[string]Notifier)

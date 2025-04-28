@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mavrk-mose/pay/internal/ledger/models"
-	"github.com/mavrk-mose/pay/internal/ledger/mocks"
-	"github.com/mavrk-mose/pay/internal/payment"
+	"github.com/mavrk-mose/pay/internal/ledger/service/mocks"
+	payment "github.com/mavrk-mose/pay/internal/payment/service/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -24,10 +25,10 @@ func TestPaymentService_MakePayment(t *testing.T) {
 		{
 			name: "Successful transaction",
 			txn: models.Transaction{
-				ID:       "txn-001",
+				ID:       uuid.New(),
 				Amount:   100.0,
 				Currency: "USD",
-				Status:   models.StatusPending,
+				Status:   models.TransactionCompleted,
 			},
 			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
 				mock.On("RecordTransaction", ctx, txn).Return(nil)
@@ -37,10 +38,10 @@ func TestPaymentService_MakePayment(t *testing.T) {
 		{
 			name: "Ledger service error",
 			txn: models.Transaction{
-				ID:       "txn-002",
+				ID:       uuid.New(),
 				Amount:   250.0,
 				Currency: "KES",
-				Status:   models.StatusPending,
+				Status:   models.TransactionFailed,
 			},
 			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
 				mock.On("RecordTransaction", ctx, txn).Return(errors.New("ledger service failure"))
@@ -50,10 +51,10 @@ func TestPaymentService_MakePayment(t *testing.T) {
 		{
 			name: "Duplicate transaction error",
 			txn: models.Transaction{
-				ID:       "txn-003",
+				ID:       uuid.New(),
 				Amount:   50.0,
 				Currency: "EUR",
-				Status:   models.StatusPending,
+				Status:   models.TransactionPending,
 			},
 			mockSetup: func(mock *mocks.LedgerService, ctx *gin.Context, txn models.Transaction) {
 				mock.On("RecordTransaction", ctx, txn).Return(errors.New("duplicate transaction"))

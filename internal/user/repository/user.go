@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"fmt"
-	wallet "github.com/mavrk-mose/pay/internal/wallet/models"
+	"strings"
 	"time"
+
+	wallet "github.com/mavrk-mose/pay/internal/wallet/models"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
@@ -88,37 +90,43 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*mod
 }
 
 func (r *userRepo) UpdateUser(ctx context.Context, userID string, updates models.UserUpdateRequest) error {
-	query := "UPDATE users SET"
-	var args []interface{}
-	argCount := 1
+	var (
+		setClauses []string
+		args       []interface{}
+	)
 
 	if updates.Name != nil {
-		query += fmt.Sprintf("name = $%d, ", argCount)
+		setClauses = append(setClauses, fmt.Sprintf("name = $%d", len(args)+1))
 		args = append(args, *updates.Name)
-		argCount++
 	}
 	if updates.Email != nil {
-		query += fmt.Sprintf("email = $%d, ", argCount)
+		setClauses = append(setClauses, fmt.Sprintf("email = $%d", len(args)+1))
 		args = append(args, *updates.Email)
-		argCount++
 	}
 	if updates.Phone != nil {
-		query += fmt.Sprintf("phone = $%d, ", argCount)
+		setClauses = append(setClauses, fmt.Sprintf("phone = $%d", len(args)+1))
 		args = append(args, *updates.Phone)
-		argCount++
 	}
 	if updates.IsActive != nil {
-		query += fmt.Sprintf("is_active = $%d, ", argCount)
+		setClauses = append(setClauses, fmt.Sprintf("is_active = $%d", len(args)+1))
 		args = append(args, *updates.IsActive)
-		argCount++
 	}
 
-	query = query[:len(query)-2] + fmt.Sprintf(" WHERE id = $%d", argCount)
+	if len(setClauses) == 0 {
+		return nil // nothing to update
+	}
+
+	query := fmt.Sprintf(
+		"UPDATE users SET %s WHERE id = $%d",
+		strings.Join(setClauses, ", "),
+		len(args)+1,
+	)
 	args = append(args, userID)
 
 	_, err := r.db.ExecContext(ctx, query, args...)
 	return err
 }
+
 
 func (r *userRepo) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
 	var user models.User
