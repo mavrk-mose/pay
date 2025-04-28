@@ -96,13 +96,15 @@ func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID str
 	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
 	s.logger.Debugf("Processed template message: %s", message)
 
-	notification := Notification{
-		ID:      uuid.New(),
-		UserID:  userID,
-		Title:   template.Title,
-		Message: message,
-		Type:    template.Type,
-		Time:    time.Now(),
+	notification := Notification {
+		ID:        uuid.New(),
+		UserID:    userID,
+		Channel:   "WEB",     
+		Title:     template.Title,
+		Message:   message,
+		Type:      template.Type,
+		IsRead:    false,        
+		CreatedAt: time.Now(),
 	}
 
 	if notifyChan, ok := s.clients.Get(userID); ok {
