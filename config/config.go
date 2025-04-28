@@ -160,17 +160,17 @@ type Jaeger struct {
 }
 
 // PSP
-stripe struct {
+type stripe struct {
 	secret string
 	key    string
 }
 
-paypal struct {
+type paypal struct {
 	secret string
 	key    string
 }
 
-adyen struct {
+type adyen struct {
 	secret string
 	key    string
 }
