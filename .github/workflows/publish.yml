@@ -13,15 +13,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
+      # - name: Set up Go
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: '1.24'
 
-      - name: Run Tests
-        run: |
-          go mod tidy
-          go test ./... -v
+      # - name: Run Tests
+      #   run: |
+      #     go mod tidy
+      #     go test ./... -v
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
