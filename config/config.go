@@ -159,6 +159,22 @@ type Jaeger struct {
 	LogSpans    bool
 }
 
+// PSP
+stripe struct {
+	secret string
+	key    string
+}
+
+paypal struct {
+	secret string
+	key    string
+}
+
+adyen struct {
+	secret string
+	key    string
+}
+
 // Load config file from given path
 func LoadConfig(filename string) (*viper.Viper, error) {
 	v := viper.New()
