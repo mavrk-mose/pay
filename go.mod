@@ -1,6 +1,6 @@
 module github.com/mavrk-mose/pay
 
-go 1.23.4
+go 1.24
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
