@@ -36,5 +36,5 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.actor }}/pay:latest .
+          docker push ghcr.io/${{ github.actor }}/pay:latest 
           
