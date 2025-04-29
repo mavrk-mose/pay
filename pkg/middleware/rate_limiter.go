@@ -9,7 +9,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// RateLimiter defines a struct to manage limiters per IP
 type RateLimiter struct {
 	limiters map[string]*rate.Limiter
 	mu       sync.Mutex

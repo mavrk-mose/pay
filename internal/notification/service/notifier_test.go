@@ -25,12 +25,12 @@ func TestNewNotifier(t *testing.T) {
 		want *mocks.Notifier
 	}{
 		{
-            name: "create new notifier",
-            args: args{
-                t: &testing.T{},
-            },
-            want: &mocks.Notifier{},
-        },
+			name: "create new notifier",
+			args: args{
+				t: &testing.T{},
+			},
+			want: &mocks.Notifier{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -42,6 +42,8 @@ func TestNewNotifier(t *testing.T) {
 }
 
 func TestNotifier_Send(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Mock mock.Mock
 	}
@@ -58,39 +60,39 @@ func TestNotifier_Send(t *testing.T) {
 		wantErr bool
 	}{
 		{
-            name: "successful notification send",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("Send", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:        context.TODO(),
-                user:       models.User{ID: uuid.New(), Name: "John Doe"},
-                templateID: "welcome_email",
-                details:    map[string]string{"subject": "Welcome", "body": "Hello, John!"},
-            },
-            wantErr: false,
-        },
-        {
-            name: "failed notification send",
-            fields: fields{
-                Mock: func() mock.Mock {
-                    m := mock.Mock{}
-                    m.On("Send", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("send failed"))
-                    return m
-                }(),
-            },
-            args: args{
-                ctx:        context.TODO(),
-                user:       models.User{ID: uuid.New(), Name: "Jane Doe"},
-                templateID: "error_email",
-                details:    map[string]string{"subject": "Error", "body": "Something went wrong."},
-            },
-            wantErr: true,
-        },
+			name: "successful notification send",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("Send", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+					return m
+				}(),
+			},
+			args: args{
+				ctx:        context.TODO(),
+				user:       models.User{ID: uuid.New(), Name: "John Doe"},
+				templateID: "welcome_email",
+				details:    map[string]string{"subject": "Welcome", "body": "Hello, John!"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed notification send",
+			fields: fields{
+				Mock: func() mock.Mock {
+					m := mock.Mock{}
+					m.On("Send", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("send failed"))
+					return m
+				}(),
+			},
+			args: args{
+				ctx:        context.TODO(),
+				user:       models.User{ID: uuid.New(), Name: "Jane Doe"},
+				templateID: "error_email",
+				details:    map[string]string{"subject": "Error", "body": "Something went wrong."},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

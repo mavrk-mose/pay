@@ -11,6 +11,8 @@ import (
 )
 
 func TestExecutorService_ExecutePayment(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		Mock mock.Mock
 	}

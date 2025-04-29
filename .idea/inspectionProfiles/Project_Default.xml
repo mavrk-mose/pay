@@ -1,0 +1,14 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
+      <functions>
+        <function importPath="github.com/golang-jwt/jwt" name="Parse" />
+      </functions>
+      <methods>
+        <method importPath="github.com/mavrk-mose/pay/internal/ledger/service" receiver="LedgerService" name="GetTransactionByID" />
+        <method importPath="github.com/mavrk-mose/pay/internal/wallet/repository" receiver="WalletRepo" name="CreateWallet" />
+      </methods>
+    </inspection_tool>
+  </profile>
+</component>

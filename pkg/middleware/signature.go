@@ -17,6 +17,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	signatureHeader = "Signature"
+	filePath        = "certs/public.pem"
+)
+
 func SignatureMiddleware(publicKey *rsa.PublicKey) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		body, err := io.ReadAll(c.Request.Body)
@@ -69,7 +74,7 @@ func VerifySignature(data, signature []byte, publicKey *rsa.PublicKey) error {
 	return nil
 }
 
-func LoadPublicKey(filePath string) (*rsa.PublicKey, error) {
+func LoadPublicKey() (*rsa.PublicKey, error) {
 	keyBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mavrk-mose/pay/pkg/db"
 	"log"
 	"os"
 
@@ -19,13 +20,8 @@ import (
 
 func main() {
 	graceful.Initialize()
-	
-	r := gin.Default()
 
-	_, err := middleware.LoadPublicKey("public.pem")
-	if err != nil {
-		panic(err)
-	}
+	r := gin.Default()
 
 	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
 	r.Use(rl.RateLimitMiddleware())
@@ -43,26 +39,18 @@ func main() {
 
 	appLogger := NewApiLogger(cfg)
 
-	db, err := config.NewPsqlDB(cfg)
+	DB, err := db.NewPsqlDB(cfg)
 	if err != nil {
 		panic("Failed to connect to database!")
 	}
 
-	schema, err := os.ReadFile("pkg/general.sql")
-	if err != nil {
-		log.Fatalln("Failed to read SQL file:", err)
-	}
-
-	_, err = db.Exec(string(schema))
-	if err != nil {
-		log.Fatalln("Failed to execute schema:", err)
-	}
+	db.MigrateDB(DB)
 
 	// modules
-	user.AuthRoute(r, db, cfg)
-	payment.NewApiHandler(r, db, cfg)
-	wallet.NewApiHandler(r, db)
-	notification.NewApiHandler(r, db, cfg)
+	user.AuthRoute(r, DB, cfg)
+	payment.NewApiHandler(r, DB, cfg)
+	wallet.NewApiHandler(r, DB)
+	notification.NewApiHandler(r, DB, cfg)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {

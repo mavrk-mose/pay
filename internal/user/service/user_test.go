@@ -15,6 +15,8 @@ import (
 )
 
 func TestNewUserService(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		t interface {
 			mock.TestingT

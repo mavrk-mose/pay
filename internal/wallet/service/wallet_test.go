@@ -11,6 +11,8 @@ import (
 )
 
 func TestNewWalletService(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		t interface {
 			mock.TestingT
