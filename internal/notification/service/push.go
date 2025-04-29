@@ -14,7 +14,6 @@ import (
 	"google.golang.org/api/option"
 )
 
-// PushNotifier sends push notifications via Firebase Cloud Messaging (FCM)
 type PushNotifier struct {
 	repo     repo.NotificationRepo
 	userRepo repository.UserRepository
@@ -25,24 +24,14 @@ type PushNotifier struct {
 func NewPushNotifier(
 	repo repo.NotificationRepo,
 	userRepo repository.UserRepository,
-	logger utils.Logger,
-	firebaseConfig config.Firebase,
+	cfg *config.Config,
 ) *PushNotifier {
 	return &PushNotifier{
 		repo:     repo,
 		userRepo: userRepo,
-		logger:   logger,
-		firebase: firebaseConfig,
+		firebase: cfg.Firebase,
 	}
 }
-
-// TODO: for push notification require device id & platform in the http handler
-// deviceID := ctx.GetHeader("device-id")
-// if deviceID == "" {
-// 	response.BadRequestError(ctx, "device-id missing")
-// 	return
-// }
-// platform := ctx.GetHeader("platform") -- do android only for now
 
 func (n *PushNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
 	if user.DeviceToken == "" {
@@ -75,6 +64,7 @@ func (n *PushNotifier) Send(ctx context.Context, user models.User, templateID st
 	}
 
 	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
+
 	n.logger.Debugf("Processed template message: %s", message)
 
 	_, err = client.Send(ctx, &messaging.Message{
@@ -167,3 +157,11 @@ func (n *PushNotifier) Send(ctx context.Context, user models.User, templateID st
 //
 //	log.Printf("batch response: %+v, err: %s \n", batchResp, err)
 //}
+
+// TODO: for push notification require device id & platform in the http handler
+// deviceID := ctx.GetHeader("device-id")
+// if deviceID == "" {
+// 	response.BadRequestError(ctx, "device-id missing")
+// 	return
+// }
+// platform := ctx.GetHeader("platform") -- do android only for now

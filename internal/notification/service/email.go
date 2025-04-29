@@ -3,39 +3,30 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/mavrk-mose/pay/config"
 	notificationRepo "github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"net/smtp"
 )
 
-// EmailNotifier sends email notifications via SMTP
 type EmailNotifier struct {
-	from             string // Sender email address
-	smtpHost         string // SMTP server host
-	smtpPort         string // SMTP server port
+	from             string
+	smtpHost         string
+	smtpPort         string
 	auth             smtp.Auth
 	notificationRepo notificationRepo.NotificationRepo
 	logger           utils.Logger
 }
 
-func NewEmailNotifier(
-	from,
-	smtpHost,
-	smtpPort,
-	smtpUser,
-	smtpPass string,
-	notificationRepo notificationRepo.NotificationRepo,
-	logger utils.Logger,
-) *EmailNotifier {
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
+func NewEmailNotifier(cfg *config.Config, notificationRepo notificationRepo.NotificationRepo) *EmailNotifier {
+	auth := smtp.PlainAuth("", cfg.Server.SMTPUser, cfg.Server.SMTPPassword, cfg.Server.SMTPHost)
 	return &EmailNotifier{
-		from:             from,
-		smtpHost:         smtpHost,
-		smtpPort:         smtpPort,
+		from:             cfg.Server.EmailFrom,
+		smtpHost:         cfg.Server.SMTPHost,
+		smtpPort:         cfg.Server.SMTPPort,
 		auth:             auth,
 		notificationRepo: notificationRepo,
-		logger:           logger,
 	}
 }
 
@@ -49,6 +40,8 @@ func (n *EmailNotifier) Send(ctx context.Context, user models.User, templateID s
 
 	to := user.Email
 
+	n.logger.Infof("Sending email to user %s", to)
+
 	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
 	if err != nil {
 		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
@@ -57,13 +50,15 @@ func (n *EmailNotifier) Send(ctx context.Context, user models.User, templateID s
 
 	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
 
+	n.logger.Debugf("Processed template message: %s", message)
+
 	subject := fmt.Sprintf("Subject: %s\n", templateID)
 	body := fmt.Sprintf("%s\n\n%s", templateID, message)
 	msg := []byte(subject + "\n" + body)
 
-	// Send the email
 	err = smtp.SendMail(n.smtpHost+":"+n.smtpPort, n.auth, n.from, []string{to}, msg)
 	if err != nil {
+		n.logger.Errorf("Failed to send email to %s: %v", to, err)
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 

@@ -24,12 +24,10 @@ type WebNotifier struct {
 
 func NewWebNotifier(
 	repo repository.NotificationRepo,
-	logger utils.Logger,
 ) *WebNotifier {
 	return &WebNotifier{
 		clients: cmap.New[chan Notification](),
 		repo:    repo,
-		logger:  logger,
 	}
 }
 
@@ -54,7 +52,7 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 		s.logger.Debugf("Removed user %s from active clients map", userID)
 	}()
 
-	ctx := c.Request.Context()
+	ctx := c
 	for {
 		select {
 		case <-ctx.Done():
@@ -80,7 +78,7 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 	}
 }
 
-// SendNotification sends a notification to a specific user
+// Send SendNotification sends a notification to a specific user
 // SSE provides real-time updates to web clients.
 func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
 	userID := user.ID.String()
@@ -94,16 +92,17 @@ func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID str
 	}
 
 	message := utils.ReplaceTemplatePlaceholders(template.Message, details)
+
 	s.logger.Debugf("Processed template message: %s", message)
 
-	notification := Notification {
+	notification := Notification{
 		ID:        uuid.New(),
 		UserID:    userID,
-		Channel:   "WEB",     
+		Channel:   "WEB",
 		Title:     template.Title,
 		Message:   message,
 		Type:      template.Type,
-		IsRead:    false,        
+		IsRead:    false,
 		CreatedAt: time.Now(),
 	}
 

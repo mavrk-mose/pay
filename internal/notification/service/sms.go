@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/user/models"
 
 	"github.com/mavrk-mose/pay/internal/notification/repository"
@@ -11,7 +12,6 @@ import (
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
-// SMSNotifier sends SMS notifications via Twilio
 type SMSNotifier struct {
 	client           *twilio.RestClient
 	from             string // Twilio phone number from config
@@ -19,26 +19,18 @@ type SMSNotifier struct {
 	logger           utils.Logger
 }
 
-func NewSMSNotifier(
-	accountSID,
-	authToken,
-	from string,
-	notificationRepo repository.NotificationRepo,
-	logger utils.Logger,
-) *SMSNotifier {
+func NewSMSNotifier(cfg *config.Config, notificationRepo repository.NotificationRepo) *SMSNotifier {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: accountSID,
-		Password: authToken,
+		Username: cfg.Twilio.AccountSID,
+		Password: cfg.Twilio.AuthToken,
 	})
 	return &SMSNotifier{
 		client:           client,
-		from:             from,
+		from:             cfg.Twilio.From,
 		notificationRepo: notificationRepo,
-		logger:           logger,
 	}
 }
 
-// Send sends a simple SMS without using a template (for backward compatibility)
 func (n *SMSNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
 	userID := user.ID.String()
 

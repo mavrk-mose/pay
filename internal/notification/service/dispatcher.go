@@ -11,6 +11,10 @@ import (
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
+type DispatcherService interface {
+	SendNotification(ctx context.Context, user models.User, channel, title string, details map[string]string) error
+}
+
 type Dispatcher struct {
 	notifiers map[string]Notifier
 	logger    utils.Logger
@@ -20,58 +24,29 @@ func NewDispatcher(
 	cfg *config.Config,
 	userRepo user.UserRepository,
 	notificationRepo repository.NotificationRepo,
-	logger utils.Logger,
 ) *Dispatcher {
-	logger.Info("Initializing notification dispatcher")
-
 	notifiers := make(map[string]Notifier)
 
 	notifiers["push"] = NewPushNotifier(
 		notificationRepo,
 		userRepo,
-		logger,
-		cfg.Firebase,
+		cfg,
 	)
-	logger.Debug("Push notifier initialized")
 
 	if cfg.Twilio.AccountSID != "" && cfg.Twilio.AuthToken != "" && cfg.Twilio.From != "" {
-		notifiers["sms"] = NewSMSNotifier(
-			cfg.Twilio.AccountSID,
-			cfg.Twilio.AuthToken,
-			cfg.Twilio.From,
-			notificationRepo,
-			logger,
-		)
-		logger.Infof("SMS notifier initialized with Twilio from: %s", cfg.Twilio.From)
-	} else {
-		logger.Warn("SMS notifier not initialized: missing Twilio configuration")
+		notifiers["sms"] = NewSMSNotifier(cfg, notificationRepo)
 	}
 
 	if cfg.Server.EmailFrom != "" && cfg.Server.SMTPHost != "" {
-		notifiers["email"] = NewEmailNotifier(
-			cfg.Server.EmailFrom,
-			cfg.Server.SMTPHost,
-			cfg.Server.SMTPPort,
-			cfg.Server.SMTPUser,
-			cfg.Server.SMTPPassword,
-			notificationRepo,
-			logger,
-		)
-		logger.Infof("Email notifier initialized with sender: %s", cfg.Server.EmailFrom)
-	} else {
-		logger.Warn("Email notifier not initialized: missing email configuration")
+		notifiers["email"] = NewEmailNotifier(cfg, notificationRepo)
 	}
 
 	if cfg.Server.WebhookURL != "" {
-		notifiers["web"] = NewWebNotifier(notificationRepo, logger)
-		logger.Infof("Web notifier initialized with webhook URL: %s", cfg.Server.WebhookURL)
-	} else {
-		logger.Warn("Web notifier not initialized: missing webhook configuration")
+		notifiers["web"] = NewWebNotifier(notificationRepo)
 	}
 
 	return &Dispatcher{
 		notifiers: notifiers,
-		logger:    logger,
 	}
 }
 

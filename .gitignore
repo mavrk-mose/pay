@@ -20,3 +20,5 @@ gopath/
 
 # Go workspace file
 go.work
+/.idea/vcs.xml
+.xml
