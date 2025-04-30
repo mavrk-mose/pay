@@ -36,6 +36,9 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 	userID := c.Param("userID")
 	s.logger.Infof("SSE connection established for user: %s", userID)
 
+	_, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
 	// Set headers for SSE
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
@@ -59,26 +62,14 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 			s.logger.Infof("Client %s disconnected", userID)
 			return
 		case notification := <-notifyChan:
-			// Send the notification as an SSE event
-			data, err := json.Marshal(notification)
-			if err != nil {
-				s.logger.Errorf("Failed to marshal notification for user %s: %v", userID, err)
-				continue
-			}
-
-			_, err = fmt.Fprintf(c.Writer, "data: %s\n\n", data)
-			if err != nil {
-				s.logger.Errorf("Failed to write SSE data for user %s: %v", userID, err)
-				return
-			}
-
+			c.SSEvent("message", notification.Message)
 			c.Writer.Flush()
 			s.logger.Debugf("Notification sent to user %s: %s", userID, notification.ID)
 		}
 	}
 }
 
-// Send SendNotification sends a notification to a specific user
+// Send sends a notification to a specific user
 // SSE provides real-time updates to web clients.
 func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
 	userID := user.ID.String()
