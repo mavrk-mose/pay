@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//go:generate mockery --name=WalletService --output=./mocks --filename=wallet.go --with-expecter
 type WalletService interface {
 	CreateWallet(ctx *gin.Context, req CreateWalletRequest) (Wallet, error)
 	Transfer(ctx *gin.Context, req TransferRequest) error

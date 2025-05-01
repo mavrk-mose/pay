@@ -80,7 +80,7 @@ func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entr
 			INSERT INTO transaction (
 				id, external_ref, type, status, details, currency, 
 				debit_wallet_id, amount,
-				credit_wallet_id, credit_amount, created_at, updated_at, checksum
+				credit_wallet_id, created_at, updated_at, checksum
 			) VALUES (
 				:id, :external_ref, :type, :status, :details, :currency, 
 				:debit_wallet_id, :amount,
@@ -111,7 +111,12 @@ func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, sta
 }
 
 func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
-	query := `SELECT id, checksum FROM transaction WHERE provider = $1 AND created_at >= NOW() - INTERVAL '1 DAY'`
+	query := `
+        SELECT id, checksum
+        FROM transaction
+        WHERE provider = $1
+          AND created_at >= NOW() - INTERVAL '1 DAY'
+`
 	rows, err := db.Query(query, provider)
 	if err != nil {
 		panic(err)
@@ -141,7 +146,7 @@ func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[stri
 }
 
 func GenerateChecksum(txn Transaction) string {
-	data := fmt.Sprintf("%s|%s|%s|%s|%f|%s|%s",
+	data := fmt.Sprintf("%s|%s|%s|%s|%f|%d|%d",
 		txn.ExternalRef, txn.Type, txn.Status, txn.Currency,
 		txn.Amount, txn.DebitWalletID, txn.CreditWalletID,
 	)

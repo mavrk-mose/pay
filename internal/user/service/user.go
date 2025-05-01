@@ -16,6 +16,7 @@ var (
 	expirationTime time.Time
 )
 
+//go:generate mockery --name=UserService --output=./mocks --filename=user.go --with-expecter
 type UserService interface {
 	RegisterUser(ctx context.Context, user goth.User) (token string, err error)
 	UpdateUser(ctx context.Context, userID string, updates UserUpdateRequest) error
@@ -53,8 +54,8 @@ func (s *userService) RegisterUser(ctx context.Context, user goth.User) (string,
 	return token, nil
 }
 
-func (s *userService) UpdateUser(ctx context.Context, userID string, updates UserUpdateRequest) error {	
-	s.logger.Infof("Updating user : %v", userID)	
+func (s *userService) UpdateUser(ctx context.Context, userID string, updates UserUpdateRequest) error {
+	s.logger.Infof("Updating user : %v", userID)
 
 	return s.repo.UpdateUser(ctx, userID, updates)
 }

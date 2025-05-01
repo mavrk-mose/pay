@@ -14,7 +14,17 @@ import (
 	wallet "github.com/mavrk-mose/pay/internal/wallet/service"
 )
 
-type PaymentService struct {
+//go:generate mockery --name=PaymentService --output=./mocks --filename=payment.go --with-expecter
+type PaymentService interface {
+	ProcessPayment(ctx *gin.Context, req PaymentIntent) error
+	GetPaymentDetails(id string) (PaymentIntent, error)
+	GetPaymentStatus(id string) (PaymentStatus, error)
+	QueryPaymentsByDateRange(id string, startDate time.Time, endDate time.Time) ([]PaymentIntent, error)
+	QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error)
+	UpdatePaymentStatus(id string, status PaymentStatus) error
+}
+
+type payment struct {
 	walletService     wallet.WalletService
 	ledgerService     ledger.LedgerService
 	executor          executor.PaymentExecutor
@@ -27,8 +37,8 @@ func NewPaymentService(
 	ledger ledger.LedgerService,
 	executor executor.PaymentExecutor,
 	productConfigRepo ProductConfigRepo,
-) *PaymentService {
-	return &PaymentService{
+) *payment {
+	return &payment{
 		walletService:     wallet,
 		ledgerService:     ledger,
 		executor:          executor,
@@ -41,7 +51,7 @@ type ExternalPaymentResponse struct {
 	ExternalRef string `json:"external_ref"`
 }
 
-func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
+func (h *payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 	productConfig, err := h.productConfigRepo.GetProductConfig(ctx, req.ProductName)
 	if err != nil {
 		h.logger.Errorf("Failed to fetch product configuration: %v", err)
@@ -95,7 +105,7 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 			Details:        "Transaction fee for payment",
 			Currency:       req.Currency,
 			DebitWalletID:  23423342424, // Customer's wallet ID
-			Amount:    feeAmount,   // Fee amount deducted from customer
+			Amount:         feeAmount,   // Fee amount deducted from customer
 			EntryType:      EntryType("debit"),
 			CreditWalletID: 25234534254, // System's fee wallet ID
 			CreatedAt:      time.Now(),
@@ -126,22 +136,22 @@ func (h *PaymentService) ProcessPayment(ctx *gin.Context, req PaymentIntent) err
 	return nil
 }
 
-func (h *PaymentService) GetPaymentDetails(id string) (PaymentIntent, error) {
+func (h *payment) GetPaymentDetails(id string) (PaymentIntent, error) {
 	return PaymentIntent{}, nil
 }
 
-func (h *PaymentService) GetPaymentStatus(id string) (PaymentStatus, error) {
+func (h *payment) GetPaymentStatus(id string) (PaymentStatus, error) {
 	return "", nil
 }
 
-func (h *PaymentService) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {
+func (h *payment) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {
 	return []PaymentIntent{}, nil
 }
 
-func (h *PaymentService) QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error) {
+func (h *payment) QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error) {
 	return []PaymentIntent{}, nil
 }
 
-func (h *PaymentService) UpdatePaymentStatus(id string, status PaymentStatus) error {
+func (h *payment) UpdatePaymentStatus(id string, status PaymentStatus) error {
 	return nil
 }

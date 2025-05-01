@@ -11,6 +11,7 @@ import (
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
+//go:generate mockery --name=DispatcherService --output=./mocks --filename=dispatcher.go --with-expecter
 type DispatcherService interface {
 	SendNotification(ctx context.Context, user models.User, channel, title string, details map[string]string) error
 }

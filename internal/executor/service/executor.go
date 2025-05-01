@@ -6,7 +6,7 @@ import (
 	"github.com/mavrk-mose/pay/internal/payment/models"
 )
 
-//go:generate mockgen -destination mocks/ExecutorService.go -package mocks github.com/mavrk-mose/pay/internal/executor/service ExecutorService
+//go:generate mockery --name=ExecutorService --output=./mocks --filename=executor.go --with-expecter
 type ExecutorService interface {
 	ExecutePayment(order models.PaymentIntent) (any, error)
 	RecordPaymentOrder(order models.PaymentIntent) error

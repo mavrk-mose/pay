@@ -4,16 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	repository "github.com/mavrk-mose/pay/internal/ledger/repository"
-	ledgerService "github.com/mavrk-mose/pay/internal/ledger/service"
+	ledger "github.com/mavrk-mose/pay/internal/ledger/service"
 	. "github.com/mavrk-mose/pay/internal/payment/models"
-	paymentService "github.com/mavrk-mose/pay/internal/payment/service"
+	payment "github.com/mavrk-mose/pay/internal/payment/service"
 	"net/http"
 	"time"
 )
 
 type PaymentHandler struct {
-	paymentService paymentService.PaymentService
-	ledgerService  ledgerService.LedgerService
+	paymentService payment.PaymentService
+	ledgerService  ledger.LedgerService
 	txnRepo        repository.Repo
 }
 
