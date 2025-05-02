@@ -40,6 +40,7 @@ func JetStreamInit() (nats.JetStreamContext, error) {
 	return js, nil
 }
 
+// TODO: will need to update this when I have multiple streams each with multiple subjects
 func CreateStream(jetStream nats.JetStreamContext) error {
 	stream, err := jetStream.StreamInfo(StreamName)
 
@@ -63,75 +64,3 @@ func (n *Nats) Close() {
 	n.logger.Infof("Closing NATS connection ...")
 	n.conn.Close()
 }
-
-
-//TODO: publishing to JetStream
-// const (
-// 	SubjectNameReviewCreated = "REVIEWS.rateGiven"
-// )
-//
-// func publishReviews(js nats.JetStreamContext) {
-// 	reviews, err := getReviews()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	for _, oneReview := range reviews {
-		
-// 		// create random message intervals to slow down
-// 		r := rand.Intn(1500)
-// 		time.Sleep(time.Duration(r) * time.Millisecond)
-
-// 		reviewString, err := json.Marshal(oneReview)
-// 		if err != nil {
-// 			log.Println(err)
-// 			continue
-// 		}
-
-// 		// publish to REVIEWS.rateGiven subject
-// 		_, err = js.Publish(SubjectNameReviewCreated, reviewString)
-// 		if err != nil {
-// 			log.Println(err)
-// 		} else {
-// 			log.Printf("Publisher  =>  Message:%s\n", oneReview.Text)
-// 		}
-// 	}
-// }
-
-// func getReviews() ([]models.Review, error) {
-// 	rawReviews, _ := ioutil.ReadFile("./reviews.json")
-// 	var reviewsObj []models.Review
-// 	err := json.Unmarshal(rawReviews, &reviewsObj)
-
-// 	return reviewsObj, err
-// }
-
-
-//TODO: subscribing to JetStream
-// func consumeReviews(js nats.JetStreamContext) {
-// 	_, err := js.Subscribe(SubjectNameReviewCreated, func(m *nats.Msg) {
-// 		err := m.Ack()
-
-// 		if err != nil {
-// 			log.Println("Unable to Ack", err)
-// 			return
-// 		}
-
-// 		var review models.Review
-// 		err = json.Unmarshal(m.Data, &review)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-
-// 		log.Printf("Consumer  =>  Subject: %s  -  ID:%s  -  Author: %s  -  Rating:%d\n", m.Subject, review.Id, review.Author, review.Rating)
-		
-// 		// send answer via JetStream using another subject if you need
-// 		// js.Publish(config.SubjectNameReviewAnswered, []byte(review.Id))
-// 	})
-
-// 	if err != nil {
-// 		log.Println("Subscribe failed")
-// 		return
-// 	}
-// }
