@@ -1,8 +1,11 @@
 package nats
 
 import (
+	"fmt"
+	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/nats-io/nats.go"
+	"log"
 )
 
 type Nats struct {
@@ -10,17 +13,15 @@ type Nats struct {
 	logger utils.Logger
 }
 
-// add these from a streams config -> so its like redis streams
 const (
-	StreamName     = "PAYMENTS" // TODO: these should be dynamic: PAYMENTS, NOTIFICATIONS, USER, TRANSACTION, etc
-	StreamSubjects = "PAYMENTS.*" // TODO: as well as these
+	StreamName     = "PAYMENTS"
+	StreamSubjects = "PAYMENTS.*"
 )
 
-func JetStreamInit() (nats.JetStreamContext, error) {
-	url := fmt.Sprintf("nats://%s:%s", c.Nats.NatsHost, c.Nats.NatsPort)
-	
-	//TODO: in dev use default url -> in prod use config's url
-	nc, err := nats.Connect(nats.DefaultURL)
+func JetStreamInit(cfg *config.Config) (nats.JetStreamContext, error) {
+	url := fmt.Sprintf("nats://%s:%s", cfg.Nats.Host, cfg.Nats.Port)
+
+	nc, err := nats.Connect(url, nats.UserInfo(cfg.Nats.User, cfg.Nats.Password))
 	if err != nil {
 		return nil, err
 	}

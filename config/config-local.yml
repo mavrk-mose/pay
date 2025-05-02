@@ -39,6 +39,12 @@ session:
   Prefix: api-session
   Expire: 86400
 
+nats:
+  Host: 127.0.0.1
+  Port: 4222
+  User: admin
+  Password: admin123
+
 metrics:
   Url: 0.0.0.0:7070
   ServiceName: api

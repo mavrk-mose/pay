@@ -23,7 +23,7 @@ type Config struct {
 	Jaeger   Jaeger
 	Firebase Firebase
 	OAuth    OAuth
-	Nats	 NatsConfig
+	Nats     NatsConfig
 }
 
 // Server config struct
@@ -84,8 +84,10 @@ type RedisConfig struct {
 
 // NATS config
 type NatsConfig struct {
-	NatsHost	string
-	NatsPort	string
+	Host     string
+	Port     string
+	User     string
+	Password string
 }
 
 // Twilio config

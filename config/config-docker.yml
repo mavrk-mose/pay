@@ -39,6 +39,10 @@ session:
   Prefix: api-session
   Expire: 86400
 
+nats:
+  NatsHost: 127.0.0.1 # change this to the NATS host
+  NatsPort: 4222
+
 metrics:
   url: 0.0.0.0:7070
   service: api

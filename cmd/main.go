@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/mavrk-mose/pay/pkg/db"
+	"github.com/mavrk-mose/pay/pkg/nats"
 	"log"
 	"os"
 
@@ -45,6 +46,12 @@ func main() {
 	}
 
 	db.MigrateDB(DB)
+
+	_, err = nats.JetStreamInit(cfg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	// modules
 	user.AuthRoute(r, DB, cfg)

@@ -10,10 +10,10 @@ services:
       - NATS_USER=admin
       - NATS_PASSWORD=admin123
     command: >
-      -js  # Enable JetStream for persistence
-      -m 8222  # Enable monitoring on port 8222
-      --user ${NATS_USER}
-      --pass ${NATS_PASSWORD}
+      -js  
+      -m 8222  
+      --user 'admin'
+      --pass 'admin123'
   service_register:
     container_name: "pay_service_register"
     image: consul:1.15.4
@@ -38,6 +38,6 @@ services:
 networks:
   default:
     name: pay-net
-    external: true
+    external: false
 volumes:
   db:
