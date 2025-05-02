@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/nats-io/nats.go"
-  "github.com/mavrk-mose/pay/pkg/utils"
+  	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
 // Publisher is a generic interface for message producers
@@ -23,8 +23,8 @@ type Consumer interface {
 }
 
 type NatsClient struct {
-	JS nats.JetStreamContext
-  logger  utils.Logger
+	JS 	nats.JetStreamContext
+  	logger  utils.Logger
 }
 
 func NewNatsClient(js nats.JetStreamContext) *NatsClient {
