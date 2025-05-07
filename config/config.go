@@ -47,6 +47,7 @@ type ServerConfig struct {
 	SMTPPassword      string
 	WebhookURL        string
 	PublicKeyPath     string
+	Environment	      string
 }
 
 // Logger config

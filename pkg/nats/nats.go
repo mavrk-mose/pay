@@ -2,6 +2,8 @@ package nats
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/nats-io/nats.go"
@@ -18,10 +20,16 @@ const (
 	StreamSubjects = "PAYMENTS.*"
 )
 
-func JetStreamInit(cfg *config.Config) (nats.JetStreamContext, error) {
-	url := fmt.Sprintf("nats://%s:%s", cfg.Nats.Host, cfg.Nats.Port)
+func JetStreamInit(config *config.Config) (nats.JetStreamContext, error) {
+	var url string
 
-	nc, err := nats.Connect(url, nats.UserInfo(cfg.Nats.User, cfg.Nats.Password))
+    if config.Server.Mode == "Development" {
+        url = nats.DefaultURL
+    } else {
+        url = fmt.Sprintf("nats://%s:%s", config.Nats.NatsHost, config.Nats.NatsPort)
+    }
+	
+	nc, err := nats.Connect(url)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +40,6 @@ func JetStreamInit(cfg *config.Config) (nats.JetStreamContext, error) {
 		return nil, err
 	}
 
-	// Create a stream if it does not exist
 	err = CreateStream(js)
 	if err != nil {
 		return nil, err
@@ -44,6 +51,9 @@ func JetStreamInit(cfg *config.Config) (nats.JetStreamContext, error) {
 // TODO: will need to update this when I have multiple streams each with multiple subjects
 func CreateStream(jetStream nats.JetStreamContext) error {
 	stream, err := jetStream.StreamInfo(StreamName)
+	if err != nil {
+		log.Printf("Stream %s not found: %v\n", StreamName, err)
+	}
 
 	// stream not found, create it
 	if stream == nil {

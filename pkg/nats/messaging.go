@@ -60,7 +60,7 @@ func (n *NatsClient) Consume(subject string, handler func(interface{})) error {
 
 			n.logger.Infof("Received message on subject %s: %+v", subject, data)
 
-			handler(data)
+			handler(msg.Data)
 
 			if err := msg.Ack(); err != nil {
 				n.logger.Errorf("Failed to acknowledge message on subject %s: %v", subject, err)
