@@ -41,28 +41,29 @@ func (p *PayPalProvider) ExecutePayment(order PaymentOrder) (any, error) {
 }
 
 func (p *PayPalProvider) CreateOrder(amount string, currency string, returnURL string, cancelURL string) (*paypalsdk.Order, error) {
-	orderReq := paypalsdk.CreateOrderRequest{
-		Intent: "CAPTURE",
-		PurchaseUnits: []paypalsdk.PurchaseUnitRequest{
-			{
-				Amount: &paypalsdk.PurchaseUnitAmount{
-					Currency: currency,
-					Value:    amount,
-				},
-			},
-		},
-		ApplicationContext: &paypalsdk.ApplicationContext{
-			ReturnURL: returnURL,
-			CancelURL: cancelURL,
-		},
-	}
+	// orderReq := paypalsdk.CreateOrderRequest{
+	// 	Intent: "CAPTURE",
+	// 	PurchaseUnits: []paypalsdk.PurchaseUnitRequest{
+	// 		{
+	// 			Amount: &paypalsdk.PurchaseUnitAmount{
+	// 				Currency: currency,
+	// 				Value:    amount,
+	// 			},
+	// 		},
+	// 	},
+	// 	ApplicationContext: &paypalsdk.ApplicationContext{
+	// 		ReturnURL: returnURL,
+	// 		CancelURL: cancelURL,
+	// 	},
+	// }
 
-	order, err := p.Client.CreateOrder(orderReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create PayPal order: %w", err)
-	}
+	// order, err := p.Client.CreateOrder(orderReq)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create PayPal order: %w", err)
+	// }
 
-	return order, nil
+	// return order, nil
+	panic("unimplemented")
 }
 
 // CapturePayment captures a PayPal order after user approval

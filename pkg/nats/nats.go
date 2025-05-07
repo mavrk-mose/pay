@@ -7,7 +7,6 @@ import (
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/nats-io/nats.go"
-	"log"
 )
 
 type Nats struct {
@@ -26,7 +25,7 @@ func JetStreamInit(config *config.Config) (nats.JetStreamContext, error) {
     if config.Server.Mode == "Development" {
         url = nats.DefaultURL
     } else {
-        url = fmt.Sprintf("nats://%s:%s", config.Nats.NatsHost, config.Nats.NatsPort)
+        url = fmt.Sprintf("nats://%s:%s", config.Nats.Host, config.Nats.Port)
     }
 	
 	nc, err := nats.Connect(url)
