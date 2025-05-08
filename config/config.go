@@ -24,6 +24,9 @@ type Config struct {
 	Firebase Firebase
 	OAuth    OAuth
 	Nats     NatsConfig
+	Stripe   Stripe
+	Paypal   Paypal
+	Adyen    Adyen
 }
 
 // Server config struct
@@ -47,7 +50,7 @@ type ServerConfig struct {
 	SMTPPassword      string
 	WebhookURL        string
 	PublicKeyPath     string
-	Environment	      string
+	Environment       string
 }
 
 // Logger config
@@ -170,19 +173,19 @@ type Jaeger struct {
 }
 
 // PSP
-type stripe struct {
-	secret string
-	key    string
+type Stripe struct {
+	Secret string
+	Key    string
 }
 
-type paypal struct {
-	secret string
-	key    string
+type Paypal struct {
+	Secret string
+	Key    string
 }
 
-type adyen struct {
-	secret string
-	key    string
+type Adyen struct {
+	Secret string
+	Key    string
 }
 
 // Load config file from given path

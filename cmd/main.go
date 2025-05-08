@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/mavrk-mose/pay/internal/executor"
 	"github.com/mavrk-mose/pay/pkg/db"
 	"github.com/mavrk-mose/pay/pkg/nats"
 	"log"
@@ -58,6 +59,7 @@ func main() {
 	payment.NewApiHandler(r, DB, cfg)
 	wallet.NewApiHandler(r, DB)
 	notification.NewApiHandler(r, DB, cfg)
+	executor.NewApiHandler(r, DB, cfg)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {

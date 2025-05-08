@@ -2,8 +2,8 @@ package nats
 
 import (
 	"encoding/json"
+	"go.uber.org/zap"
 
-	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/nats-io/nats.go"
 )
 
@@ -22,54 +22,57 @@ type Consumer interface {
 	Consume(subject string, handler func(interface{})) error
 }
 
-type NatsClient struct {
+type Client struct {
 	JS     nats.JetStreamContext
-	logger utils.Logger
+	Logger *zap.Logger
 }
 
-func NewNatsClient(js nats.JetStreamContext) *NatsClient {
-	return &NatsClient{JS: js}
+func NewNatsClient(js nats.JetStreamContext) *Client {
+	return &Client{
+		JS:     js,
+		Logger: zap.Must(zap.NewProduction()),
+	}
 }
 
-func (n *NatsClient) Publish(subject string, data interface{}) error {
-	n.logger.Infof("Publishing to subject: %s with data: %+v", subject, data)
+func (n *Client) Publish(subject string, data interface{}) error {
+	//n.Logger.Info("Publishing to subject: %s with data: %+v", zap.Any("subject", subject), zap.Any("data", data))
 
 	msg, err := json.Marshal(data)
 	if err != nil {
-		n.logger.Errorf("Failed to marshal message: %v", err)
+		n.Logger.Error("Failed to marshal message: %v", zap.Error(err))
 		return err
 	}
 
 	_, err = n.JS.PublishAsync(subject, msg)
 	if err != nil {
-		n.logger.Errorf("Failed to publish message: %v", err)
+		n.Logger.Error("Failed to publish message: %v", zap.Error(err))
 	}
 	return err
 }
 
-func (n *NatsClient) Consume(subject string, handler func(interface{})) error {
-	n.logger.Infof("Subscribing to subject: %s", subject)
+func (n *Client) Consume(subject string, handler func(interface{})) error {
+	n.Logger.Info("Subscribing to subject: %s", zap.Any("subject", subject))
 
 	_, err := n.JS.Subscribe(subject, func(m *nats.Msg) {
 		go func(msg *nats.Msg) {
 			var data interface{}
 			if err := json.Unmarshal(msg.Data, &data); err != nil {
-				n.logger.Errorf("Failed to unmarshal message on subject %s: %v", subject, err)
+				n.Logger.Error("Failed to unmarshal message on subject %s: %v", zap.Any("subject", subject), zap.Error(err))
 				return
 			}
 
-			n.logger.Infof("Received message on subject %s: %+v", subject, data)
+			n.Logger.Info("Received message on subject %s: %+v", zap.Any("subject", subject), zap.Any("data", data))
 
 			handler(msg.Data)
 
 			if err := msg.Ack(); err != nil {
-				n.logger.Errorf("Failed to acknowledge message on subject %s: %v", subject, err)
+				n.Logger.Error("Failed to acknowledge message on subject %s: %v", zap.Any("subject", subject), zap.Error(err))
 			}
 		}(m)
 	}, nats.Durable("worker"))
 
 	if err != nil {
-		n.logger.Errorf("Failed to subscribe to subject %s: %v", subject, err)
+		n.Logger.Error("Failed to subscribe to subject %s: %v", zap.Any("subject", subject), zap.Error(err))
 	}
 	return err
 }

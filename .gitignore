@@ -22,3 +22,4 @@ gopath/
 go.work
 /.idea/vcs.xml
 .xml
+.yml

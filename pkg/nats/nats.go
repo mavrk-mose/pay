@@ -19,16 +19,10 @@ const (
 	StreamSubjects = "PAYMENTS.*"
 )
 
-func JetStreamInit(config *config.Config) (nats.JetStreamContext, error) {
-	var url string
+func JetStreamInit(cfg *config.Config) (nats.JetStreamContext, error) {
+	url := fmt.Sprintf("nats://%s:%s", cfg.Nats.Host, cfg.Nats.Port)
 
-    if config.Server.Mode == "Development" {
-        url = nats.DefaultURL
-    } else {
-        url = fmt.Sprintf("nats://%s:%s", config.Nats.Host, config.Nats.Port)
-    }
-	
-	nc, err := nats.Connect(url)
+	nc, err := nats.Connect(url, nats.UserInfo(cfg.Nats.User, cfg.Nats.Password))
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +33,9 @@ func JetStreamInit(config *config.Config) (nats.JetStreamContext, error) {
 		return nil, err
 	}
 
-	err = CreateStream(js)
+	client := NewNatsClient(js)
+
+	err = CreateStream(client.JS)
 	if err != nil {
 		return nil, err
 	}

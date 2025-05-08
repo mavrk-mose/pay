@@ -2,31 +2,30 @@ package handler
 
 import (
 	"encoding/json"
-	"io"
-	"net/http"
-	"os"
-
 	"github.com/gin-gonic/gin"
+	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/executor/service"
 	"github.com/mavrk-mose/pay/pkg/nats"
-	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/webhook"
 	"go.uber.org/zap"
+	"io"
+	"net/http"
 )
 
 type WebhookHandler struct {
-	Logger     utils.Logger
-	Nats       *nats.NatsClient
-	Provider   *service.PayPalProvider
-	WebhookID  string
-	Secret     string
+	Logger    *zap.Logger
+	Nats      *nats.Client
+	Provider  *service.PayPalProvider
+	WebhookID string
+	Secret    string
 }
 
-func NewWebhookHandler(natsClient *nats.NatsClient) *WebhookHandler {
+func NewWebhookHandler(cfg *config.Config, natsClient *nats.Client) *WebhookHandler {
 	return &WebhookHandler{
+		Logger: zap.Must(zap.NewProduction()),
 		Nats:   natsClient,
-		Secret: os.Getenv("STRIPE_WEBHOOK_SECRET"),
+		Secret: cfg.Stripe.Secret,
 	}
 }
 
@@ -41,7 +40,7 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 	}
 
 	sigHeader := c.GetHeader("Stripe-Signature")
-	event, err := webhook.ConstructEvent(payload, sigHeader, h.Secret)
+	event, err := webhook.ConstructEventWithOptions(payload, sigHeader, h.Secret, webhook.ConstructEventOptions{IgnoreAPIVersionMismatch: true})
 	if err != nil {
 		h.Logger.Error("Invalid Stripe signature", zap.Error(err))
 		c.String(http.StatusBadRequest, "Invalid signature")
@@ -57,14 +56,19 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 			return
 		}
 
-		h.Nats.Publish("payments.success", map[string]any{
-			"event":         "checkout.session.completed",
-			"session_id":    session.ID,
-			"customer_id":   session.Customer.ID,
-			"amount_total":  session.AmountTotal,
-			"currency":      session.Currency,
+		err := h.Nats.Publish("payments.success", map[string]any{
+			"event":          "checkout.session.completed",
+			"session_id":     session.ID,
+			"customer_id":    session.Customer.ID,
+			"amount_total":   session.AmountTotal,
+			"currency":       session.Currency,
 			"payment_intent": session.PaymentIntent.ID,
 		})
+		if err != nil {
+			h.Logger.Error("Failed to publish session", zap.Error(err))
+			c.String(http.StatusInternalServerError, "Failed to publish event")
+			return
+		}
 
 		h.Logger.Info("Published checkout.session.completed", zap.String("session_id", session.ID))
 
@@ -76,7 +80,7 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 			return
 		}
 
-		h.Nats.Publish("payments.success", map[string]any{
+		err := h.Nats.Publish("payments.success", map[string]any{
 			"event":       "payment_intent.succeeded",
 			"intent_id":   intent.ID,
 			"amount":      intent.Amount,
@@ -84,6 +88,11 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 			"customer_id": intent.Customer.ID,
 			"description": intent.Description,
 		})
+		if err != nil {
+			h.Logger.Error("Failed to publish payment intent", zap.Error(err))
+			c.String(http.StatusInternalServerError, "Failed to publish event")
+			return
+		}
 
 		h.Logger.Info("Published payment_intent.succeeded", zap.String("intent_id", intent.ID))
 
@@ -139,7 +148,7 @@ func (h *WebhookHandler) PaypalWebhookHandler(c *gin.Context) {
 
 	if err := h.Nats.Publish(subject, payload); err != nil {
 		h.Logger.Error("Failed to publish event to NATS", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to forward event"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to publish event"})
 		return
 	}
 
