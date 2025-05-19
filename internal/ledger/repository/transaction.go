@@ -19,11 +19,17 @@ type TransactionRepo interface {
 	FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error)
 }
 
-type Repo struct {
+type transactionRepo struct {
 	DB *sqlx.DB
 }
 
-func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error) {
+func NewRepo(db *sqlx.DB) TransactionRepo {
+	return &transactionRepo{
+		DB: db,
+	}
+}	
+
+func (r *transactionRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error) {
 	txn, err := r.DB.BeginTxx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -72,7 +78,7 @@ func (r *Repo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID 
 	return transactionID.String(), nil
 }
 
-func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
+func (r *transactionRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
 	for i := range entries {
 		entries[i].Checksum = GenerateChecksum(entries[i])
 
@@ -93,7 +99,7 @@ func (r *Repo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entr
 	return nil
 }
 
-func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
+func (r *transactionRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
 	query := `
 		UPDATE transaction
 		SET status = $1, updated_at = NOW() 
@@ -110,12 +116,12 @@ func (r *Repo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, sta
 	return nil
 }
 
-func FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
+func (r *transactionRepo) FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
 	query := `
-        SELECT id, checksum
-        FROM transaction
-        WHERE provider = $1
-          AND created_at >= NOW() - INTERVAL '1 DAY'
+		SELECT id, checksum
+		FROM transaction
+		WHERE provider = $1
+		  AND created_at >= NOW() - INTERVAL '1 DAY'
 `
 	rows, err := db.Query(query, provider)
 	if err != nil {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/internal/user/models"
-	user "github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
@@ -23,16 +23,13 @@ type Dispatcher struct {
 
 func NewDispatcher(
 	cfg *config.Config,
-	userRepo user.UserRepository,
-	notificationRepo repository.NotificationRepo,
+	db *sqlx.DB,
 ) *Dispatcher {
 	notifiers := make(map[string]Notifier)
 
-	notifiers["push"] = NewPushNotifier(
-		notificationRepo,
-		userRepo,
-		cfg,
-	)
+	notificationRepo := repository.NewNotificationRepo(db)
+
+	notifiers["push"] = NewPushNotifier(db,cfg)
 
 	if cfg.Twilio.AccountSID != "" && cfg.Twilio.AuthToken != "" && cfg.Twilio.From != "" {
 		notifiers["sms"] = NewSMSNotifier(cfg, notificationRepo)

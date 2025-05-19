@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
 	. "github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/internal/user/repository"
@@ -33,8 +34,8 @@ type userService struct {
 	logger utils.Logger
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserService(db *sqlx.DB) UserService {
+	return &userService{repo: repository.NewUserRepository(db)}
 }
 
 func (s *userService) RegisterUser(ctx context.Context, user goth.User) (string, error) {

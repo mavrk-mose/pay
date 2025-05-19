@@ -3,32 +3,30 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
-	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
-	repo "github.com/mavrk-mose/pay/internal/notification/repository"
+	notificationRepo "github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/internal/user/models"
-	"github.com/mavrk-mose/pay/internal/user/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"google.golang.org/api/option"
 )
 
 type PushNotifier struct {
-	repo     repo.NotificationRepo
-	userRepo repository.UserRepository
+	notificationRepo notificationRepo.NotificationRepo
 	logger   utils.Logger
 	firebase config.Firebase
 }
 
 func NewPushNotifier(
-	repo repo.NotificationRepo,
-	userRepo repository.UserRepository,
+	DB *sqlx.DB,
 	cfg *config.Config,
 ) *PushNotifier {
 	return &PushNotifier{
-		repo:     repo,
-		userRepo: userRepo,
+		notificationRepo: notificationRepo.NewNotificationRepo(DB),
 		firebase: cfg.Firebase,
 	}
 }
@@ -57,7 +55,7 @@ func (n *PushNotifier) Send(ctx context.Context, user models.User, templateID st
 		return fmt.Errorf("failed to get messaging client: %v", err)
 	}
 
-	template, err := n.repo.GetTemplate(ctx, templateID)
+	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
 	if err != nil {
 		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
 		return fmt.Errorf("failed to get template: %w", err)
