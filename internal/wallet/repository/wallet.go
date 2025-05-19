@@ -18,9 +18,8 @@ type WalletRepo interface {
 	GetByID(ctx context.Context, walletID string) (Wallet, error)
 	CreateTransfer(ctx context.Context, transfer *TransferRequest) error
 	UpdateTransferStatus(ctx context.Context, externalRef, status string) error
-	Withdraw(ctx context.Context, walletID uuid.UUID, amount float64, currency string) (string, error)
-	Debit(ctx context.Context, walletID uuid.UUID, amount float64) error
-	Credit(ctx context.Context, walletID uuid.UUID, amount float64) error
+	Debit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error
+	Credit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error
 }
 
 type walletRepo struct {
@@ -62,7 +61,7 @@ func (r *walletRepo) GetUserWallets(ctx context.Context, userID string) ([]Walle
 func (r *walletRepo) GetBalance(ctx context.Context, userID string) (float64, error) {
 	r.logger.Infof("Fetching wallet balance for user %s", userID)
 	var balance float64
-	err := r.DB.QueryRowContext(ctx, "SELECT balance FROM wallets WHERE user_id = ?", userID).Scan(&balance)
+	err := r.DB.QueryRowContext(ctx, "SELECT balance FROM wallets WHERE user_id = ? FOR UPDATE", userID).Scan(&balance)
 	if err != nil {
 		r.logger.Errorf("Failed to fetch wallet balance: %v", err)
 		return 0, fmt.Errorf("error fetching wallet balance: %v", err)
@@ -90,7 +89,7 @@ func (r *walletRepo) CreateTransfer(ctx context.Context, transfer *TransferReque
 		return fmt.Errorf("failed to begin transaction: %v", err)
 	}
 
-	if err := r.Debit(ctx, transfer.FromWalletID, transfer.Amount); err != nil {
+	if err := r.Debit(tx, transfer.FromWalletID, transfer.Amount); err != nil {
 		err := tx.Rollback()
 		if err != nil {
 			return err
@@ -99,7 +98,7 @@ func (r *walletRepo) CreateTransfer(ctx context.Context, transfer *TransferReque
 		return fmt.Errorf("failed to debit from_wallet: %w", err)
 	}
 
-	if err := r.Credit(ctx, transfer.ToWalletID, transfer.Amount); err != nil {
+	if err := r.Credit(tx, transfer.ToWalletID, transfer.Amount); err != nil {
 		err := tx.Rollback()
 		if err != nil {
 			return err
@@ -122,34 +121,11 @@ func (r *walletRepo) UpdateTransferStatus(ctx context.Context, externalRef, stat
 	return err
 }
 
-func (r *walletRepo) Withdraw(ctx context.Context, walletID uuid.UUID, amount float64, currency string) (string, error) {
-	transactionID := uuid.New().String()
-
-	tx, err := r.DB.BeginTxx(ctx, nil)
-	if err != nil {
-		return "", err
-	}
-
-	if err := r.Debit(ctx, walletID, amount); err != nil {
-		err := tx.Rollback()
-		if err != nil {
-			return "", err
-		}
-		return "", err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return "", err
-	}
-
-	return transactionID, nil
-}
-
-func (r *walletRepo) Debit(ctx context.Context, walletID uuid.UUID, amount float64) error {
+func (r *walletRepo) Debit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error {
 	r.logger.Infof("Debiting wallet %s by %f", walletID, amount)
 
 	var balance float64
-	err := r.DB.QueryRowContext(ctx, "SELECT balance FROM wallets WHERE id = $1", walletID).Scan(&balance)
+	err := txn.QueryRowContext(context.Background(), "SELECT balance FROM wallets WHERE id = ? FOR UPDATE", walletID).Scan(&balance)
 	if err != nil {
 		r.logger.Errorf("Failed to fetch wallet balance: %v", err)
 		return fmt.Errorf("failed to fetch wallet balance: %w", err)
@@ -160,12 +136,12 @@ func (r *walletRepo) Debit(ctx context.Context, walletID uuid.UUID, amount float
 		return fmt.Errorf("insufficient balance in wallet %s", walletID)
 	}
 
-	_, err = r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance - $1 WHERE id = $2", amount, walletID)
+	_, err = txn.ExecContext(context.Background(), "UPDATE wallets SET balance = balance - $1 WHERE id = $2", amount, walletID)
 	return err
 }
 
-func (r *walletRepo) Credit(ctx context.Context, walletID uuid.UUID, amount float64) error {
+func (r *walletRepo) Credit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error {
 	r.logger.Infof("Crediting wallet %s by %f", walletID, amount)
-	_, err := r.DB.ExecContext(ctx, "UPDATE wallets SET balance = balance + $1 WHERE id = $2", amount, walletID)
+	_, err := txn.ExecContext(context.Background(), "UPDATE wallets SET balance = balance + $1 WHERE id = $2", amount, walletID)
 	return err
 }

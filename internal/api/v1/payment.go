@@ -26,15 +26,15 @@ type WebhookPayload struct {
 
 func NewPaymentHandler(db *sqlx.DB) *PaymentHandler {
 	return &PaymentHandler{
-		txnRepo: repository.NewRepo(db),
+		ledgerService: repository.NewLedgerRepo(db),
 	}
 }
 
-func (t *PaymentHandler) Check(c *gin.Context) {
+func (h *PaymentHandler) Check(c *gin.Context) {
 	c.Status(200)
 }
 
-func (t *PaymentHandler) ProcessPayment(ctx *gin.Context) {
+func (h *PaymentHandler) ProcessPayment(ctx *gin.Context) {
 	var paymentIntent PaymentIntent
 
 	if err := ctx.ShouldBindJSON(&paymentIntent); err != nil {
@@ -42,7 +42,7 @@ func (t *PaymentHandler) ProcessPayment(ctx *gin.Context) {
 		return
 	}
 
-	if err := t.paymentService.ProcessPayment(ctx, paymentIntent); err != nil {
+	if err := h.paymentService.ProcessPayment(ctx, paymentIntent); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -50,10 +50,10 @@ func (t *PaymentHandler) ProcessPayment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
 }
 
-func (t *PaymentHandler) GetPaymentStatus(c *gin.Context) {
+func (h *PaymentHandler) GetPaymentStatus(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 
-	status, err := t.paymentService.GetPaymentStatus(paymentID)
+	status, err := h.paymentService.GetPaymentStatus(paymentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -63,7 +63,7 @@ func (t *PaymentHandler) GetPaymentStatus(c *gin.Context) {
 }
 
 // QueryPayments allows filtering payments based on type, date range, and status
-func (t *PaymentHandler) QueryPayments(c *gin.Context) {
+func (h *PaymentHandler) QueryPayments(c *gin.Context) {
 	userID := c.Param("userID")
 	status := c.Query("status")
 	startDateStr := c.Query("startDate")
@@ -101,7 +101,7 @@ func (t *PaymentHandler) QueryPayments(c *gin.Context) {
 
 	// Filter by date range if applicable
 	if !startDate.IsZero() && !endDate.IsZero() {
-		payments, err = t.paymentService.QueryPaymentsByDateRange(userID, startDate, endDate)
+		payments, err = h.paymentService.QueryPaymentsByDateRange(userID, startDate, endDate)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -110,7 +110,7 @@ func (t *PaymentHandler) QueryPayments(c *gin.Context) {
 
 	// Filter by status if applicable
 	if status != "" {
-		payments, err = t.paymentService.QueryPaymentsByStatus(userID, paymentStatus)
+		payments, err = h.paymentService.QueryPaymentsByStatus(userID, paymentStatus)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -121,7 +121,7 @@ func (t *PaymentHandler) QueryPayments(c *gin.Context) {
 	c.JSON(http.StatusOK, payments)
 }
 
-func (t *PaymentHandler) UpdatePaymentStatus(c *gin.Context) {
+func (h *PaymentHandler) UpdatePaymentStatus(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 	var request struct {
 		Status PaymentStatus `json:"status"`
@@ -132,7 +132,7 @@ func (t *PaymentHandler) UpdatePaymentStatus(c *gin.Context) {
 		return
 	}
 
-	if err := t.paymentService.UpdatePaymentStatus(paymentID, request.Status); err != nil {
+	if err := h.paymentService.UpdatePaymentStatus(paymentID, request.Status); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -140,10 +140,10 @@ func (t *PaymentHandler) UpdatePaymentStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Payment status updated successfully"})
 }
 
-func (t *PaymentHandler) GetPaymentDetails(c *gin.Context) {
+func (h *PaymentHandler) GetPaymentDetails(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 
-	payment, err := t.paymentService.GetPaymentDetails(paymentID)
+	payment, err := h.paymentService.GetPaymentDetails(paymentID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -177,14 +177,14 @@ func (h *PaymentHandler) HandleWebhook(c *gin.Context) {
 
 	if newStatus == "confirmed" {
 		go func() {
-			err := h.ledgerService.RecordTransaction(c, txn)
+			_, err := h.ledgerService.RecordTransaction(c, txn)
 			if err != nil {
 
 			}
 		}()
 	}
 
-	if err := h.txnRepo.UpdateTransactionStatus(c, payload.ExternalRef, newStatus); err != nil {
+	if err := h.ledgerService.UpdateTransactionStatus(c, payload.ExternalRef, newStatus); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

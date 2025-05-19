@@ -12,6 +12,14 @@ type ExecutorService struct {
 	mock.Mock
 }
 
+type ExecutorService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *ExecutorService) EXPECT() *ExecutorService_Expecter {
+	return &ExecutorService_Expecter{mock: &_m.Mock}
+}
+
 // ExecutePayment provides a mock function with given fields: order
 func (_m *ExecutorService) ExecutePayment(order models.PaymentIntent) (interface{}, error) {
 	ret := _m.Called(order)
@@ -42,6 +50,34 @@ func (_m *ExecutorService) ExecutePayment(order models.PaymentIntent) (interface
 	return r0, r1
 }
 
+// ExecutorService_ExecutePayment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExecutePayment'
+type ExecutorService_ExecutePayment_Call struct {
+	*mock.Call
+}
+
+// ExecutePayment is a helper method to define mock.On call
+//   - order models.PaymentIntent
+func (_e *ExecutorService_Expecter) ExecutePayment(order interface{}) *ExecutorService_ExecutePayment_Call {
+	return &ExecutorService_ExecutePayment_Call{Call: _e.mock.On("ExecutePayment", order)}
+}
+
+func (_c *ExecutorService_ExecutePayment_Call) Run(run func(order models.PaymentIntent)) *ExecutorService_ExecutePayment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(models.PaymentIntent))
+	})
+	return _c
+}
+
+func (_c *ExecutorService_ExecutePayment_Call) Return(_a0 interface{}, _a1 error) *ExecutorService_ExecutePayment_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *ExecutorService_ExecutePayment_Call) RunAndReturn(run func(models.PaymentIntent) (interface{}, error)) *ExecutorService_ExecutePayment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RecordPaymentOrder provides a mock function with given fields: order
 func (_m *ExecutorService) RecordPaymentOrder(order models.PaymentIntent) error {
 	ret := _m.Called(order)
@@ -60,9 +96,37 @@ func (_m *ExecutorService) RecordPaymentOrder(order models.PaymentIntent) error 
 	return r0
 }
 
-// NewPaymentExecutorService creates a new instance of ExecutorService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// ExecutorService_RecordPaymentOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RecordPaymentOrder'
+type ExecutorService_RecordPaymentOrder_Call struct {
+	*mock.Call
+}
+
+// RecordPaymentOrder is a helper method to define mock.On call
+//   - order models.PaymentIntent
+func (_e *ExecutorService_Expecter) RecordPaymentOrder(order interface{}) *ExecutorService_RecordPaymentOrder_Call {
+	return &ExecutorService_RecordPaymentOrder_Call{Call: _e.mock.On("RecordPaymentOrder", order)}
+}
+
+func (_c *ExecutorService_RecordPaymentOrder_Call) Run(run func(order models.PaymentIntent)) *ExecutorService_RecordPaymentOrder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(models.PaymentIntent))
+	})
+	return _c
+}
+
+func (_c *ExecutorService_RecordPaymentOrder_Call) Return(_a0 error) *ExecutorService_RecordPaymentOrder_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *ExecutorService_RecordPaymentOrder_Call) RunAndReturn(run func(models.PaymentIntent) error) *ExecutorService_RecordPaymentOrder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewExecutorService creates a new instance of ExecutorService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
-func NewPaymentExecutorService(t interface {
+func NewExecutorService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *ExecutorService {

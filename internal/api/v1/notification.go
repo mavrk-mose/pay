@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/mavrk-mose/pay/internal/notification/service"
 	"net/http"
 	"strconv"
 
@@ -9,22 +10,17 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
-	"github.com/mavrk-mose/pay/internal/notification/service"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
 type NotificationHandler struct {
-	dispatcher service.NotificationService
-	repo       repository.NotificationRepo
-	logger     utils.Logger
+	notification service.NotificationService
+	logger       utils.Logger
 }
 
-func NewNotificationHandler(
-	cfg *config.Config,
-	db *sqlx.DB,
-) *NotificationHandler {
+func NewNotificationHandler(cfg *config.Config, db *sqlx.DB) *NotificationHandler {
 	return &NotificationHandler{
-		dispatcher: service.NewDispatcher(cfg, db),
+		notification: repository.NewNotificationRepo(db, cfg),
 	}
 }
 
@@ -36,7 +32,7 @@ func (h *NotificationHandler) GetNotifications(c *gin.Context) {
 
 	h.logger.Infof("Fetching notifications for user %s page %d limit %d", userID, page, limit)
 
-	notifications, err := h.repo.FetchNotifications(userID, (page-1)*limit, limit)
+	notifications, err := h.notification.FetchNotifications(userID, (page-1)*limit, limit)
 	if err != nil {
 		h.logger.Errorf("Failed to fetch notifications: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch notifications"})
@@ -62,7 +58,7 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.UpdateNotificationAsRead(userID, notificationID)
+	err = h.notification.UpdateNotificationAsRead(userID, notificationID)
 	if err != nil {
 		h.logger.Errorf("Failed to mark notification as read: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to mark as read"})

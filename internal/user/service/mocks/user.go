@@ -16,6 +16,14 @@ type UserService struct {
 	mock.Mock
 }
 
+type UserService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *UserService) EXPECT() *UserService_Expecter {
+	return &UserService_Expecter{mock: &_m.Mock}
+}
+
 // AssignRole provides a mock function with given fields: ctx, userID, role
 func (_m *UserService) AssignRole(ctx context.Context, userID string, role string) error {
 	ret := _m.Called(ctx, userID, role)
@@ -34,6 +42,36 @@ func (_m *UserService) AssignRole(ctx context.Context, userID string, role strin
 	return r0
 }
 
+// UserService_AssignRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AssignRole'
+type UserService_AssignRole_Call struct {
+	*mock.Call
+}
+
+// AssignRole is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - role string
+func (_e *UserService_Expecter) AssignRole(ctx interface{}, userID interface{}, role interface{}) *UserService_AssignRole_Call {
+	return &UserService_AssignRole_Call{Call: _e.mock.On("AssignRole", ctx, userID, role)}
+}
+
+func (_c *UserService_AssignRole_Call) Run(run func(ctx context.Context, userID string, role string)) *UserService_AssignRole_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *UserService_AssignRole_Call) Return(_a0 error) *UserService_AssignRole_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *UserService_AssignRole_Call) RunAndReturn(run func(context.Context, string, string) error) *UserService_AssignRole_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // BanUser provides a mock function with given fields: ctx, userID, reason
 func (_m *UserService) BanUser(ctx context.Context, userID string, reason string) error {
 	ret := _m.Called(ctx, userID, reason)
@@ -50,6 +88,36 @@ func (_m *UserService) BanUser(ctx context.Context, userID string, reason string
 	}
 
 	return r0
+}
+
+// UserService_BanUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BanUser'
+type UserService_BanUser_Call struct {
+	*mock.Call
+}
+
+// BanUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - reason string
+func (_e *UserService_Expecter) BanUser(ctx interface{}, userID interface{}, reason interface{}) *UserService_BanUser_Call {
+	return &UserService_BanUser_Call{Call: _e.mock.On("BanUser", ctx, userID, reason)}
+}
+
+func (_c *UserService_BanUser_Call) Run(run func(ctx context.Context, userID string, reason string)) *UserService_BanUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *UserService_BanUser_Call) Return(_a0 error) *UserService_BanUser_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *UserService_BanUser_Call) RunAndReturn(run func(context.Context, string, string) error) *UserService_BanUser_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // GetUserByID provides a mock function with given fields: ctx, userID
@@ -78,6 +146,35 @@ func (_m *UserService) GetUserByID(ctx context.Context, userID string) (models.U
 	}
 
 	return r0, r1
+}
+
+// UserService_GetUserByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserByID'
+type UserService_GetUserByID_Call struct {
+	*mock.Call
+}
+
+// GetUserByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *UserService_Expecter) GetUserByID(ctx interface{}, userID interface{}) *UserService_GetUserByID_Call {
+	return &UserService_GetUserByID_Call{Call: _e.mock.On("GetUserByID", ctx, userID)}
+}
+
+func (_c *UserService_GetUserByID_Call) Run(run func(ctx context.Context, userID string)) *UserService_GetUserByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *UserService_GetUserByID_Call) Return(_a0 models.User, _a1 error) *UserService_GetUserByID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *UserService_GetUserByID_Call) RunAndReturn(run func(context.Context, string) (models.User, error)) *UserService_GetUserByID_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // ListUsers provides a mock function with given fields: ctx, filter
@@ -110,6 +207,35 @@ func (_m *UserService) ListUsers(ctx context.Context, filter models.UserFilter) 
 	return r0, r1
 }
 
+// UserService_ListUsers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListUsers'
+type UserService_ListUsers_Call struct {
+	*mock.Call
+}
+
+// ListUsers is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter models.UserFilter
+func (_e *UserService_Expecter) ListUsers(ctx interface{}, filter interface{}) *UserService_ListUsers_Call {
+	return &UserService_ListUsers_Call{Call: _e.mock.On("ListUsers", ctx, filter)}
+}
+
+func (_c *UserService_ListUsers_Call) Run(run func(ctx context.Context, filter models.UserFilter)) *UserService_ListUsers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(models.UserFilter))
+	})
+	return _c
+}
+
+func (_c *UserService_ListUsers_Call) Return(_a0 []models.User, _a1 error) *UserService_ListUsers_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *UserService_ListUsers_Call) RunAndReturn(run func(context.Context, models.UserFilter) ([]models.User, error)) *UserService_ListUsers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RegisterUser provides a mock function with given fields: ctx, user
 func (_m *UserService) RegisterUser(ctx context.Context, user goth.User) (string, error) {
 	ret := _m.Called(ctx, user)
@@ -138,6 +264,35 @@ func (_m *UserService) RegisterUser(ctx context.Context, user goth.User) (string
 	return r0, r1
 }
 
+// UserService_RegisterUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterUser'
+type UserService_RegisterUser_Call struct {
+	*mock.Call
+}
+
+// RegisterUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - user goth.User
+func (_e *UserService_Expecter) RegisterUser(ctx interface{}, user interface{}) *UserService_RegisterUser_Call {
+	return &UserService_RegisterUser_Call{Call: _e.mock.On("RegisterUser", ctx, user)}
+}
+
+func (_c *UserService_RegisterUser_Call) Run(run func(ctx context.Context, user goth.User)) *UserService_RegisterUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(goth.User))
+	})
+	return _c
+}
+
+func (_c *UserService_RegisterUser_Call) Return(token string, err error) *UserService_RegisterUser_Call {
+	_c.Call.Return(token, err)
+	return _c
+}
+
+func (_c *UserService_RegisterUser_Call) RunAndReturn(run func(context.Context, goth.User) (string, error)) *UserService_RegisterUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RevokeRole provides a mock function with given fields: ctx, userID, role
 func (_m *UserService) RevokeRole(ctx context.Context, userID string, role string) error {
 	ret := _m.Called(ctx, userID, role)
@@ -154,6 +309,36 @@ func (_m *UserService) RevokeRole(ctx context.Context, userID string, role strin
 	}
 
 	return r0
+}
+
+// UserService_RevokeRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RevokeRole'
+type UserService_RevokeRole_Call struct {
+	*mock.Call
+}
+
+// RevokeRole is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - role string
+func (_e *UserService_Expecter) RevokeRole(ctx interface{}, userID interface{}, role interface{}) *UserService_RevokeRole_Call {
+	return &UserService_RevokeRole_Call{Call: _e.mock.On("RevokeRole", ctx, userID, role)}
+}
+
+func (_c *UserService_RevokeRole_Call) Run(run func(ctx context.Context, userID string, role string)) *UserService_RevokeRole_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *UserService_RevokeRole_Call) Return(_a0 error) *UserService_RevokeRole_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *UserService_RevokeRole_Call) RunAndReturn(run func(context.Context, string, string) error) *UserService_RevokeRole_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // UnbanUser provides a mock function with given fields: ctx, userID
@@ -174,6 +359,35 @@ func (_m *UserService) UnbanUser(ctx context.Context, userID string) error {
 	return r0
 }
 
+// UserService_UnbanUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UnbanUser'
+type UserService_UnbanUser_Call struct {
+	*mock.Call
+}
+
+// UnbanUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *UserService_Expecter) UnbanUser(ctx interface{}, userID interface{}) *UserService_UnbanUser_Call {
+	return &UserService_UnbanUser_Call{Call: _e.mock.On("UnbanUser", ctx, userID)}
+}
+
+func (_c *UserService_UnbanUser_Call) Run(run func(ctx context.Context, userID string)) *UserService_UnbanUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *UserService_UnbanUser_Call) Return(_a0 error) *UserService_UnbanUser_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *UserService_UnbanUser_Call) RunAndReturn(run func(context.Context, string) error) *UserService_UnbanUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUser provides a mock function with given fields: ctx, userID, updates
 func (_m *UserService) UpdateUser(ctx context.Context, userID string, updates models.UserUpdateRequest) error {
 	ret := _m.Called(ctx, userID, updates)
@@ -190,6 +404,36 @@ func (_m *UserService) UpdateUser(ctx context.Context, userID string, updates mo
 	}
 
 	return r0
+}
+
+// UserService_UpdateUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUser'
+type UserService_UpdateUser_Call struct {
+	*mock.Call
+}
+
+// UpdateUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - updates models.UserUpdateRequest
+func (_e *UserService_Expecter) UpdateUser(ctx interface{}, userID interface{}, updates interface{}) *UserService_UpdateUser_Call {
+	return &UserService_UpdateUser_Call{Call: _e.mock.On("UpdateUser", ctx, userID, updates)}
+}
+
+func (_c *UserService_UpdateUser_Call) Run(run func(ctx context.Context, userID string, updates models.UserUpdateRequest)) *UserService_UpdateUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(models.UserUpdateRequest))
+	})
+	return _c
+}
+
+func (_c *UserService_UpdateUser_Call) Return(_a0 error) *UserService_UpdateUser_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *UserService_UpdateUser_Call) RunAndReturn(run func(context.Context, string, models.UserUpdateRequest) error) *UserService_UpdateUser_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewUserService creates a new instance of UserService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

@@ -14,6 +14,14 @@ type Notifier struct {
 	mock.Mock
 }
 
+type Notifier_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *Notifier) EXPECT() *Notifier_Expecter {
+	return &Notifier_Expecter{mock: &_m.Mock}
+}
+
 // Send provides a mock function with given fields: ctx, user, templateID, details
 func (_m *Notifier) Send(ctx context.Context, user models.User, templateID string, details map[string]string) error {
 	ret := _m.Called(ctx, user, templateID, details)
@@ -30,6 +38,37 @@ func (_m *Notifier) Send(ctx context.Context, user models.User, templateID strin
 	}
 
 	return r0
+}
+
+// Notifier_Send_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Send'
+type Notifier_Send_Call struct {
+	*mock.Call
+}
+
+// Send is a helper method to define mock.On call
+//   - ctx context.Context
+//   - user models.User
+//   - templateID string
+//   - details map[string]string
+func (_e *Notifier_Expecter) Send(ctx interface{}, user interface{}, templateID interface{}, details interface{}) *Notifier_Send_Call {
+	return &Notifier_Send_Call{Call: _e.mock.On("Send", ctx, user, templateID, details)}
+}
+
+func (_c *Notifier_Send_Call) Run(run func(ctx context.Context, user models.User, templateID string, details map[string]string)) *Notifier_Send_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(models.User), args[2].(string), args[3].(map[string]string))
+	})
+	return _c
+}
+
+func (_c *Notifier_Send_Call) Return(_a0 error) *Notifier_Send_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Notifier_Send_Call) RunAndReturn(run func(context.Context, models.User, string, map[string]string) error) *Notifier_Send_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewNotifier creates a new instance of Notifier. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

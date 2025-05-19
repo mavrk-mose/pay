@@ -19,7 +19,7 @@ type ledgerRepo struct {
 	DB *sqlx.DB
 }
 
-func NewRepo(db *sqlx.DB) service.LedgerService {
+func NewLedgerRepo(db *sqlx.DB) service.LedgerService {
 	return &ledgerRepo{
 		DB: db,
 	}
