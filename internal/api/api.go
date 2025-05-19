@@ -1,12 +1,12 @@
 package api
 
 import (
-	"github.com/jmoiron/sqlx"
-	"golang.org/x/time/rate"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/api/middleware"
 	v1 "github.com/mavrk-mose/pay/internal/api/v1"
+	"golang.org/x/time/rate"
 )
 
 func Init(db *sqlx.DB, cfg *config.Config) *gin.Engine {
@@ -36,7 +36,7 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	r.GET("/check", paymentHandler.Check)
 
 	// Authentication routes
-	auth := api.Group("/auth") 
+	auth := api.Group("/auth")
 	{
 		auth.GET("/:provider", v1.BeginAuthHandler)
 		auth.GET("/:provider/callback", userHandler.AuthCallbackHandler)
@@ -67,14 +67,14 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	// Payment routes
 	payment := api.Group("/payment")
 	{
-		payment.POST("/event", paymentHandler.ProcessPayment)                      
-		payment.GET("/id/:paymentID", paymentHandler.GetPaymentDetails)            
-		payment.GET("/user/:userID/date-range", paymentHandler.QueryPayments)     
-		payment.GET("/user/:userID/status", paymentHandler.QueryPayments)          
-		payment.PATCH("/id/:paymentID/status", paymentHandler.UpdatePaymentStatus) 
-		payment.GET("/id/:paymentID/status", paymentHandler.GetPaymentStatus)     
-		payment.POST("/id/:paymentID", paymentHandler.GetPaymentDetails)           
-		payment.POST("/id/:paymentID/process", paymentHandler.ProcessPayment) 
+		payment.POST("/event", paymentHandler.ProcessPayment)
+		payment.GET("/id/:paymentID", paymentHandler.GetPaymentDetails)
+		payment.GET("/user/:userID/date-range", paymentHandler.QueryPayments)
+		payment.GET("/user/:userID/status", paymentHandler.QueryPayments)
+		payment.PATCH("/id/:paymentID/status", paymentHandler.UpdatePaymentStatus)
+		payment.GET("/id/:paymentID/status", paymentHandler.GetPaymentStatus)
+		payment.POST("/id/:paymentID", paymentHandler.GetPaymentDetails)
+		payment.POST("/id/:paymentID/process", paymentHandler.ProcessPayment)
 	}
 
 	notification := api.Group("/notifications")

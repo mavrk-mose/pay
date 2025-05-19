@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"github.com/google/uuid"
 	"net/http"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	wallet "github.com/mavrk-mose/pay/internal/wallet/models"
@@ -17,7 +19,7 @@ type WalletHandler struct {
 
 func NewWalletHandler(db *sqlx.DB) *WalletHandler {
 	return &WalletHandler{
-		service: service.NewWalletService(repository.NewWalletRepo(db)),
+		service: repository.NewWalletRepo(db),
 	}
 }
 
@@ -30,7 +32,16 @@ func (h *WalletHandler) CreateWallet(c *gin.Context) {
 		return
 	}
 
-	dbWallet, err := h.service.CreateWallet(c, req)
+	dbWallet, err := h.service.CreateWallet(c, &wallet.Wallet{
+		ID:        uuid.New(),
+		UserId:    req.CustomerID,
+		Balance:   0.00,
+		Status:    wallet.Active,
+		Currency:  req.Currency,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create wallet"})
 		return
@@ -56,7 +67,7 @@ func (h *WalletHandler) GetUserWallets(c *gin.Context) {
 func (h *WalletHandler) GetWalletByID(c *gin.Context) {
 	walletID := c.Param("walletID")
 
-	w, err := h.service.GetWallet(c, walletID)
+	w, err := h.service.GetByID(c, uuid.MustParse(walletID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "wallet not found"})
 		return
@@ -73,7 +84,7 @@ func (h *WalletHandler) CreditWallet(c *gin.Context) {
 		return
 	}
 
-	err := h.service.CreditWallet(c, req)
+	err := h.service.Credit(nil, uuid.MustParse(req.WalletID), req.Amount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to credit wallet"})
 		return
@@ -90,7 +101,7 @@ func (h *WalletHandler) DebitWallet(c *gin.Context) {
 		return
 	}
 
-	err := h.service.DebitWallet(c, req)
+	err := h.service.Debit(nil, uuid.MustParse(req.WalletID), req.Amount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to debit wallet"})
 		return

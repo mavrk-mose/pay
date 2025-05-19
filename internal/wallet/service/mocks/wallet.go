@@ -3,8 +3,11 @@
 package mocks
 
 import (
-	gin "github.com/gin-gonic/gin"
+	context "context"
+
 	mock "github.com/stretchr/testify/mock"
+
+	sqlx "github.com/jmoiron/sqlx"
 
 	uuid "github.com/google/uuid"
 
@@ -24,86 +27,76 @@ func (_m *WalletService) EXPECT() *WalletService_Expecter {
 	return &WalletService_Expecter{mock: &_m.Mock}
 }
 
-// CanWithdraw provides a mock function with given fields: request, i
-func (_m *WalletService) CanWithdraw(request string, i int) (interface{}, error) {
-	ret := _m.Called(request, i)
+// CreateTransfer provides a mock function with given fields: ctx, transfer
+func (_m *WalletService) CreateTransfer(ctx context.Context, transfer *wallet.TransferRequest) error {
+	ret := _m.Called(ctx, transfer)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CanWithdraw")
+		panic("no return value specified for CreateTransfer")
 	}
 
-	var r0 interface{}
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string, int) (interface{}, error)); ok {
-		return rf(request, i)
-	}
-	if rf, ok := ret.Get(0).(func(string, int) interface{}); ok {
-		r0 = rf(request, i)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *wallet.TransferRequest) error); ok {
+		r0 = rf(ctx, transfer)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(interface{})
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, int) error); ok {
-		r1 = rf(request, i)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
-// WalletService_CanWithdraw_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CanWithdraw'
-type WalletService_CanWithdraw_Call struct {
+// WalletService_CreateTransfer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateTransfer'
+type WalletService_CreateTransfer_Call struct {
 	*mock.Call
 }
 
-// CanWithdraw is a helper method to define mock.On call
-//   - request string
-//   - i int
-func (_e *WalletService_Expecter) CanWithdraw(request interface{}, i interface{}) *WalletService_CanWithdraw_Call {
-	return &WalletService_CanWithdraw_Call{Call: _e.mock.On("CanWithdraw", request, i)}
+// CreateTransfer is a helper method to define mock.On call
+//   - ctx context.Context
+//   - transfer *wallet.TransferRequest
+func (_e *WalletService_Expecter) CreateTransfer(ctx interface{}, transfer interface{}) *WalletService_CreateTransfer_Call {
+	return &WalletService_CreateTransfer_Call{Call: _e.mock.On("CreateTransfer", ctx, transfer)}
 }
 
-func (_c *WalletService_CanWithdraw_Call) Run(run func(request string, i int)) *WalletService_CanWithdraw_Call {
+func (_c *WalletService_CreateTransfer_Call) Run(run func(ctx context.Context, transfer *wallet.TransferRequest)) *WalletService_CreateTransfer_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string), args[1].(int))
+		run(args[0].(context.Context), args[1].(*wallet.TransferRequest))
 	})
 	return _c
 }
 
-func (_c *WalletService_CanWithdraw_Call) Return(_a0 interface{}, _a1 error) *WalletService_CanWithdraw_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *WalletService_CreateTransfer_Call) Return(_a0 error) *WalletService_CreateTransfer_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *WalletService_CanWithdraw_Call) RunAndReturn(run func(string, int) (interface{}, error)) *WalletService_CanWithdraw_Call {
+func (_c *WalletService_CreateTransfer_Call) RunAndReturn(run func(context.Context, *wallet.TransferRequest) error) *WalletService_CreateTransfer_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// CreateWallet provides a mock function with given fields: ctx, req
-func (_m *WalletService) CreateWallet(ctx *gin.Context, req wallet.CreateWalletRequest) (wallet.Wallet, error) {
-	ret := _m.Called(ctx, req)
+// CreateWallet provides a mock function with given fields: ctx, _a1
+func (_m *WalletService) CreateWallet(ctx context.Context, _a1 *wallet.Wallet) (*wallet.Wallet, error) {
+	ret := _m.Called(ctx, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateWallet")
 	}
 
-	var r0 wallet.Wallet
+	var r0 *wallet.Wallet
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, wallet.CreateWalletRequest) (wallet.Wallet, error)); ok {
-		return rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(context.Context, *wallet.Wallet) (*wallet.Wallet, error)); ok {
+		return rf(ctx, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(*gin.Context, wallet.CreateWalletRequest) wallet.Wallet); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(context.Context, *wallet.Wallet) *wallet.Wallet); ok {
+		r0 = rf(ctx, _a1)
 	} else {
-		r0 = ret.Get(0).(wallet.Wallet)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*wallet.Wallet)
+		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gin.Context, wallet.CreateWalletRequest) error); ok {
-		r1 = rf(ctx, req)
+	if rf, ok := ret.Get(1).(func(context.Context, *wallet.Wallet) error); ok {
+		r1 = rf(ctx, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -117,40 +110,40 @@ type WalletService_CreateWallet_Call struct {
 }
 
 // CreateWallet is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - req wallet.CreateWalletRequest
-func (_e *WalletService_Expecter) CreateWallet(ctx interface{}, req interface{}) *WalletService_CreateWallet_Call {
-	return &WalletService_CreateWallet_Call{Call: _e.mock.On("CreateWallet", ctx, req)}
+//   - ctx context.Context
+//   - _a1 *wallet.Wallet
+func (_e *WalletService_Expecter) CreateWallet(ctx interface{}, _a1 interface{}) *WalletService_CreateWallet_Call {
+	return &WalletService_CreateWallet_Call{Call: _e.mock.On("CreateWallet", ctx, _a1)}
 }
 
-func (_c *WalletService_CreateWallet_Call) Run(run func(ctx *gin.Context, req wallet.CreateWalletRequest)) *WalletService_CreateWallet_Call {
+func (_c *WalletService_CreateWallet_Call) Run(run func(ctx context.Context, _a1 *wallet.Wallet)) *WalletService_CreateWallet_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(wallet.CreateWalletRequest))
+		run(args[0].(context.Context), args[1].(*wallet.Wallet))
 	})
 	return _c
 }
 
-func (_c *WalletService_CreateWallet_Call) Return(_a0 wallet.Wallet, _a1 error) *WalletService_CreateWallet_Call {
+func (_c *WalletService_CreateWallet_Call) Return(_a0 *wallet.Wallet, _a1 error) *WalletService_CreateWallet_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *WalletService_CreateWallet_Call) RunAndReturn(run func(*gin.Context, wallet.CreateWalletRequest) (wallet.Wallet, error)) *WalletService_CreateWallet_Call {
+func (_c *WalletService_CreateWallet_Call) RunAndReturn(run func(context.Context, *wallet.Wallet) (*wallet.Wallet, error)) *WalletService_CreateWallet_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// CreditWallet provides a mock function with given fields: ctx, req
-func (_m *WalletService) CreditWallet(ctx *gin.Context, req wallet.WalletTransactionRequest) error {
-	ret := _m.Called(ctx, req)
+// Credit provides a mock function with given fields: txn, walletID, amount
+func (_m *WalletService) Credit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error {
+	ret := _m.Called(txn, walletID, amount)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreditWallet")
+		panic("no return value specified for Credit")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, wallet.WalletTransactionRequest) error); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(*sqlx.Tx, uuid.UUID, float64) error); ok {
+		r0 = rf(txn, walletID, amount)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -158,46 +151,47 @@ func (_m *WalletService) CreditWallet(ctx *gin.Context, req wallet.WalletTransac
 	return r0
 }
 
-// WalletService_CreditWallet_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreditWallet'
-type WalletService_CreditWallet_Call struct {
+// WalletService_Credit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Credit'
+type WalletService_Credit_Call struct {
 	*mock.Call
 }
 
-// CreditWallet is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - req wallet.WalletTransactionRequest
-func (_e *WalletService_Expecter) CreditWallet(ctx interface{}, req interface{}) *WalletService_CreditWallet_Call {
-	return &WalletService_CreditWallet_Call{Call: _e.mock.On("CreditWallet", ctx, req)}
+// Credit is a helper method to define mock.On call
+//   - txn *sqlx.Tx
+//   - walletID uuid.UUID
+//   - amount float64
+func (_e *WalletService_Expecter) Credit(txn interface{}, walletID interface{}, amount interface{}) *WalletService_Credit_Call {
+	return &WalletService_Credit_Call{Call: _e.mock.On("Credit", txn, walletID, amount)}
 }
 
-func (_c *WalletService_CreditWallet_Call) Run(run func(ctx *gin.Context, req wallet.WalletTransactionRequest)) *WalletService_CreditWallet_Call {
+func (_c *WalletService_Credit_Call) Run(run func(txn *sqlx.Tx, walletID uuid.UUID, amount float64)) *WalletService_Credit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(wallet.WalletTransactionRequest))
+		run(args[0].(*sqlx.Tx), args[1].(uuid.UUID), args[2].(float64))
 	})
 	return _c
 }
 
-func (_c *WalletService_CreditWallet_Call) Return(_a0 error) *WalletService_CreditWallet_Call {
+func (_c *WalletService_Credit_Call) Return(_a0 error) *WalletService_Credit_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *WalletService_CreditWallet_Call) RunAndReturn(run func(*gin.Context, wallet.WalletTransactionRequest) error) *WalletService_CreditWallet_Call {
+func (_c *WalletService_Credit_Call) RunAndReturn(run func(*sqlx.Tx, uuid.UUID, float64) error) *WalletService_Credit_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// DebitWallet provides a mock function with given fields: ctx, req
-func (_m *WalletService) DebitWallet(ctx *gin.Context, req wallet.WalletTransactionRequest) error {
-	ret := _m.Called(ctx, req)
+// Debit provides a mock function with given fields: txn, walletID, amount
+func (_m *WalletService) Debit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error {
+	ret := _m.Called(txn, walletID, amount)
 
 	if len(ret) == 0 {
-		panic("no return value specified for DebitWallet")
+		panic("no return value specified for Debit")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, wallet.WalletTransactionRequest) error); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(*sqlx.Tx, uuid.UUID, float64) error); ok {
+		r0 = rf(txn, walletID, amount)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -205,50 +199,49 @@ func (_m *WalletService) DebitWallet(ctx *gin.Context, req wallet.WalletTransact
 	return r0
 }
 
-// WalletService_DebitWallet_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DebitWallet'
-type WalletService_DebitWallet_Call struct {
+// WalletService_Debit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Debit'
+type WalletService_Debit_Call struct {
 	*mock.Call
 }
 
-// DebitWallet is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - req wallet.WalletTransactionRequest
-func (_e *WalletService_Expecter) DebitWallet(ctx interface{}, req interface{}) *WalletService_DebitWallet_Call {
-	return &WalletService_DebitWallet_Call{Call: _e.mock.On("DebitWallet", ctx, req)}
+// Debit is a helper method to define mock.On call
+//   - txn *sqlx.Tx
+//   - walletID uuid.UUID
+//   - amount float64
+func (_e *WalletService_Expecter) Debit(txn interface{}, walletID interface{}, amount interface{}) *WalletService_Debit_Call {
+	return &WalletService_Debit_Call{Call: _e.mock.On("Debit", txn, walletID, amount)}
 }
 
-func (_c *WalletService_DebitWallet_Call) Run(run func(ctx *gin.Context, req wallet.WalletTransactionRequest)) *WalletService_DebitWallet_Call {
+func (_c *WalletService_Debit_Call) Run(run func(txn *sqlx.Tx, walletID uuid.UUID, amount float64)) *WalletService_Debit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(wallet.WalletTransactionRequest))
+		run(args[0].(*sqlx.Tx), args[1].(uuid.UUID), args[2].(float64))
 	})
 	return _c
 }
 
-func (_c *WalletService_DebitWallet_Call) Return(_a0 error) *WalletService_DebitWallet_Call {
+func (_c *WalletService_Debit_Call) Return(_a0 error) *WalletService_Debit_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *WalletService_DebitWallet_Call) RunAndReturn(run func(*gin.Context, wallet.WalletTransactionRequest) error) *WalletService_DebitWallet_Call {
+func (_c *WalletService_Debit_Call) RunAndReturn(run func(*sqlx.Tx, uuid.UUID, float64) error) *WalletService_Debit_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeleteWallet provides a mock function with given fields: c, walletID
-func (_m *WalletService) DeleteWallet(c *gin.Context, walletID string) interface{} {
+func (_m *WalletService) DeleteWallet(c context.Context, walletID string) error {
 	ret := _m.Called(c, walletID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteWallet")
 	}
 
-	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(*gin.Context, string) interface{}); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
 		r0 = rf(c, walletID)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(interface{})
-		}
+		r0 = ret.Error(0)
 	}
 
 	return r0
@@ -260,32 +253,32 @@ type WalletService_DeleteWallet_Call struct {
 }
 
 // DeleteWallet is a helper method to define mock.On call
-//   - c *gin.Context
+//   - c context.Context
 //   - walletID string
 func (_e *WalletService_Expecter) DeleteWallet(c interface{}, walletID interface{}) *WalletService_DeleteWallet_Call {
 	return &WalletService_DeleteWallet_Call{Call: _e.mock.On("DeleteWallet", c, walletID)}
 }
 
-func (_c *WalletService_DeleteWallet_Call) Run(run func(c *gin.Context, walletID string)) *WalletService_DeleteWallet_Call {
+func (_c *WalletService_DeleteWallet_Call) Run(run func(c context.Context, walletID string)) *WalletService_DeleteWallet_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *WalletService_DeleteWallet_Call) Return(_a0 interface{}) *WalletService_DeleteWallet_Call {
+func (_c *WalletService_DeleteWallet_Call) Return(_a0 error) *WalletService_DeleteWallet_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *WalletService_DeleteWallet_Call) RunAndReturn(run func(*gin.Context, string) interface{}) *WalletService_DeleteWallet_Call {
+func (_c *WalletService_DeleteWallet_Call) RunAndReturn(run func(context.Context, string) error) *WalletService_DeleteWallet_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetBalance provides a mock function with given fields: ctx, walletID
-func (_m *WalletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float64, error) {
-	ret := _m.Called(ctx, walletID)
+// GetBalance provides a mock function with given fields: ctx, userID
+func (_m *WalletService) GetBalance(ctx context.Context, userID uuid.UUID) (float64, error) {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetBalance")
@@ -293,17 +286,17 @@ func (_m *WalletService) GetBalance(ctx *gin.Context, walletID uuid.UUID) (float
 
 	var r0 float64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, uuid.UUID) (float64, error)); ok {
-		return rf(ctx, walletID)
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (float64, error)); ok {
+		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(*gin.Context, uuid.UUID) float64); ok {
-		r0 = rf(ctx, walletID)
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) float64); ok {
+		r0 = rf(ctx, userID)
 	} else {
 		r0 = ret.Get(0).(float64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*gin.Context, uuid.UUID) error); ok {
-		r1 = rf(ctx, walletID)
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = rf(ctx, userID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -317,15 +310,15 @@ type WalletService_GetBalance_Call struct {
 }
 
 // GetBalance is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - walletID uuid.UUID
-func (_e *WalletService_Expecter) GetBalance(ctx interface{}, walletID interface{}) *WalletService_GetBalance_Call {
-	return &WalletService_GetBalance_Call{Call: _e.mock.On("GetBalance", ctx, walletID)}
+//   - ctx context.Context
+//   - userID uuid.UUID
+func (_e *WalletService_Expecter) GetBalance(ctx interface{}, userID interface{}) *WalletService_GetBalance_Call {
+	return &WalletService_GetBalance_Call{Call: _e.mock.On("GetBalance", ctx, userID)}
 }
 
-func (_c *WalletService_GetBalance_Call) Run(run func(ctx *gin.Context, walletID uuid.UUID)) *WalletService_GetBalance_Call {
+func (_c *WalletService_GetBalance_Call) Run(run func(ctx context.Context, userID uuid.UUID)) *WalletService_GetBalance_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(uuid.UUID))
+		run(args[0].(context.Context), args[1].(uuid.UUID))
 	})
 	return _c
 }
@@ -335,14 +328,71 @@ func (_c *WalletService_GetBalance_Call) Return(_a0 float64, _a1 error) *WalletS
 	return _c
 }
 
-func (_c *WalletService_GetBalance_Call) RunAndReturn(run func(*gin.Context, uuid.UUID) (float64, error)) *WalletService_GetBalance_Call {
+func (_c *WalletService_GetBalance_Call) RunAndReturn(run func(context.Context, uuid.UUID) (float64, error)) *WalletService_GetBalance_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetUserWallets provides a mock function with given fields: ctx, id
-func (_m *WalletService) GetUserWallets(ctx *gin.Context, id string) ([]wallet.Wallet, error) {
-	ret := _m.Called(ctx, id)
+// GetByID provides a mock function with given fields: ctx, walletID
+func (_m *WalletService) GetByID(ctx context.Context, walletID uuid.UUID) (wallet.Wallet, error) {
+	ret := _m.Called(ctx, walletID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 wallet.Wallet
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (wallet.Wallet, error)); ok {
+		return rf(ctx, walletID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) wallet.Wallet); ok {
+		r0 = rf(ctx, walletID)
+	} else {
+		r0 = ret.Get(0).(wallet.Wallet)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = rf(ctx, walletID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WalletService_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type WalletService_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - walletID uuid.UUID
+func (_e *WalletService_Expecter) GetByID(ctx interface{}, walletID interface{}) *WalletService_GetByID_Call {
+	return &WalletService_GetByID_Call{Call: _e.mock.On("GetByID", ctx, walletID)}
+}
+
+func (_c *WalletService_GetByID_Call) Run(run func(ctx context.Context, walletID uuid.UUID)) *WalletService_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *WalletService_GetByID_Call) Return(_a0 wallet.Wallet, _a1 error) *WalletService_GetByID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *WalletService_GetByID_Call) RunAndReturn(run func(context.Context, uuid.UUID) (wallet.Wallet, error)) *WalletService_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUserWallets provides a mock function with given fields: ctx, userID
+func (_m *WalletService) GetUserWallets(ctx context.Context, userID string) ([]wallet.Wallet, error) {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserWallets")
@@ -350,19 +400,19 @@ func (_m *WalletService) GetUserWallets(ctx *gin.Context, id string) ([]wallet.W
 
 	var r0 []wallet.Wallet
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, string) ([]wallet.Wallet, error)); ok {
-		return rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]wallet.Wallet, error)); ok {
+		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(*gin.Context, string) []wallet.Wallet); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []wallet.Wallet); ok {
+		r0 = rf(ctx, userID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]wallet.Wallet)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*gin.Context, string) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, userID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -376,15 +426,15 @@ type WalletService_GetUserWallets_Call struct {
 }
 
 // GetUserWallets is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - id string
-func (_e *WalletService_Expecter) GetUserWallets(ctx interface{}, id interface{}) *WalletService_GetUserWallets_Call {
-	return &WalletService_GetUserWallets_Call{Call: _e.mock.On("GetUserWallets", ctx, id)}
+//   - ctx context.Context
+//   - userID string
+func (_e *WalletService_Expecter) GetUserWallets(ctx interface{}, userID interface{}) *WalletService_GetUserWallets_Call {
+	return &WalletService_GetUserWallets_Call{Call: _e.mock.On("GetUserWallets", ctx, userID)}
 }
 
-func (_c *WalletService_GetUserWallets_Call) Run(run func(ctx *gin.Context, id string)) *WalletService_GetUserWallets_Call {
+func (_c *WalletService_GetUserWallets_Call) Run(run func(ctx context.Context, userID string)) *WalletService_GetUserWallets_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -394,79 +444,22 @@ func (_c *WalletService_GetUserWallets_Call) Return(_a0 []wallet.Wallet, _a1 err
 	return _c
 }
 
-func (_c *WalletService_GetUserWallets_Call) RunAndReturn(run func(*gin.Context, string) ([]wallet.Wallet, error)) *WalletService_GetUserWallets_Call {
+func (_c *WalletService_GetUserWallets_Call) RunAndReturn(run func(context.Context, string) ([]wallet.Wallet, error)) *WalletService_GetUserWallets_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetWallet provides a mock function with given fields: ctx, userID
-func (_m *WalletService) GetWallet(ctx *gin.Context, userID string) (wallet.Wallet, error) {
-	ret := _m.Called(ctx, userID)
+// UpdateTransferStatus provides a mock function with given fields: ctx, externalRef, status
+func (_m *WalletService) UpdateTransferStatus(ctx context.Context, externalRef string, status string) error {
+	ret := _m.Called(ctx, externalRef, status)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetWallet")
-	}
-
-	var r0 wallet.Wallet
-	var r1 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, string) (wallet.Wallet, error)); ok {
-		return rf(ctx, userID)
-	}
-	if rf, ok := ret.Get(0).(func(*gin.Context, string) wallet.Wallet); ok {
-		r0 = rf(ctx, userID)
-	} else {
-		r0 = ret.Get(0).(wallet.Wallet)
-	}
-
-	if rf, ok := ret.Get(1).(func(*gin.Context, string) error); ok {
-		r1 = rf(ctx, userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// WalletService_GetWallet_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWallet'
-type WalletService_GetWallet_Call struct {
-	*mock.Call
-}
-
-// GetWallet is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - userID string
-func (_e *WalletService_Expecter) GetWallet(ctx interface{}, userID interface{}) *WalletService_GetWallet_Call {
-	return &WalletService_GetWallet_Call{Call: _e.mock.On("GetWallet", ctx, userID)}
-}
-
-func (_c *WalletService_GetWallet_Call) Run(run func(ctx *gin.Context, userID string)) *WalletService_GetWallet_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(string))
-	})
-	return _c
-}
-
-func (_c *WalletService_GetWallet_Call) Return(_a0 wallet.Wallet, _a1 error) *WalletService_GetWallet_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *WalletService_GetWallet_Call) RunAndReturn(run func(*gin.Context, string) (wallet.Wallet, error)) *WalletService_GetWallet_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// Transfer provides a mock function with given fields: ctx, req
-func (_m *WalletService) Transfer(ctx *gin.Context, req wallet.TransferRequest) error {
-	ret := _m.Called(ctx, req)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Transfer")
+		panic("no return value specified for UpdateTransferStatus")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, wallet.TransferRequest) error); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, externalRef, status)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -474,79 +467,32 @@ func (_m *WalletService) Transfer(ctx *gin.Context, req wallet.TransferRequest) 
 	return r0
 }
 
-// WalletService_Transfer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Transfer'
-type WalletService_Transfer_Call struct {
+// WalletService_UpdateTransferStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTransferStatus'
+type WalletService_UpdateTransferStatus_Call struct {
 	*mock.Call
 }
 
-// Transfer is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - req wallet.TransferRequest
-func (_e *WalletService_Expecter) Transfer(ctx interface{}, req interface{}) *WalletService_Transfer_Call {
-	return &WalletService_Transfer_Call{Call: _e.mock.On("Transfer", ctx, req)}
+// UpdateTransferStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - externalRef string
+//   - status string
+func (_e *WalletService_Expecter) UpdateTransferStatus(ctx interface{}, externalRef interface{}, status interface{}) *WalletService_UpdateTransferStatus_Call {
+	return &WalletService_UpdateTransferStatus_Call{Call: _e.mock.On("UpdateTransferStatus", ctx, externalRef, status)}
 }
 
-func (_c *WalletService_Transfer_Call) Run(run func(ctx *gin.Context, req wallet.TransferRequest)) *WalletService_Transfer_Call {
+func (_c *WalletService_UpdateTransferStatus_Call) Run(run func(ctx context.Context, externalRef string, status string)) *WalletService_UpdateTransferStatus_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(wallet.TransferRequest))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *WalletService_Transfer_Call) Return(_a0 error) *WalletService_Transfer_Call {
+func (_c *WalletService_UpdateTransferStatus_Call) Return(_a0 error) *WalletService_UpdateTransferStatus_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *WalletService_Transfer_Call) RunAndReturn(run func(*gin.Context, wallet.TransferRequest) error) *WalletService_Transfer_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateBalance provides a mock function with given fields: ctx, walletID, amount
-func (_m *WalletService) UpdateBalance(ctx *gin.Context, walletID uuid.UUID, amount float64) error {
-	ret := _m.Called(ctx, walletID, amount)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateBalance")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*gin.Context, uuid.UUID, float64) error); ok {
-		r0 = rf(ctx, walletID, amount)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// WalletService_UpdateBalance_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateBalance'
-type WalletService_UpdateBalance_Call struct {
-	*mock.Call
-}
-
-// UpdateBalance is a helper method to define mock.On call
-//   - ctx *gin.Context
-//   - walletID uuid.UUID
-//   - amount float64
-func (_e *WalletService_Expecter) UpdateBalance(ctx interface{}, walletID interface{}, amount interface{}) *WalletService_UpdateBalance_Call {
-	return &WalletService_UpdateBalance_Call{Call: _e.mock.On("UpdateBalance", ctx, walletID, amount)}
-}
-
-func (_c *WalletService_UpdateBalance_Call) Run(run func(ctx *gin.Context, walletID uuid.UUID, amount float64)) *WalletService_UpdateBalance_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*gin.Context), args[1].(uuid.UUID), args[2].(float64))
-	})
-	return _c
-}
-
-func (_c *WalletService_UpdateBalance_Call) Return(_a0 error) *WalletService_UpdateBalance_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *WalletService_UpdateBalance_Call) RunAndReturn(run func(*gin.Context, uuid.UUID, float64) error) *WalletService_UpdateBalance_Call {
+func (_c *WalletService_UpdateTransferStatus_Call) RunAndReturn(run func(context.Context, string, string) error) *WalletService_UpdateTransferStatus_Call {
 	_c.Call.Return(run)
 	return _c
 }

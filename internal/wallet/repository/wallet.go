@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/mavrk-mose/pay/internal/wallet/service"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -10,28 +11,16 @@ import (
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
-//go:generate mockery generate WalletRepo --output=internal/wallet/repository/mocks
-type WalletRepo interface {
-	CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, error)
-	GetUserWallets(ctx context.Context, userID string) ([]Wallet, error)
-	GetBalance(ctx context.Context, userID string) (float64, error)
-	GetByID(ctx context.Context, walletID string) (Wallet, error)
-	CreateTransfer(ctx context.Context, transfer *TransferRequest) error
-	UpdateTransferStatus(ctx context.Context, externalRef, status string) error
-	Debit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error
-	Credit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) error
-}
-
 type walletRepo struct {
 	DB     *sqlx.DB
 	logger utils.Logger
 }
 
-func NewWalletRepo(db *sqlx.DB) WalletRepo {
+func NewWalletRepo(db *sqlx.DB) service.WalletService {
 	return &walletRepo{DB: db}
 }
 
-func (r *walletRepo) CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, error) {
+func (r *walletRepo) CreateWallet(ctx context.Context, wallet *Wallet) (*Wallet, error) {
 	r.logger.Infof("Creating wallet for user %s", wallet.UserId)
 	query := `
 		INSERT INTO wallets (user_id, balance, currency, created_at)
@@ -43,7 +32,18 @@ func (r *walletRepo) CreateWallet(ctx context.Context, wallet Wallet) (*Wallet, 
 		r.logger.Errorf("Failed to create wallet: %v", err)
 		return nil, fmt.Errorf("failed to create wallet: %v", err)
 	}
-	return &wallet, nil
+	return wallet, nil
+}
+
+func (r *walletRepo) DeleteWallet(c context.Context, walletID string) error {
+	r.logger.Infof("Deleting wallet %s", walletID)
+	query := `DELETE FROM wallets WHERE id = $1`
+	_, err := r.DB.ExecContext(c, query, walletID)
+	if err != nil {
+		r.logger.Errorf("Failed to delete wallet: %v", err)
+		return fmt.Errorf("failed to delete wallet: %v", err)
+	}
+	return nil
 }
 
 func (r *walletRepo) GetUserWallets(ctx context.Context, userID string) ([]Wallet, error) {
@@ -58,7 +58,7 @@ func (r *walletRepo) GetUserWallets(ctx context.Context, userID string) ([]Walle
 	return wallets, nil
 }
 
-func (r *walletRepo) GetBalance(ctx context.Context, userID string) (float64, error) {
+func (r *walletRepo) GetBalance(ctx context.Context, userID uuid.UUID) (float64, error) {
 	r.logger.Infof("Fetching wallet balance for user %s", userID)
 	var balance float64
 	err := r.DB.QueryRowContext(ctx, "SELECT balance FROM wallets WHERE user_id = ? FOR UPDATE", userID).Scan(&balance)
@@ -69,7 +69,7 @@ func (r *walletRepo) GetBalance(ctx context.Context, userID string) (float64, er
 	return balance, nil
 }
 
-func (r *walletRepo) GetByID(ctx context.Context, walletID string) (Wallet, error) {
+func (r *walletRepo) GetByID(ctx context.Context, walletID uuid.UUID) (Wallet, error) {
 	r.logger.Infof("Fetching wallet details for wallet %s", walletID)
 	var wallet Wallet
 	err := r.DB.GetContext(ctx, &wallet, "SELECT * FROM wallets WHERE id = $1", walletID)

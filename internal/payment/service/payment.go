@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"net/http"
@@ -24,12 +26,13 @@ type PaymentService interface {
 	UpdatePaymentStatus(id string, status PaymentStatus) error
 }
 
-type payment struct {
+type Payment struct {
 	walletService     wallet.WalletService
 	ledgerService     ledger.LedgerService
 	executor          executor.PaymentExecutor
 	productConfigRepo ProductConfigRepo
 	logger            utils.Logger
+	DB                *sqlx.DB
 }
 
 func NewPaymentService(
@@ -37,12 +40,14 @@ func NewPaymentService(
 	ledger ledger.LedgerService,
 	executor executor.PaymentExecutor,
 	productConfigRepo ProductConfigRepo,
-) *payment {
-	return &payment{
+	db *sqlx.DB,
+) *Payment {
+	return &Payment{
 		walletService:     wallet,
 		ledgerService:     ledger,
 		executor:          executor,
 		productConfigRepo: productConfigRepo,
+		DB:                db,
 	}
 }
 
@@ -51,7 +56,7 @@ type ExternalPaymentResponse struct {
 	ExternalRef string `json:"external_ref"`
 }
 
-func (h *payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
+func (h *Payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 	productConfig, err := h.productConfigRepo.GetProductConfig(ctx, req.ProductName)
 	if err != nil {
 		h.logger.Errorf("Failed to fetch product configuration: %v", err)
@@ -117,41 +122,62 @@ func (h *payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 		}
 	}()
 
-	if err := h.walletService.UpdateBalance(ctx, req.Customer, -req.Amount); err != nil {
+	tx, err := h.DB.BeginTxx(ctx, nil)
+	if err != nil {
+		h.logger.Errorf("Failed to begin transaction: %v", err)
+		return fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	if err := h.walletService.Debit(tx, req.Customer, -req.Amount); err != nil {
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update wallet balance"})
 		return err
 	}
 
-	if err := h.walletService.UpdateBalance(ctx, req.Recipient, netAmount); err != nil {
+	if err := h.walletService.Debit(tx, req.Recipient, netAmount); err != nil {
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update recipient's wallet balance"})
 		return err
 	}
 
-	if err := h.walletService.UpdateBalance(ctx, productConfig.FeeWalletID, feeAmount); err != nil {
+	if err := h.walletService.Debit(tx, productConfig.FeeWalletID, feeAmount); err != nil {
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update fee wallet balance"})
 		return err
 	}
 
+	if err := tx.Commit(); err != nil {
+		return err
+	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Payment successful"})
 	return nil
 }
 
-func (h *payment) GetPaymentDetails(id string) (PaymentIntent, error) {
+func (h *Payment) GetPaymentDetails(id string) (PaymentIntent, error) {
 	return PaymentIntent{}, nil
 }
 
-func (h *payment) GetPaymentStatus(id string) (PaymentStatus, error) {
+func (h *Payment) GetPaymentStatus(id string) (PaymentStatus, error) {
 	return "", nil
 }
 
-func (h *payment) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {
+func (h *Payment) QueryPaymentsByDateRange(id string, date time.Time, date2 time.Time) ([]PaymentIntent, error) {
 	return []PaymentIntent{}, nil
 }
 
-func (h *payment) QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error) {
+func (h *Payment) QueryPaymentsByStatus(id string, status PaymentStatus) ([]PaymentIntent, error) {
 	return []PaymentIntent{}, nil
 }
 
-func (h *payment) UpdatePaymentStatus(id string, status PaymentStatus) error {
+func (h *Payment) UpdatePaymentStatus(id string, status PaymentStatus) error {
 	return nil
 }
