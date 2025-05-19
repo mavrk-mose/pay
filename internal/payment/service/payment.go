@@ -91,7 +91,7 @@ func (h *payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 	}
 
 	go func() {
-		if err := h.ledgerService.RecordTransaction(ctx, txn); err != nil {
+		if _, err := h.ledgerService.RecordTransaction(ctx, txn); err != nil {
 			h.logger.Errorf("Failed to record transaction in ledger: %v", err)
 			panic(err)
 		}
@@ -111,7 +111,7 @@ func (h *payment) ProcessPayment(ctx *gin.Context, req PaymentIntent) error {
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
 		}
-		if err := h.ledgerService.RecordTransaction(ctx, feeTxn); err != nil {
+		if _, err := h.ledgerService.RecordTransaction(ctx, feeTxn); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record fee transaction in ledger"})
 			panic(err)
 		}

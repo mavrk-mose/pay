@@ -1,33 +1,32 @@
-package service
+package repository
 
 import (
 	"context"
 	"fmt"
 	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/internal/notification/service"
 	"github.com/mavrk-mose/pay/internal/user/models"
 
-	"github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 type SMSNotifier struct {
-	client           *twilio.RestClient
-	from             string // Twilio phone number from config
-	notificationRepo repository.NotificationRepo
-	logger           utils.Logger
+	client       *twilio.RestClient
+	from         string // Twilio phone number from config
+	notification service.NotificationService
+	logger       utils.Logger
 }
 
-func NewSMSNotifier(cfg *config.Config, notificationRepo repository.NotificationRepo) *SMSNotifier {
+func NewSMSNotifier(cfg *config.Config) *SMSNotifier {
 	client := twilio.NewRestClientWithParams(twilio.ClientParams{
 		Username: cfg.Twilio.AccountSID,
 		Password: cfg.Twilio.AuthToken,
 	})
 	return &SMSNotifier{
-		client:           client,
-		from:             cfg.Twilio.From,
-		notificationRepo: notificationRepo,
+		client: client,
+		from:   cfg.Twilio.From,
 	}
 }
 
@@ -36,7 +35,7 @@ func (n *SMSNotifier) Send(ctx context.Context, user models.User, templateID str
 
 	n.logger.Infof("Sending direct SMS to user %s", userID)
 
-	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
+	template, err := n.notification.GetTemplate(ctx, templateID)
 	if err != nil {
 		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
 		return fmt.Errorf("failed to get template: %w", err)

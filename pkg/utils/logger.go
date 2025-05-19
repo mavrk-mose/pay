@@ -8,7 +8,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Logger methods interface
 type Logger interface {
 	InitLogger()
 	Debug(args ...interface{})
@@ -25,18 +24,15 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-// Logger
 type ApiLogger struct {
 	cfg         *config.Config
 	sugarLogger *zap.SugaredLogger
 }
 
-// App Logger constructor
 func NewApiLogger(cfg *config.Config) *ApiLogger {
 	return &ApiLogger{cfg: cfg}
 }
 
-// For mapping config logger to app logger levels
 var loggerLevelMap = map[string]zapcore.Level{
 	"debug":  zapcore.DebugLevel,
 	"info":   zapcore.InfoLevel,
@@ -56,7 +52,6 @@ func (l *ApiLogger) getLoggerLevel(cfg *config.Config) zapcore.Level {
 	return level
 }
 
-// Init logger
 func (l *ApiLogger) InitLogger() {
 	logLevel := l.getLoggerLevel(l.cfg)
 
@@ -91,8 +86,6 @@ func (l *ApiLogger) InitLogger() {
 		l.sugarLogger.Error(err)
 	}
 }
-
-// Logger methods
 
 func (l *ApiLogger) Debug(args ...interface{}) {
 	l.sugarLogger.Debug(args...)

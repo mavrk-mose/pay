@@ -14,7 +14,7 @@ import (
 )
 
 type NotificationHandler struct {
-	dispatcher service.DispatcherService
+	dispatcher service.NotificationService
 	repo       repository.NotificationRepo
 	logger     utils.Logger
 }
@@ -22,7 +22,7 @@ type NotificationHandler struct {
 func NewNotificationHandler(
 	cfg *config.Config,
 	db *sqlx.DB,
-) *NotificationHandler { 
+) *NotificationHandler {
 	return &NotificationHandler{
 		dispatcher: service.NewDispatcher(cfg, db),
 	}

@@ -1,32 +1,31 @@
-package service
+package repository
 
 import (
 	"context"
 	"fmt"
 	"github.com/mavrk-mose/pay/config"
-	notificationRepo "github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/internal/notification/service"
 	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	"net/smtp"
 )
 
 type EmailNotifier struct {
-	from             string
-	smtpHost         string
-	smtpPort         string
-	auth             smtp.Auth
-	notificationRepo notificationRepo.NotificationRepo
-	logger           utils.Logger
+	from         string
+	smtpHost     string
+	smtpPort     string
+	auth         smtp.Auth
+	notification service.NotificationService
+	logger       utils.Logger
 }
 
-func NewEmailNotifier(cfg *config.Config, notificationRepo notificationRepo.NotificationRepo) *EmailNotifier {
+func NewEmailNotifier(cfg *config.Config) *EmailNotifier {
 	auth := smtp.PlainAuth("", cfg.Server.SMTPUser, cfg.Server.SMTPPassword, cfg.Server.SMTPHost)
 	return &EmailNotifier{
-		from:             cfg.Server.EmailFrom,
-		smtpHost:         cfg.Server.SMTPHost,
-		smtpPort:         cfg.Server.SMTPPort,
-		auth:             auth,
-		notificationRepo: notificationRepo,
+		from:     cfg.Server.EmailFrom,
+		smtpHost: cfg.Server.SMTPHost,
+		smtpPort: cfg.Server.SMTPPort,
+		auth:     auth,
 	}
 }
 
@@ -42,7 +41,7 @@ func (n *EmailNotifier) Send(ctx context.Context, user models.User, templateID s
 
 	n.logger.Infof("Sending email to user %s", to)
 
-	template, err := n.notificationRepo.GetTemplate(ctx, templateID)
+	template, err := n.notification.GetTemplate(ctx, templateID)
 	if err != nil {
 		n.logger.Errorf("Failed to get template %s: %v", templateID, err)
 		return fmt.Errorf("failed to get template: %w", err)

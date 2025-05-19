@@ -1,4 +1,4 @@
-package service
+package repository
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
-	"github.com/mavrk-mose/pay/internal/notification/repository"
+	"github.com/mavrk-mose/pay/internal/notification/service"
 	"github.com/mavrk-mose/pay/internal/user/models"
 	"github.com/mavrk-mose/pay/pkg/utils"
 	cmap "github.com/orcaman/concurrent-map/v2"
@@ -16,17 +16,14 @@ import (
 // WebNotifier handles SSE and notifications.
 // It uses a concurrent map for clients where each userID maps to its notification channel.
 type WebNotifier struct {
-	clients cmap.ConcurrentMap[string, chan Notification]
-	repo    repository.NotificationRepo
-	logger  utils.Logger
+	clients      cmap.ConcurrentMap[string, chan Notification]
+	notification service.NotificationService
+	logger       utils.Logger
 }
 
-func NewWebNotifier(
-	repo repository.NotificationRepo,
-) *WebNotifier {
+func NewWebNotifier() *WebNotifier {
 	return &WebNotifier{
 		clients: cmap.New[chan Notification](),
-		repo:    repo,
 	}
 }
 
@@ -75,7 +72,7 @@ func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID str
 
 	s.logger.Infof("Sending notification to user %s using template %s", userID, templateID)
 
-	template, err := s.repo.GetTemplate(ctx, templateID)
+	template, err := s.notification.GetTemplate(ctx, templateID)
 	if err != nil {
 		s.logger.Errorf("Failed to get template %s: %v", templateID, err)
 		return fmt.Errorf("failed to get template: %w", err)
@@ -101,7 +98,7 @@ func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID str
 		notifyChan <- notification
 	} else {
 		s.logger.Infof("User %s is not connected, storing notification", userID)
-		if err := s.repo.StoreNotification(ctx, notification); err != nil {
+		if err := s.notification.StoreNotification(ctx, notification); err != nil {
 			s.logger.Errorf("Failed to store notification for user %s: %v", userID, err)
 		}
 		return fmt.Errorf("user %s is not connected", userID)

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	graceful.Initialize()
-	
+
 	configPath := GetConfigPath(os.Getenv("config"))
 
 	cfgFile, err := config.LoadConfig(configPath)
@@ -26,6 +26,7 @@ func main() {
 	}
 
 	appLogger := NewApiLogger(cfg)
+	appLogger.InitLogger()
 
 	DB, err := db.NewPsqlDB(cfg)
 	if err != nil {

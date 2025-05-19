@@ -14,9 +14,9 @@ import (
 )
 
 type PaymentHandler struct {
+	db             *sqlx.DB
 	paymentService payment.PaymentService
 	ledgerService  ledger.LedgerService
-	txnRepo        repository.TransactionRepo
 }
 
 type WebhookPayload struct {
