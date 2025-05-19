@@ -1,12 +1,25 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/time/rate"
+	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/api/middleware"
 	v1 "github.com/mavrk-mose/pay/internal/api/v1"
 )
+
+func Init(db *sqlx.DB, cfg *config.Config) *gin.Engine {
+	server := gin.Default()
+	server.Use(gin.Recovery())
+	server.Use(middleware.CORSMiddleware())
+
+	rl := middleware.NewRateLimiter(rate.Limit(20), 5)
+	server.Use(rl.RateLimitMiddleware())
+
+	NewApiHandler(server, db, cfg)
+	return server
+}
 
 func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 

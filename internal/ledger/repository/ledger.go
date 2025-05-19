@@ -4,32 +4,28 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/mavrk-mose/pay/internal/ledger/models"
 	. "github.com/mavrk-mose/pay/internal/ledger/models"
-	"sync"
-	"time"
+	"github.com/mavrk-mose/pay/internal/ledger/service"
 )
 
-type TransactionRepo interface {
-	RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error)
-	CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error
-	UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error
-	FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error)
-}
-
-type transactionRepo struct {
+type ledgerRepo struct {
 	DB *sqlx.DB
 }
 
-func NewRepo(db *sqlx.DB) TransactionRepo {
-	return &transactionRepo{
+func NewRepo(db *sqlx.DB) service.LedgerService {
+	return &ledgerRepo{
 		DB: db,
 	}
-}	
+}
 
-func (r *transactionRepo) RecordTransaction(ctx *gin.Context, payerWalletID, payeeWalletID int64, amount float64, currency string) (string, error) {
+func (r *ledgerRepo) RecordTransaction(ctx *gin.Context, transaction models.Transaction) (string, error) {
 	txn, err := r.DB.BeginTxx(ctx, nil)
 	if err != nil {
 		return "", err
@@ -42,9 +38,9 @@ func (r *transactionRepo) RecordTransaction(ctx *gin.Context, payerWalletID, pay
 		ExternalRef:   uuid.New().String(),
 		Type:          TransactionTransfer,
 		Status:        TransactionPending,
-		Currency:      currency,
-		DebitWalletID: payerWalletID,
-		Amount:        amount,
+		Currency:      transaction.Currency,
+		DebitWalletID: transaction.DebitWalletID,
+		Amount:        transaction.Amount,
 		EntryType:     Debit,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
@@ -54,9 +50,9 @@ func (r *transactionRepo) RecordTransaction(ctx *gin.Context, payerWalletID, pay
 		ExternalRef:    uuid.New().String(),
 		Type:           TransactionTransfer,
 		Status:         TransactionPending,
-		Currency:       currency,
-		CreditWalletID: payeeWalletID,
-		Amount:         amount,
+		Currency:       transaction.Currency,
+		CreditWalletID: transaction.CreditWalletID,
+		Amount:         transaction.Amount,
 		EntryType:      Credit,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
@@ -78,7 +74,13 @@ func (r *transactionRepo) RecordTransaction(ctx *gin.Context, payerWalletID, pay
 	return transactionID.String(), nil
 }
 
-func (r *transactionRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
+func (r *ledgerRepo) GetTransactionByID(transactionID string) (Transaction, error) {
+	var txn Transaction
+	err := r.DB.Get(&txn, "SELECT * FROM transaction WHERE id = $1 FOR UPDATE", transactionID)
+	return txn, err
+}
+
+func (r *ledgerRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sqlx.Tx, entries []Transaction) error {
 	for i := range entries {
 		entries[i].Checksum = GenerateChecksum(entries[i])
 
@@ -99,7 +101,7 @@ func (r *transactionRepo) CreateTransactionWithEntries(ctx *gin.Context, txn *sq
 	return nil
 }
 
-func (r *transactionRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
+func (r *ledgerRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef string, status TransactionStatus) error {
 	query := `
 		UPDATE transaction
 		SET status = $1, updated_at = NOW() 
@@ -116,7 +118,7 @@ func (r *transactionRepo) UpdateTransactionStatus(ctx *gin.Context, externalRef 
 	return nil
 }
 
-func (r *transactionRepo) FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
+func (r *ledgerRepo) FetchTransactionsWithChecksum(db *sqlx.DB, date, provider string) (map[string]string, error) {
 	query := `
 		SELECT id, checksum
 		FROM transaction
