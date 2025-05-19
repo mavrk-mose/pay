@@ -8,9 +8,8 @@ import (
 	v1 "github.com/mavrk-mose/pay/internal/api/v1"
 )
 
-
 func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
-	
+
 	walletHandler := v1.NewWalletHandler(db)
 	userHandler := v1.NewUserHandler(db)
 	paymentHandler := v1.NewPaymentHandler(db)

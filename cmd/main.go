@@ -1,22 +1,17 @@
 package main
 
 import (
-	"github.com/mavrk-mose/pay/internal/executor"
-	"github.com/mavrk-mose/pay/pkg/db"
-	"github.com/mavrk-mose/pay/pkg/nats"
 	"log"
 	"os"
 
 	"github.com/dreson4/graceful/v2"
-	"github.com/mavrk-mose/pay/internal/notification"
-	"github.com/mavrk-mose/pay/internal/payment"
-	"github.com/mavrk-mose/pay/internal/user"
-	"github.com/mavrk-mose/pay/internal/wallet"
-	"github.com/mavrk-mose/pay/pkg/middleware"
 	"golang.org/x/time/rate"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/internal/api/middleware"
+	"github.com/mavrk-mose/pay/internal/api"
+	"github.com/mavrk-mose/pay/pkg/db"
 	. "github.com/mavrk-mose/pay/pkg/utils"
 )
 
@@ -48,18 +43,8 @@ func main() {
 
 	db.MigrateDB(DB)
 
-	_, err = nats.JetStreamInit(cfg)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// modules
-	user.AuthRoute(r, DB, cfg)
-	payment.NewApiHandler(r, DB, cfg)
-	wallet.NewApiHandler(r, DB)
-	notification.NewApiHandler(r, DB, cfg)
-	executor.NewApiHandler(r, DB, cfg)
+	api.NewApiHandler(r, DB, cfg)
 
 	PORT := cfg.Server.Port
 	if PORT == "" {
