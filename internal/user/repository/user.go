@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	walletService "github.com/mavrk-mose/pay/internal/wallet/service"
 	"strings"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/markbates/goth"
 	models "github.com/mavrk-mose/pay/internal/user/models"
-	walletRepo "github.com/mavrk-mose/pay/internal/wallet/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
 
@@ -27,9 +27,9 @@ type UserRepository interface {
 }
 
 type userRepo struct {
-	db         *sqlx.DB
-	walletRepo walletRepo.WalletRepo
-	logger     utils.Logger
+	db            *sqlx.DB
+	walletService walletService.WalletService
+	logger        utils.Logger
 }
 
 func NewUserRepository(db *sqlx.DB) UserRepository {
@@ -72,17 +72,17 @@ func (r *userRepo) CreateOrUpdateUser(ctx context.Context, user goth.User) (*mod
 	}
 
 	if walletCount == 0 {
-		wallet := wallet.Wallet{
+		newWallet := &wallet.Wallet{
 			UserId:    dbUser.UserId,
 			Balance:   0,
 			Currency:  dbUser.Currency,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
-		_, err = r.walletRepo.CreateWallet(ctx, wallet)
+		_, err = r.walletService.CreateWallet(ctx, newWallet)
 		if err != nil {
-			r.logger.Errorf("Failed to create default wallet: %v", err)
-			return nil, fmt.Errorf("failed to create default wallet: %v", err)
+			r.logger.Errorf("Failed to create default newWallet: %v", err)
+			return nil, fmt.Errorf("failed to create default newWallet: %v", err)
 		}
 	}
 
@@ -126,7 +126,6 @@ func (r *userRepo) UpdateUser(ctx context.Context, userID string, updates models
 	_, err := r.db.ExecContext(ctx, query, args...)
 	return err
 }
-
 
 func (r *userRepo) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
 	var user models.User
