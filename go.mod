@@ -5,12 +5,10 @@ go 1.23.0
 require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/adyen/adyen-go-api-library/v7 v7.3.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dreson4/graceful/v2 v2.0.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/nats-io/nats.go v1.41.2
 	github.com/netlify/PayPal-Go-SDK v1.0.2
 	github.com/pressly/goose/v3 v3.24.2
 	github.com/spf13/viper v1.19.0
@@ -21,23 +19,12 @@ require (
 )
 
 require (
-	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/fatih/color v1.16.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/hashicorp/consul/api v1.32.0 // indirect
-	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-hclog v1.6.3 // indirect
-	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
@@ -45,11 +32,7 @@ require (
 	github.com/lestrrat-go/jwx v1.2.29 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/logpacker/PayPal-Go-SDK v2.0.5+incompatible // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/nats-io/nkeys v0.4.11 // indirect
-	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect

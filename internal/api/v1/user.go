@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/mavrk-mose/pay/internal/user/service"
 	"net/http"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/api/middleware"
 	"github.com/mavrk-mose/pay/internal/user/models"
-	"github.com/mavrk-mose/pay/internal/user/service"
+	"github.com/mavrk-mose/pay/internal/user/repository"
 )
 
 type UserHandler struct {
@@ -22,7 +23,7 @@ type UserHandler struct {
 }
 
 func NewUserHandler(db *sqlx.DB) *UserHandler {
-	return &UserHandler{service: service.NewUserService(db)}
+	return &UserHandler{service: repository.NewUserService(db)}
 }
 
 var (
@@ -148,9 +149,8 @@ func (h *UserHandler) AssignRole(c *gin.Context) {
 // RevokeRole removes a role from a user
 func (h *UserHandler) RevokeRole(c *gin.Context) {
 	userID := c.Param("userID")
-	role := c.Param("role")
 
-	if err := h.service.RevokeRole(c.Request.Context(), userID, role); err != nil {
+	if err := h.service.RevokeRole(c.Request.Context(), userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke role: " + err.Error()})
 		return
 	}

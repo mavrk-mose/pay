@@ -19,7 +19,7 @@ type notificationRepo struct {
 	DB        *sqlx.DB
 }
 
-func NewNotificationRepo(db *sqlx.DB, cfg *config.Config) service.NotificationService {
+func NewNotificationService(db *sqlx.DB, cfg *config.Config) service.NotificationService {
 	notifiers := make(map[string]service.Notifier)
 
 	notifiers["push"] = NewPushNotifier(cfg)

@@ -4,10 +4,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/mavrk-mose/pay/config"
+)
+
+var (
+	expirationTime time.Time
 )
 
 type Claims struct {
@@ -93,4 +98,13 @@ func AdminMiddleware(cfg *config.Config) gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func GenerateJWT(userID string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     expirationTime.Unix(),
+	})
+
+	return token.SignedString(jwtSecret)
 }

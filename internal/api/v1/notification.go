@@ -20,7 +20,7 @@ type NotificationHandler struct {
 
 func NewNotificationHandler(cfg *config.Config, db *sqlx.DB) *NotificationHandler {
 	return &NotificationHandler{
-		notification: repository.NewNotificationRepo(db, cfg),
+		notification: repository.NewNotificationService(db, cfg),
 	}
 }
 

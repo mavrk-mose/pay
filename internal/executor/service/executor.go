@@ -20,19 +20,15 @@ type PaymentExecutor struct {
 	gateways map[string]PaymentGateway
 }
 
-func NewPaymentExecutor(gateways map[string]PaymentGateway) ExecutorService {
-	return &PaymentExecutor{
-		gateways: gateways,
-	}
-}
-
-func NewDefaultPaymentExecutor() ExecutorService {
+func NewPaymentExecutor() ExecutorService {
 	gateways := map[string]PaymentGateway{
 		"stripe": &StripeProvider{},
 		"paypal": &PayPalProvider{},
 		"adyen":  &AdyenProvider{},
 	}
-	return NewPaymentExecutor(gateways)
+	return &PaymentExecutor{
+		gateways: gateways,
+	}
 }
 
 func (pe *PaymentExecutor) ExecutePayment(order models.PaymentIntent) (any, error) {

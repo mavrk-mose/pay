@@ -26,7 +26,7 @@ type WebhookPayload struct {
 
 func NewPaymentHandler(db *sqlx.DB) *PaymentHandler {
 	return &PaymentHandler{
-		ledgerService: repository.NewLedgerRepo(db),
+		ledgerService: repository.NewLedgerService(db),
 	}
 }
 

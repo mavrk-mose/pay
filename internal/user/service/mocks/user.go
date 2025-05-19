@@ -121,22 +121,24 @@ func (_c *UserService_BanUser_Call) RunAndReturn(run func(context.Context, strin
 }
 
 // GetUserByID provides a mock function with given fields: ctx, userID
-func (_m *UserService) GetUserByID(ctx context.Context, userID string) (models.User, error) {
+func (_m *UserService) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
 	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserByID")
 	}
 
-	var r0 models.User
+	var r0 *models.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (models.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*models.User, error)); ok {
 		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) models.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *models.User); ok {
 		r0 = rf(ctx, userID)
 	} else {
-		r0 = ret.Get(0).(models.User)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -167,12 +169,12 @@ func (_c *UserService_GetUserByID_Call) Run(run func(ctx context.Context, userID
 	return _c
 }
 
-func (_c *UserService_GetUserByID_Call) Return(_a0 models.User, _a1 error) *UserService_GetUserByID_Call {
+func (_c *UserService_GetUserByID_Call) Return(_a0 *models.User, _a1 error) *UserService_GetUserByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *UserService_GetUserByID_Call) RunAndReturn(run func(context.Context, string) (models.User, error)) *UserService_GetUserByID_Call {
+func (_c *UserService_GetUserByID_Call) RunAndReturn(run func(context.Context, string) (*models.User, error)) *UserService_GetUserByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -283,8 +285,8 @@ func (_c *UserService_RegisterUser_Call) Run(run func(ctx context.Context, user 
 	return _c
 }
 
-func (_c *UserService_RegisterUser_Call) Return(token string, err error) *UserService_RegisterUser_Call {
-	_c.Call.Return(token, err)
+func (_c *UserService_RegisterUser_Call) Return(_a0 string, _a1 error) *UserService_RegisterUser_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
@@ -293,17 +295,17 @@ func (_c *UserService_RegisterUser_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
-// RevokeRole provides a mock function with given fields: ctx, userID, role
-func (_m *UserService) RevokeRole(ctx context.Context, userID string, role string) error {
-	ret := _m.Called(ctx, userID, role)
+// RevokeRole provides a mock function with given fields: ctx, userID
+func (_m *UserService) RevokeRole(ctx context.Context, userID string) error {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RevokeRole")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, userID, role)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -319,14 +321,13 @@ type UserService_RevokeRole_Call struct {
 // RevokeRole is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-//   - role string
-func (_e *UserService_Expecter) RevokeRole(ctx interface{}, userID interface{}, role interface{}) *UserService_RevokeRole_Call {
-	return &UserService_RevokeRole_Call{Call: _e.mock.On("RevokeRole", ctx, userID, role)}
+func (_e *UserService_Expecter) RevokeRole(ctx interface{}, userID interface{}) *UserService_RevokeRole_Call {
+	return &UserService_RevokeRole_Call{Call: _e.mock.On("RevokeRole", ctx, userID)}
 }
 
-func (_c *UserService_RevokeRole_Call) Run(run func(ctx context.Context, userID string, role string)) *UserService_RevokeRole_Call {
+func (_c *UserService_RevokeRole_Call) Run(run func(ctx context.Context, userID string)) *UserService_RevokeRole_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -336,7 +337,7 @@ func (_c *UserService_RevokeRole_Call) Return(_a0 error) *UserService_RevokeRole
 	return _c
 }
 
-func (_c *UserService_RevokeRole_Call) RunAndReturn(run func(context.Context, string, string) error) *UserService_RevokeRole_Call {
+func (_c *UserService_RevokeRole_Call) RunAndReturn(run func(context.Context, string) error) *UserService_RevokeRole_Call {
 	_c.Call.Return(run)
 	return _c
 }
