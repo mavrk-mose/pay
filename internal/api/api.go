@@ -11,6 +11,10 @@ import (
 
 func Init(db *sqlx.DB, cfg *config.Config) *gin.Engine {
 	server := gin.Default()
+	err := server.SetTrustedProxies([]string{"127.0.0.1", "192.168.0.0/16"}) //TODO: grab these from config
+	if err != nil {
+		log.Fatalf("failed to set trusted proxies: %v", err)
+	}
 	server.Use(gin.Recovery())
 	server.Use(middleware.CORSMiddleware())
 
