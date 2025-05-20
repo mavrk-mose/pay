@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
