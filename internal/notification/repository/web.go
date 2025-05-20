@@ -37,6 +37,7 @@ func (s *WebNotifier) SSEHandler(c *gin.Context) {
 
 	// Set headers for SSE
 	c.Header("Content-Type", "text/event-stream")
+	c.Header("X-Accel-Buffering: no")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 
