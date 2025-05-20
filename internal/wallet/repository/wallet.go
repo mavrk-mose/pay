@@ -16,7 +16,7 @@ type walletRepo struct {
 	logger utils.Logger
 }
 
-func NewWalletRepo(db *sqlx.DB) service.WalletService {
+func NewWalletService(db *sqlx.DB) service.WalletService {
 	return &walletRepo{DB: db}
 }
 

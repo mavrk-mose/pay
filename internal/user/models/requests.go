@@ -10,6 +10,6 @@ type UserUpdateRequest struct {
 type UserFilter struct {
 	Role   *string `json:"role,omitempty"`
 	Active *bool   `json:"active,omitempty"`
-	Limit  *int     `json:"limit"`
-	Offset *int     `json:"offset"`
+	Limit  *int    `json:"limit"`
+	Offset *int    `json:"offset"`
 }

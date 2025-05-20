@@ -19,7 +19,7 @@ type WalletHandler struct {
 
 func NewWalletHandler(db *sqlx.DB) *WalletHandler {
 	return &WalletHandler{
-		service: repository.NewWalletRepo(db),
+		service: repository.NewWalletService(db),
 	}
 }
 

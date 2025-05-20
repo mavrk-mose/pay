@@ -33,26 +33,20 @@ const (
 )
 
 type Transaction struct {
-	ID          uuid.UUID         `db:"id" json:"id"`
-	ExternalRef string            `db:"external_ref" json:"external_ref"` // Unique external reference to track the transaction
-	Type        TransactionType   `db:"type" json:"type"`                 // e.g. transfer, deposit, withdrawal, charge
-	Status      TransactionStatus `db:"status" json:"status"`             // pending, confirmed, or failed
-	Details     string            `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
-	Currency    string            `db:"currency" json:"currency"`
-
-	DebitWalletID int64   `db:"debit_wallet_id" json:"debit_wallet_id"`
-	Amount        float64 `db:"amount" json:"amount"`
-
-	EntryType EntryType `db:"entry_type" json:"entry_type"`
-
-	CreditWalletID int64 `db:"credit_wallet_id" json:"credit_wallet_id"`
-
-	Checksum string `db:"checksum" json:"checksum"`
-
-	Provider string `db:"provider" json:"provider"`
-
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	ID             uuid.UUID         `db:"id" json:"id"`
+	ExternalRef    string            `db:"external_ref" json:"external_ref"` // Unique external reference to track the transaction
+	Type           TransactionType   `db:"type" json:"type"`                 // e.g. transfer, deposit, withdrawal, charge
+	Status         TransactionStatus `db:"status" json:"status"`             // pending, confirmed, or failed
+	Details        string            `db:"details" json:"details,omitempty"` // Optional extra details as JSON or text
+	Currency       string            `db:"currency" json:"currency"`
+	DebitWalletID  int64             `db:"debit_wallet_id" json:"debit_wallet_id"`
+	Amount         float64           `db:"amount" json:"amount"`
+	EntryType      EntryType         `db:"entry_type" json:"entry_type"`
+	CreditWalletID int64             `db:"credit_wallet_id" json:"credit_wallet_id"`
+	Checksum       string            `db:"checksum" json:"checksum"`
+	Provider       string            `db:"provider" json:"provider"`
+	CreatedAt      time.Time         `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time         `db:"updated_at" json:"updated_at"`
 }
 
 type Report struct {

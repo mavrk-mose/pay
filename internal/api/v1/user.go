@@ -101,7 +101,10 @@ func (h *UserHandler) AuthCallbackHandler(c *gin.Context) {
 }
 
 func (h *UserHandler) LogoutHandler(c *gin.Context) {
-	gothic.Logout(c.Writer, c.Request)
+	err := gothic.Logout(c.Writer, c.Request)
+	if err != nil {
+		return
+	}
 	c.Writer.Header().Set("Set-Cookie", "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure")
 	c.Redirect(http.StatusFound, "http://localhost:8080/auth/login")
 	c.JSON(http.StatusOK, gin.H{

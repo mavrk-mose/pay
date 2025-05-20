@@ -15,15 +15,17 @@ import (
 )
 
 type WebhookHandler struct {
-	Logger     utils.Logger
-	Provider   *service.PayPalProvider
-	WebhookID  string
-	Secret     string
+	Logger    utils.Logger
+	Provider  *service.PayPalProvider
+	service   service.ExecutorService
+	WebhookID string
+	Secret    string
 }
 
 func NewWebhookHandler() *WebhookHandler {
 	return &WebhookHandler{
-		Secret: os.Getenv("STRIPE_WEBHOOK_SECRET"),
+		service: service.NewPaymentExecutor(),
+		Secret:  os.Getenv("STRIPE_WEBHOOK_SECRET"),
 	}
 }
 
