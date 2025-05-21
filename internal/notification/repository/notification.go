@@ -62,7 +62,7 @@ func (s *notificationRepo) SendNotification(ctx context.Context, user models.Use
 
 func (s *notificationRepo) GetTemplate(ctx context.Context, templateID string) (NotificationTemplate, error) {
 	var template NotificationTemplate
-	query := `SELECT id, title, message, type FROM templates WHERE id = $1`
+	query := `SELECT id, title, subject, message, type, channel, variables, metadata FROM templates WHERE id = $1`
 	err := s.DB.GetContext(ctx, &template, query, templateID)
 	if err != nil {
 		return NotificationTemplate{}, fmt.Errorf("failed to get template: %w", err)

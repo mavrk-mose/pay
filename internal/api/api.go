@@ -1,13 +1,13 @@
 package api
 
 import (
-	"log"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
 	"github.com/mavrk-mose/pay/internal/api/middleware"
 	v1 "github.com/mavrk-mose/pay/internal/api/v1"
 	"golang.org/x/time/rate"
+	"log"
 )
 
 func Init(db *sqlx.DB, cfg *config.Config) *gin.Engine {
@@ -34,7 +34,7 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	notificationHandler := v1.NewNotificationHandler(cfg, db)
 	executorHandler := v1.NewWebhookHandler()
 
-	api := r.Group("/api/v1", middleware.AuthMiddleware())
+	api := r.Group("/api/v1")
 
 	v1.InitAuth(cfg)
 
@@ -59,7 +59,7 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	}
 
 	// Wallet Routes
-	wallet := api.Group("/wallet")
+	wallet := api.Group("/wallet", middleware.AuthMiddleware())
 	{
 		wallet.POST("/", walletHandler.CreateWallet)
 		wallet.GET("/user/:userID", walletHandler.GetUserWallets)
@@ -70,7 +70,7 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 	}
 
 	// Payment routes
-	payment := api.Group("/payment")
+	payment := api.Group("/payment", middleware.AuthMiddleware())
 	{
 		payment.POST("/event", paymentHandler.ProcessPayment)
 		payment.GET("/id/:paymentID", paymentHandler.GetPaymentDetails)
@@ -82,7 +82,7 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 		payment.POST("/id/:paymentID/process", paymentHandler.ProcessPayment)
 	}
 
-	notification := api.Group("/notifications")
+	notification := api.Group("/notifications", middleware.AuthMiddleware())
 	{
 		notification.GET("/", notificationHandler.GetNotifications) // should be realtime -> ideally websockets
 		notification.POST("/:id/read", notificationHandler.MarkAsRead)

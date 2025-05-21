@@ -17,8 +17,14 @@ type Notification struct {
 }
 
 type NotificationTemplate struct {
-	ID      string `db:"id" json:"id"`
-	Title   string `db:"title" json:"title"`
-	Message string `db:"message" json:"message"`
-	Type    string `db:"type" json:"type"`
+	Id        string   `json:"id" db:"id"`
+	Title     string   `json:"title" db:"title"`
+	Subject   string   `json:"subject" db:"subject"`
+	Message   string   `json:"message" db:"message"`
+	Type      string   `json:"type" db:"type"`
+	Channel   string   `json:"channel" db:"channel"`
+	Variables []string `json:"variables" db:"variables"`
+	Metadata  struct {
+		Language string `json:"language" db:"language"`
+	} `json:"metadata" db:"metadata"`
 }
