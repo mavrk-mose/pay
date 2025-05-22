@@ -8,7 +8,7 @@ variable "instance_type" {
   default     = "t3.nano"
 }
 
-variable "key_name" {
+variable "ssh_key" {
   description = "AWS SSH Key Pair name"
   default     = "your-key-name"
 }
