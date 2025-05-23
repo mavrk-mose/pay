@@ -97,11 +97,11 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 // @Failure      401  {object}  map[string]string
 // @Router       /api/notifications/stream [get]
 func (h *NotificationHandler) SSEHandler(c *gin.Context) {
-    userID := c.GetString("user_id")
-    if userID == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "user_id required in context"})
-        return
-    }
+	userID := c.GetString("user_id")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user_id required in context"})
+		return
+	}
 
 	h.logger.Infof("Establishing SSE connection for user %s", userID)
 
@@ -119,20 +119,20 @@ func (h *NotificationHandler) SSEHandler(c *gin.Context) {
 	notifyChan := webNotifier.RegisterClient(userID)
 	defer webNotifier.UnregisterClient(userID)
 
-    c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("X-Accel-Buffering", "no")
-    c.Writer.Header().Set("Cache-Control", "no-cache")
-    c.Writer.Header().Set("Connection", "keep-alive")
-    c.Writer.Flush()
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Flush()
 
-    ctx := c.Request.Context()
-    for {
-        select {
-        case notification := <-notifyChan:
-            c.SSEvent("notification", notification)
-            c.Writer.Flush()
-        case <-ctx.Done():
-            return
-        }
-    }
+	ctx := c.Request.Context()
+	for {
+		select {
+		case notification := <-notifyChan:
+			c.SSEvent("notification", notification)
+			c.Writer.Flush()
+		case <-ctx.Done():
+			return
+		}
+	}
 }
