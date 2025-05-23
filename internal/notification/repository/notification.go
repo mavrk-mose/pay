@@ -23,19 +23,10 @@ func NewNotificationService(db *sqlx.DB, cfg *config.Config) service.Notificatio
 	notifiers := make(map[string]service.Notifier)
 
 	notifiers["push"] = NewPushNotifier(cfg)
-
-	if cfg.Twilio.AccountSID != "" && cfg.Twilio.AuthToken != "" && cfg.Twilio.From != "" {
-		notifiers["sms"] = NewSMSNotifier(cfg)
-	}
-
-	if cfg.Server.EmailFrom != "" && cfg.Server.SMTPHost != "" {
-		notifiers["email"] = NewEmailNotifier(cfg)
-	}
-
-	if cfg.Server.WebhookURL != "" {
-		notifiers["web"] = NewWebNotifier()
-	}
-
+	notifiers["sms"] = NewSMSNotifier(cfg)
+	notifiers["email"] = NewEmailNotifier(cfg)
+        notifiers["web"] = NewWebNotifier()
+	
 	return &notificationRepo{
 		notifiers: notifiers,
 		DB:        db,
