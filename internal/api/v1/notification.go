@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mavrk-mose/pay/config"
+	"github.com/mavrk-mose/pay/internal/notification/service/notifiers"
 	"github.com/mavrk-mose/pay/internal/notification/repository"
 	"github.com/mavrk-mose/pay/pkg/utils"
 )
@@ -106,7 +107,7 @@ func (h *NotificationHandler) SSEHandler(c *gin.Context) {
 	h.logger.Infof("Establishing SSE connection for user %s", userID)
 
 	type webNotifierProvider interface {
-		WebNotifier() *repository.WebNotifier
+		WebNotifier() *notifiers.WebNotifier
 	}
 
 	provider, ok := h.notification.(webNotifierProvider)

@@ -11,32 +11,33 @@ import (
 	"github.com/jmoiron/sqlx"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"github.com/mavrk-mose/pay/internal/notification/service"
+	"github.com/mavrk-mose/pay/internal/notification/service/notifiers"
 )
 
 type notificationRepo struct {
-	notifiers map[string]service.Notifier
-	logger    utils.Logger
-	DB        *sqlx.DB
+	clients map[string]notifiers.Notifier
+	logger  utils.Logger
+	DB      *sqlx.DB
 }
 
 func NewNotificationService(db *sqlx.DB, cfg *config.Config) service.NotificationService {
-	notifiers := make(map[string]service.Notifier)
+	clients := make(map[string]notifiers.Notifier)
 
-	notifiers["push"] = NewPushNotifier(cfg)
-	notifiers["sms"] = NewSMSNotifier(cfg)
-	notifiers["email"] = NewEmailNotifier(cfg)
-    notifiers["web"] = NewWebNotifier()
-	
+	clients["push"] = notifiers.NewPushNotifier(cfg)
+	clients["sms"] = notifiers.NewSMSNotifier(cfg)
+	clients["email"] = notifiers.NewEmailNotifier(cfg)
+	clients["web"] = notifiers.NewWebNotifier()
+
 	return &notificationRepo{
-		notifiers: notifiers,
-		DB:        db,
+		clients: clients,
+		DB:      db,
 	}
 }
 
 func (s *notificationRepo) SendNotification(ctx context.Context, user models.User, channel, title string, details map[string]string) error {
 	s.logger.Infof("Dispatching notification to user %s via %s channel", user.ID.String(), channel)
 
-	notifier, exists := s.notifiers[channel]
+	notifier, exists := s.clients[channel]
 	if !exists {
 		s.logger.Errorf("Notification channel %s not supported", channel)
 		return fmt.Errorf("notification channel %s not supported", channel)
