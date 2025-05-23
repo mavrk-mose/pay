@@ -29,6 +29,23 @@ func NewWebhookHandler() *WebhookHandler {
 	}
 }
 
+
+// StripeWebhookHandler handles incoming Stripe webhook events.
+//
+// @Summary      Stripe Webhook
+// @Description  Handles Stripe webhook events such as checkout session completion and payment intent success.
+// @Tags         webhook
+// @Accept       json
+// @Produce      plain
+// @Param        Stripe-Signature  header  string  true  "Stripe Signature Header"
+// @Success      200  {string}  string  "Received"
+// @Failure      400  {string}  string  "Invalid signature or bad payload"
+// @Failure      413  {string}  string  "Request too large"
+// @Router       /api/v1/webhook/stripe [post]
+//
+// The handler verifies the Stripe signature, parses the event, and processes
+// supported event types such as "checkout.session.completed" and "payment_intent.succeeded".
+// Unhandled event types are logged as warnings.
 func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)
@@ -79,6 +96,25 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Received")
 }
 
+// PaypalWebhookHandler handles incoming PayPal webhook events.
+//
+// @Summary      PayPal Webhook
+// @Description  Handles PayPal webhook events such as payment intent completion.
+// @Tags         webhook
+// @Accept       json
+// @Produce      plain
+// @Param        Paypal-Auth-Algo  header  string  true  "PayPal Auth Algo Header"
+// @Param        Paypal-Cert-Url  header  string  true  "PayPal Cert Url Header"
+// @Param        Paypal-Transmission-Id  header  string  true  "PayPal Transmission Id Header"
+// @Param        Paypal-Transmission-Sig  header  string  true  "PayPal Transmission Sig Header"
+// @Param        Paypal-Transmission-Time  header  string  true  "PayPal Transmission Time Header"
+// @Success      200  {string}  string  "Received"
+// @Failure      400  {string}  string  "Invalid signature or bad payload"
+// @Failure      413  {string}  string  "Request too large"
+// @Router       /api/v1/webhook/paypal [post]
+//
+// The handler verifies the PayPal webhook signature, parses the event, and processes
+// supported event types. Unhandled event types are logged as warnings.
 func (h *WebhookHandler) PaypalWebhookHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -95,7 +131,6 @@ func (h *WebhookHandler) PaypalWebhookHandler(c *gin.Context) {
 		"PAYPAL-TRANSMISSION-TIME": c.GetHeader("Paypal-Transmission-Time"),
 	}
 
-	// Step 1: Verify the webhook
 	valid, err := h.Provider.VerifyWebhook(headers, body, h.WebhookID)
 	if err != nil || !valid {
 		h.Logger.Error("Webhook verification failed", zap.Error(err), zap.Bool("valid", valid))
@@ -103,7 +138,6 @@ func (h *WebhookHandler) PaypalWebhookHandler(c *gin.Context) {
 		return
 	}
 
-	// Step 2: Parse event payload
 	var event map[string]any
 	if err := json.Unmarshal(body, &event); err != nil {
 		h.Logger.Error("Failed to parse webhook event", zap.Error(err))

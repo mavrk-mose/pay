@@ -34,6 +34,17 @@ func (h *PaymentHandler) Check(c *gin.Context) {
 	c.Status(200)
 }
 
+// ProcessPayment godoc
+// @Summary      Process a payment
+// @Description  Processes a payment intent and returns a success message
+// @Tags         payments
+// @Accept       json
+// @Produce      json
+// @Param        paymentIntent  body  PaymentIntent  true  "Payment Intent"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/payments [post]
 func (h *PaymentHandler) ProcessPayment(ctx *gin.Context) {
 	var paymentIntent PaymentIntent
 
@@ -50,6 +61,15 @@ func (h *PaymentHandler) ProcessPayment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
 }
 
+// GetPaymentStatus godoc
+// @Summary      Get payment status
+// @Description  Returns the status of a payment by ID
+// @Tags         payments
+// @Produce      json
+// @Param        paymentID  path  string  true  "Payment ID"
+// @Success      200  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/payments/{paymentID}/status [get]
 func (h *PaymentHandler) GetPaymentStatus(c *gin.Context) {
 	paymentID := c.Param("paymentID")
 

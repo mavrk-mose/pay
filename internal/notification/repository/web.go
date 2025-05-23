@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "github.com/mavrk-mose/pay/internal/notification/models"
 	"github.com/mavrk-mose/pay/internal/notification/service"
@@ -13,8 +12,6 @@ import (
 	"time"
 )
 
-// WebNotifier handles SSE and notifications.
-// It uses a concurrent map for clients where each userID maps to its notification channel.
 type WebNotifier struct {
 	clients      cmap.ConcurrentMap[string, chan Notification]
 	notification service.NotificationService
@@ -27,42 +24,18 @@ func NewWebNotifier() *WebNotifier {
 	}
 }
 
-// SSEHandler handles Server-Sent Events (SSE) connections
-func (s *WebNotifier) SSEHandler(c *gin.Context) {
-	userID := c.Param("userID")
-	s.logger.Infof("SSE connection established for user: %s", userID)
-
-	_, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
-	defer cancel()
-
-	// Set headers for SSE
-	c.Header("Content-Type", "text/event-stream")
-	c.Header("X-Accel-Buffering", "no")
-	c.Header("Cache-Control", "no-cache")
-	c.Header("Connection", "keep-alive")
-
+func (s *WebNotifier) RegisterClient(userID string) chan Notification {
 	notifyChan := make(chan Notification)
-
 	s.clients.Set(userID, notifyChan)
-	s.logger.Debugf("Created new channel for user %s", userID)
+	s.logger.Debugf("Registered new SSE client for user %s", userID)
+	return notifyChan
+}
 
-	defer func() {
+func (s *WebNotifier) UnregisterClient(userID string) {
+	if ch, ok := s.clients.Get(userID); ok {
+		close(ch)
 		s.clients.Remove(userID)
-		close(notifyChan)
-		s.logger.Debugf("Removed user %s from active clients map", userID)
-	}()
-
-	ctx := c
-	for {
-		select {
-		case <-ctx.Done():
-			s.logger.Infof("Client %s disconnected", userID)
-			return
-		case notification := <-notifyChan:
-			c.SSEvent("message", notification.Message)
-			c.Writer.Flush()
-			s.logger.Debugf("Notification sent to user %s: %s", userID, notification.ID)
-		}
+		s.logger.Debugf("Unregistered SSE client for user %s", userID)
 	}
 }
 
@@ -108,3 +81,4 @@ func (s *WebNotifier) Send(ctx context.Context, user models.User, templateID str
 	s.logger.Infof("Notification %s successfully queued for user %s", notification.ID, userID)
 	return nil
 }
+

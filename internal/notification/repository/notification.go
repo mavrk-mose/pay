@@ -25,7 +25,7 @@ func NewNotificationService(db *sqlx.DB, cfg *config.Config) service.Notificatio
 	notifiers["push"] = NewPushNotifier(cfg)
 	notifiers["sms"] = NewSMSNotifier(cfg)
 	notifiers["email"] = NewEmailNotifier(cfg)
-        notifiers["web"] = NewWebNotifier()
+    notifiers["web"] = NewWebNotifier()
 	
 	return &notificationRepo{
 		notifiers: notifiers,

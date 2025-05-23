@@ -112,7 +112,16 @@ func (h *UserHandler) LogoutHandler(c *gin.Context) {
 	})
 }
 
-// ListUsers retrieves users based on filters
+// ListUsers godoc
+// @Summary      List users
+// @Description  Retrieves users based on filters
+// @Tags         users
+// @Produce      json
+// @Param        name  query  string  false  "User name"
+// @Success      200  {array}  models.User
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	var filter models.UserFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
@@ -129,7 +138,18 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-// AssignRole assigns a role to a user
+// AssignRole godoc
+// @Summary      Assign role to user
+// @Description  Assigns a role to a user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        userID  path  string  true  "User ID"
+// @Param        role    body  string  true  "Role"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/users/{userID}/role [post]
 func (h *UserHandler) AssignRole(c *gin.Context) {
 	userID := c.Param("userID")
 	var request struct {
