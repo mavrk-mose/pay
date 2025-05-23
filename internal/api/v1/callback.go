@@ -42,10 +42,6 @@ func NewWebhookHandler() *WebhookHandler {
 // @Failure      400  {string}  string  "Invalid signature or bad payload"
 // @Failure      413  {string}  string  "Request too large"
 // @Router       /api/v1/webhook/stripe [post]
-//
-// The handler verifies the Stripe signature, parses the event, and processes
-// supported event types such as "checkout.session.completed" and "payment_intent.succeeded".
-// Unhandled event types are logged as warnings.
 func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)
@@ -112,9 +108,6 @@ func (h *WebhookHandler) StripeWebhookHandler(c *gin.Context) {
 // @Failure      400  {string}  string  "Invalid signature or bad payload"
 // @Failure      413  {string}  string  "Request too large"
 // @Router       /api/v1/webhook/paypal [post]
-//
-// The handler verifies the PayPal webhook signature, parses the event, and processes
-// supported event types. Unhandled event types are logged as warnings.
 func (h *WebhookHandler) PaypalWebhookHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {

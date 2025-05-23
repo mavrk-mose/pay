@@ -136,7 +136,7 @@ func (r *walletRepo) Debit(txn *sqlx.Tx, walletID uuid.UUID, amount float64) err
 		return fmt.Errorf("insufficient balance in wallet %s", walletID)
 	}
 
-	_, err = txn.ExecContext(context.Background(), "UPDATE wallets SET balance = balance - $1 WHERE id = $2", amount, walletID)
+	_, err = txn.ExecContext(context.Context, "UPDATE wallets SET balance = balance - $1 WHERE id = $2", amount, walletID)
 	return err
 }
 

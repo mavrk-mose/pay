@@ -84,8 +84,9 @@ func NewApiHandler(r *gin.Engine, db *sqlx.DB, cfg *config.Config) {
 
 	notification := api.Group("/notifications", middleware.AuthMiddleware())
 	{
-		notification.GET("/", notificationHandler.GetNotifications) // should be realtime -> ideally websockets
+		notification.GET("/", notificationHandler.GetNotifications) 
 		notification.POST("/:id/read", notificationHandler.MarkAsRead)
+		notification.POST("/web", notificationHandler.SSEHandler)
 	}
 
 	executor := api.Group("/webhook") //validate with signature
