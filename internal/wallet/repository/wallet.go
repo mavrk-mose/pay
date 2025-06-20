@@ -49,7 +49,7 @@ func (r *walletRepo) DeleteWallet(c context.Context, walletID string) error {
 func (r *walletRepo) GetUserWallets(ctx context.Context, userID string) ([]Wallet, error) {
 	r.logger.Infof("Fetching wallets for user %s", userID)
 	var wallets []Wallet
-	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1`
+	query := `SELECT id, user_id, balance, currency, created_at FROM wallets WHERE user_id = $1 FOR UPDATE`
 	err := r.DB.Select(&wallets, query, userID)
 	if err != nil {
 		r.logger.Errorf("Failed to fetch wallets: %v", err)
