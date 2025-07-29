@@ -22,8 +22,8 @@ logger:
 postgres:
   PostgresqlHost: postgesql
   PostgresqlPort: 5432
-  PostgresqlUser: postgres
-  PostgresqlPassword: postgres
+  PostgresqlUser: anon
+  PostgresqlPassword: password 
   PostgresqlDbname: lipa
   PostgresqlSslmode: false
   PgDriver: pgx
