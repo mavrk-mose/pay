@@ -20,7 +20,7 @@ logger:
   Level: info
 
 postgres:
-  PostgresqlHost: postgesql
+  PostgresqlHost: host.docker.internal
   PostgresqlPort: 5432
   PostgresqlUser: anon
   PostgresqlPassword: password 
