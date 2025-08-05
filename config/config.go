@@ -193,14 +193,26 @@ func LoadConfig(filename string) (*viper.Viper, error) {
 	v := viper.New()
 
 	v.SetConfigName(filename)
-	v.AddConfigPath(".")
+	v.AddConfigPath(".") 
+
+	// Enable reading environment variables
+	v.SetEnvPrefix("POSTGRES") // Prefix env vars with POSTGRES_
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
+
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return nil, errors.New("config file not found")
 		}
 		return nil, err
 	}
+
+	_ = v.BindEnv("postgres.postgresqlhost")
+	_ = v.BindEnv("postgres.postgresqlport")
+	_ = v.BindEnv("postgres.postgresqluser")
+	_ = v.BindEnv("postgres.postgresqlpassword")
+	_ = v.BindEnv("postgres.postgresqldbname")
+	_ = v.BindEnv("postgres.postgresqlsslmode")
 
 	return v, nil
 }
